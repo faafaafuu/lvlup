@@ -49,7 +49,15 @@ export function findFoods(tokens: string[], catalog: readonly Food[] = CATALOG):
       matches.push({ food: entry.food, start, end: start + len });
     }
   }
-  return matches.sort((a, b) => a.start - b.start);
+  matches.sort((a, b) => a.start - b.start);
+  // «роллы филадельфия» — два алиаса одного блюда подряд = одно упоминание.
+  const merged: FoodMatch[] = [];
+  for (const m of matches) {
+    const last = merged[merged.length - 1];
+    if (last && last.food.id === m.food.id && last.end === m.start) last.end = m.end;
+    else merged.push(m);
+  }
+  return merged;
 }
 
 /** Лучшее блюдо для свободного названия («бутерброда с колбаской») или null. */

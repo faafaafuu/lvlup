@@ -20,11 +20,16 @@ export function parseHeuristic(text: string, catalog: readonly Food[] = CATALOG)
     const prevEnd = Math.max(consumedUntil, i === 0 ? 0 : matches[i - 1]!.end);
     const nextStart = i + 1 < matches.length ? matches[i + 1]!.start : tokens.length;
     const before = readAmount(tokens.slice(prevEnd, match.start));
-    // «плов граммов 300» — вес после блюда берём, только если там явно г/мл.
+    // «плов граммов 300», «голубцы две штуки» — количество после блюда берём, только если
+    // там явно вес или число с единицей. Голое «два» скорее относится к следующему блюду.
     const after = readAmount(tokens.slice(match.end, nextStart));
+    // «кофе с одной ложкой сахара»: «с …» относится к следующему блюду, не к кофе.
+    const first = tokens[match.end];
+    const startsWithAmount = first != null && (wordToNumber(first) != null || readAmount([first]).unit != null);
+    const afterIsAmount = startsWithAmount && (after.grams != null || (after.quantity != null && after.unit != null));
     let amount = before;
     consumedUntil = match.end;
-    if (before.quantity == null && before.unit == null && after.grams != null) {
+    if (before.quantity == null && before.unit == null && afterIsAmount) {
       amount = after;
       consumedUntil = match.end + after.lastIndex + 1;
     }
@@ -78,6 +83,7 @@ export function readAmount(window: string[]): Amount {
     const base = quantity ?? (scale > 1 ? 1 : null);
     return { quantity: null, unit, grams: base != null ? base * scale : null, lastIndex };
   }
-  return { quantity, unit, grams: null, lastIndex };
+  // «тарелка борща» без числа — это одна тарелка.
+  return { quantity: quantity ?? (unit != null ? 1 : null), unit, grams: null, lastIndex };
 }
 

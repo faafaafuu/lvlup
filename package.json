@@ -11,7 +11,7 @@
     "build": "npm run build --workspace @levelup/domain && npm run build --workspace @levelup/api",
     "typecheck": "tsc -p packages/domain --noEmit && tsc -p apps/api --noEmit && npm run typecheck --workspace @levelup/mobile",
     "test": "jest",
-    "eval": "tsx apps/api/scripts/eval.ts",
+    "eval": "npm run build -w @levelup/domain && tsx apps/api/scripts/eval.ts",
     "dev:api": "npm run start:dev --workspace @levelup/api",
     "dev:mobile": "npm run start --workspace @levelup/mobile"
   },
