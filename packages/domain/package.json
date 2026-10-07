@@ -1,0 +1,12 @@
+{
+  "name": "@levelup/domain",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Чистая логика Level Up: каталог еды, разбор фраз, расчёт калорий, XP и квесты. Без зависимостей — работает и на сервере, и в приложении.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "react-native": "src/index.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  }
+}

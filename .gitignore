@@ -3,3 +3,6 @@ node_modules/
 dist/
 .expo/
 *.ipa
+ios/
+android/
+*.tsbuildinfo

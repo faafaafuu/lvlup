@@ -1,0 +1,29 @@
+{
+  "name": "levelup",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Level Up — RPG-трекер питания и активности с голосовым вводом.",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspace @levelup/domain && npm run build --workspace @levelup/api",
+    "typecheck": "tsc -p packages/domain --noEmit && tsc -p apps/api --noEmit && npm run typecheck --workspace @levelup/mobile",
+    "test": "jest",
+    "eval": "tsx apps/api/scripts/eval.ts",
+    "dev:api": "npm run start:dev --workspace @levelup/api",
+    "dev:mobile": "npm run start --workspace @levelup/mobile"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.10.1",
+    "jest": "^30.2.0",
+    "ts-jest": "^29.4.5",
+    "tsx": "^4.20.6",
+    "typescript": "~5.9.3"
+  }
+}
