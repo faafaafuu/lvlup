@@ -39,7 +39,10 @@ describe('норма и безопасность', () => {
     expect(avatarStage(profile, [{ date: '2026-10-01', kg: 84 }])).toBe(2);
     const noisy = [{ date: '2026-10-01', kg: 92 }, { date: '2026-10-02', kg: 92 }, { date: '2026-10-03', kg: 86 }];
     expect(avatarStage(profile, noisy)).toBe(0);
-    expect(smoothWeights(noisy).at(-1)!.trend).toBe(90.5);
+    expect(smoothWeights(noisy).at(-1)!.trend).toBe(91.2);
+    // Редкие взвешивания: тренд не должен отставать на килограммы.
+    const sparse = [{ date: '2026-09-01', kg: 92 }, { date: '2026-09-15', kg: 89 }];
+    expect(smoothWeights(sparse).at(-1)!.trend).toBeLessThan(89.5);
   });
 });
 

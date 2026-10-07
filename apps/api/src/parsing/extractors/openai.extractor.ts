@@ -1,7 +1,6 @@
-import { ParsedEntity } from '@levelup/domain';
 import { FoodExtractor } from './extractor';
 import { SYSTEM_PROMPT } from './prompt';
-import { EXTRACTION_JSON_SCHEMA, ExtractionSchema } from './schema';
+import { EXTRACTION_JSON_SCHEMA, Extraction, ExtractionSchema } from './schema';
 
 /** OpenAI-совместимый Chat Completions (gpt-4o-mini и аналоги) с JSON Schema на выходе. */
 export class OpenAiExtractor implements FoodExtractor {
@@ -9,7 +8,7 @@ export class OpenAiExtractor implements FoodExtractor {
 
   constructor(private readonly apiKey: string, private readonly model: string, private readonly baseUrl: string) {}
 
-  async extract(text: string, signal: AbortSignal): Promise<ParsedEntity[]> {
+  async extract(text: string, signal: AbortSignal): Promise<Extraction> {
     const res = await fetch(`${this.baseUrl}/chat/completions`, {
       method: 'POST',
       signal,
@@ -26,6 +25,6 @@ export class OpenAiExtractor implements FoodExtractor {
     });
     if (!res.ok) throw new Error(`OpenAI ${res.status}: ${await res.text()}`);
     const body = (await res.json()) as { choices: Array<{ message: { content: string } }> };
-    return ExtractionSchema.parse(JSON.parse(body.choices[0]?.message.content ?? '{}')).items;
+    return ExtractionSchema.parse(JSON.parse(body.choices[0]?.message.content ?? '{}'));
   }
 }

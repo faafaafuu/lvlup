@@ -74,6 +74,8 @@ export interface ClarifyQuestion {
 export interface MealDraft {
   sourceText: string;
   items: ResolvedItem[];
+  /** Активность из той же фразы: «съел банан и пробежал полчаса». */
+  activities: import('../activity/types').ResolvedActivity[];
   /** Фразы, которые не нашлись в каталоге. */
   unknown: string[];
   questions: ClarifyQuestion[];

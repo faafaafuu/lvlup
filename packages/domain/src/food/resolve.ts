@@ -1,3 +1,5 @@
+import { ParsedActivity } from '../activity/types';
+import { resolveActivities } from '../activity/parse';
 import { CATALOG, CATALOG_BY_ID } from './catalog';
 import { matchFood } from './match';
 import { UNIT_GRAMS, UNIT_LABELS } from './units';
@@ -13,6 +15,9 @@ export const MAX_QUESTIONS = 2;
 export interface ResolveOptions {
   portions?: UserPortions;
   catalog?: readonly Food[];
+  activities?: ParsedActivity[];
+  /** Для расчёта сожжённых калорий. */
+  bodyWeightKg?: number;
 }
 
 /** Сущности от LLM/офлайн-разбора → черновик записи с калориями и вопросами. */
@@ -31,7 +36,8 @@ export function resolveMeal(sourceText: string, entities: ParsedEntity[], option
     items.push(resolveItem(food, entity, options.portions));
   }
 
-  const draft: MealDraft = { sourceText, items, unknown, questions: [], totals: sumNutrients(items) };
+  const activities = resolveActivities(options.activities ?? [], options.bodyWeightKg ?? 75);
+  const draft: MealDraft = { sourceText, items, activities, unknown, questions: [], totals: sumNutrients(items) };
   draft.questions = buildQuestions(draft, byId);
   return draft;
 }

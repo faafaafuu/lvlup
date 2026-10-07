@@ -2,6 +2,15 @@ import { z } from 'zod/v4';
 import { UNIT_IDS } from './prompt';
 
 export const ExtractionSchema = z.object({
+  activities: z.array(
+    z.object({
+      text: z.string(),
+      activityId: z.string().nullable(),
+      minutes: z.number().nullable(),
+      reps: z.number().nullable(),
+      weightKg: z.number().nullable(),
+    }),
+  ),
   items: z.array(
     z.object({
       text: z.string(),

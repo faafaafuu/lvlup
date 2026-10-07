@@ -5,6 +5,7 @@ import { MealParser, ParseResult } from './meal-parser';
 interface ParseBody {
   text?: unknown;
   portions?: UserPortions;
+  bodyWeightKg?: number;
 }
 
 @Controller('v1/meals')
@@ -16,6 +17,7 @@ export class ParseController {
     if (typeof body?.text !== 'string' || !body.text.trim()) {
       throw new BadRequestException('Нужен непустой text');
     }
-    return this.parser.parse(body.text, body.portions);
+    const kg = typeof body.bodyWeightKg === 'number' && body.bodyWeightKg > 20 ? body.bodyWeightKg : undefined;
+    return this.parser.parse(body.text, body.portions, kg);
   }
 }

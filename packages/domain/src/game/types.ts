@@ -1,3 +1,4 @@
+import { ActivitySession } from '../activity/types';
 import { Nutrients, ResolvedItem } from '../food/types';
 
 /** Дата в локальной зоне пользователя: '2026-10-07'. */
@@ -19,6 +20,8 @@ export interface DayActivity {
   /** Вода, отмеченная отдельно от еды. */
   waterMl?: number;
   workouts?: number;
+  /** Тренировки, записанные голосом или вручную. */
+  sessions?: ActivitySession[];
   /** id квестов, отмеченных вручную («Сделай 10 отжиманий»). */
   manualDone?: string[];
 }

@@ -12,6 +12,8 @@ export interface DayStats {
   steps: number;
   sleepHours: number;
   workouts: number;
+  activeMinutes: number;
+  burnedKcal: number;
   fruitVegServings: number;
   sweetsAfter18: boolean;
   breakfastBy10: boolean;
@@ -31,7 +33,9 @@ export function dayStats(date: DateKey, meals: MealLog[], activity?: DayActivity
     waterMl: activity?.waterMl ?? 0,
     steps: activity?.steps ?? 0,
     sleepHours: activity?.sleepHours ?? 0,
-    workouts: activity?.workouts ?? 0,
+    workouts: (activity?.workouts ?? 0) + (activity?.sessions?.length ?? 0),
+    activeMinutes: (activity?.sessions ?? []).reduce((m, s) => m + s.minutes, 0),
+    burnedKcal: (activity?.sessions ?? []).reduce((k, s) => k + s.kcal, 0),
     fruitVegServings: 0,
     sweetsAfter18: false,
     breakfastBy10: false,

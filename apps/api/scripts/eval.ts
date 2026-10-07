@@ -28,7 +28,7 @@ async function main() {
     const started = Date.now();
     let got: ParsedEntity[] = [];
     try {
-      got = await extractor.extract(c.text, AbortSignal.timeout(20000));
+      got = (await extractor.extract(c.text, AbortSignal.timeout(20000))).items;
     } catch (err) {
       failures.push(`ОШИБКА «${c.text}»: ${err instanceof Error ? err.message : err}`);
     }

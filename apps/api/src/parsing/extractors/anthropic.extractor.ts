@@ -1,9 +1,8 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { zodOutputFormat } from '@anthropic-ai/sdk/helpers/zod';
-import { ParsedEntity } from '@levelup/domain';
 import { FoodExtractor } from './extractor';
 import { SYSTEM_PROMPT } from './prompt';
-import { ExtractionSchema } from './schema';
+import { Extraction, ExtractionSchema } from './schema';
 
 export class AnthropicExtractor implements FoodExtractor {
   readonly name = 'anthropic';
@@ -14,7 +13,7 @@ export class AnthropicExtractor implements FoodExtractor {
     this.client = new Anthropic({ ...(apiKey ? { apiKey } : {}), maxRetries: 1 });
   }
 
-  async extract(text: string, signal: AbortSignal): Promise<ParsedEntity[]> {
+  async extract(text: string, signal: AbortSignal): Promise<Extraction> {
     const response = await this.client.messages.parse(
       {
         model: this.model,
@@ -28,6 +27,6 @@ export class AnthropicExtractor implements FoodExtractor {
     if (response.stop_reason === 'refusal' || !response.parsed_output) {
       throw new Error(`Anthropic не вернул разбор (stop_reason=${response.stop_reason})`);
     }
-    return response.parsed_output.items;
+    return response.parsed_output;
   }
 }

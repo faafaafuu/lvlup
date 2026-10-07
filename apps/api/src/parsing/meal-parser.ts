@@ -20,16 +20,16 @@ export class MealParser {
 
   constructor(private readonly primary: FoodExtractor, private readonly timeoutMs: number) {}
 
-  async parse(text: string, portions?: UserPortions): Promise<ParseResult> {
+  async parse(text: string, portions?: UserPortions, bodyWeightKg?: number): Promise<ParseResult> {
     const started = Date.now();
     const clean = text.trim().slice(0, 500);
     try {
-      const entities = await this.primary.extract(clean, AbortSignal.timeout(this.timeoutMs));
-      return { draft: resolveMeal(clean, entities, { portions }), parser: this.primary.name, fallback: false, latencyMs: Date.now() - started };
+      const x = await this.primary.extract(clean, AbortSignal.timeout(this.timeoutMs));
+      return { draft: resolveMeal(clean, x.items, { portions, activities: x.activities, bodyWeightKg }), parser: this.primary.name, fallback: false, latencyMs: Date.now() - started };
     } catch (err) {
-      const entities = await this.heuristic.extract(clean);
+      const x = await this.heuristic.extract(clean);
       return {
-        draft: resolveMeal(clean, entities, { portions }),
+        draft: resolveMeal(clean, x.items, { portions, activities: x.activities, bodyWeightKg }),
         parser: this.heuristic.name,
         fallback: this.primary.name !== this.heuristic.name,
         latencyMs: Date.now() - started,

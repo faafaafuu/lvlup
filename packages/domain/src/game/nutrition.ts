@@ -29,11 +29,20 @@ export function bmi(weightKg: number, heightCm: number): number {
   return Math.round((weightKg / (m * m)) * 10) / 10;
 }
 
-/** Сглаженный тренд веса (EMA), чтобы колебания воды не демотивировали. */
-export function smoothWeights(entries: WeightEntry[], alpha = 0.25): Array<WeightEntry & { trend: number }> {
+/**
+ * Сглаженный тренд веса, чтобы колебания воды не демотивировали. Экспоненциальное
+ * сглаживание с учётом времени: чем больше дней между взвешиваниями, тем больше
+ * веса у нового значения — иначе при редких взвешиваниях тренд безнадёжно отстаёт.
+ */
+export function smoothWeights(entries: WeightEntry[], tauDays = 7): Array<WeightEntry & { trend: number }> {
   const sorted = [...entries].sort((a, b) => a.date.localeCompare(b.date));
   let trend: number | null = null;
+  let prev: number | null = null;
   return sorted.map((e) => {
+    const t = Date.parse(e.date);
+    const days = prev == null ? 0 : Math.max(0, (t - prev) / 86_400_000);
+    const alpha = 1 - Math.exp(-days / tauDays);
+    prev = t;
     trend = trend == null ? e.kg : trend + alpha * (e.kg - trend);
     return { ...e, trend: Math.round(trend * 10) / 10 };
   });

@@ -1,3 +1,4 @@
+import { findActivities } from '../activity/parse';
 import { CATALOG } from './catalog';
 import { findFoods } from './match';
 import { splitHalfPrefix, stem, tokenize, wordToNumber } from './text';
@@ -11,6 +12,8 @@ import { Food, ParsedEntity, UnitId } from './types';
  */
 export function parseHeuristic(text: string, catalog: readonly Food[] = CATALOG): ParsedEntity[] {
   const tokens = splitHalfPrefix(tokenize(text));
+  // «гантели 10 кг, потом гречка»: слова про спорт закрываем, чтобы «10 кг» не ушли в гречку.
+  for (const a of findActivities(tokens)) for (let i = a.start; i < a.end; i++) tokens[i] = '·';
   const matches = findFoods(tokens, catalog);
 
   // Токены, которые уже забрало предыдущее блюдо («гречки граммов 150 | и котлету»).
