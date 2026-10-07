@@ -17,16 +17,22 @@ cd apps/api && set -a && . ./.env && set +a && npm start
 
 Проверить качество разбора на эталонных фразах: `npm run eval -- anthropic` (или `openai`, `ollama`, `heuristic`).
 
-## 2. Сборка IPA в Codemagic
+## 2. Сборка IPA (GitHub Actions)
 
-1. Залить репозиторий на GitHub (приватный).
-2. В Codemagic: Add application → репозиторий → тип «codemagic.yaml».
-3. Запустить workflow `ios-unsigned`. Артефакт — `LevelUp.ipa` (подписи нет, это нормально).
+Каждый пуш в `main`, который трогает приложение, собирает IPA на macOS-раннере
+(`.github/workflows/ios.yml`) и выкладывает его в релиз `latest`:
+
+```
+https://github.com/faafaafuu/lvlup/releases/download/latest/LevelUp.ipa
+```
+
+Собрать вручную: вкладка Actions → «iOS IPA» → Run workflow. Сборка ~15–25 минут.
 
 ## 3. Установка через SideStore
 
 1. Один раз поставить SideStore на iPhone (нужен компьютер и бесплатный Apple ID, по инструкции SideStore).
-2. Открыть `LevelUp.ipa` в SideStore → он подпишет приложение твоим Apple ID и установит.
+2. В SideStore: «+» → вставить ссылку выше (или скачать IPA и открыть файлом) → он подпишет приложение твоим Apple ID и установит.
+   Обновление — так же, по той же ссылке: данные приложения сохраняются.
 3. Бесплатная подпись живёт 7 дней — SideStore продлевает сама, если раз в неделю открыть её с включённым VPN-туннелем.
 
 Ограничения бесплатного Apple ID: максимум 3 сайдлоад-приложения, нет удалённых push

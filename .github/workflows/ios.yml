@@ -1,0 +1,80 @@
+# Неподписанный IPA для сайдлоада (SideStore/AltStore подписывают его бесплатным Apple ID).
+# Публичный репозиторий → минуты macOS-раннеров бесплатны без лимита.
+name: iOS IPA
+
+on:
+  push:
+    branches: [main]
+    paths: ['apps/mobile/**', 'packages/domain/**', 'package-lock.json', '.github/workflows/ios.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ios-ipa
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: macos-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Зависимости
+        run: npm ci
+
+      - name: Сборка domain
+        run: npm run build -w @levelup/domain
+
+      - name: Нативный iOS-проект (CNG + pod install)
+        working-directory: apps/mobile
+        run: npx expo prebuild --platform ios --clean
+
+      - name: Release без подписи
+        working-directory: apps/mobile/ios
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -workspace LevelUp.xcworkspace \
+            -scheme LevelUp \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            -quiet build
+
+      - name: Упаковка IPA
+        working-directory: apps/mobile/ios
+        run: |
+          mkdir Payload
+          cp -R build/Build/Products/Release-iphoneos/LevelUp.app Payload/
+          zip -qr LevelUp.ipa Payload
+          ls -lh LevelUp.ipa
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: LevelUp-ipa
+          path: apps/mobile/ios/LevelUp.ipa
+
+      # Постоянная ссылка для телефона: .../releases/download/latest/LevelUp.ipa
+      - name: Релиз latest
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete latest --yes --cleanup-tag || true
+          gh release create latest apps/mobile/ios/LevelUp.ipa \
+            --title "Level Up — свежая сборка" \
+            --notes "Коммит ${GITHUB_SHA::7}. Открой ссылку на IPA в SideStore (+ → вставить URL) или скачай и открой файлом." \
+            --latest
