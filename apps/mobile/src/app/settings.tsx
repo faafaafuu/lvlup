@@ -121,9 +121,9 @@ export default function SettingsScreen() {
             value={s.settings.health}
             onValueChange={async (on) => {
               if (!on) return s.updateSettings({ health: false });
-              const ok = await requestHealthAccess();
-              s.updateSettings({ health: ok });
-              if (!ok) Alert.alert('Здоровье недоступно', 'На сайдлоад-сборке HealthKit может быть отключён. Шаги и сон можно вводить на экране «Прогресс».');
+              const r = await requestHealthAccess();
+              s.updateSettings({ health: r.ok });
+              if (!r.ok) Alert.alert('Здоровье недоступно', `Причина: ${r.reason}\n\nПока что шаги и сон можно вводить на экране «Прогресс».`);
             }}
           />
         </Row>

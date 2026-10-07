@@ -8,11 +8,13 @@ import { DateKey } from '@levelup/domain';
  */
 type HK = typeof import('@kingstinct/react-native-healthkit');
 let hk: HK | null = null;
+let loadError: string | null = null;
 if (Platform.OS === 'ios') {
   try {
     hk = require('@kingstinct/react-native-healthkit') as HK;
-  } catch {
+  } catch (e) {
     hk = null;
+    loadError = e instanceof Error ? e.message : String(e);
   }
 }
 
@@ -31,12 +33,24 @@ export async function healthAvailable(): Promise<boolean> {
   }
 }
 
-export async function requestHealthAccess(): Promise<boolean> {
-  if (!(await healthAvailable())) return false;
+export interface HealthAccess {
+  ok: boolean;
+  /** Почему не получилось — показываем пользователю как есть, чтобы понять причину. */
+  reason?: string;
+}
+
+export async function requestHealthAccess(): Promise<HealthAccess> {
+  if (!hk) return { ok: false, reason: `модуль HealthKit не загрузился: ${loadError ?? 'не iOS'}` };
   try {
-    return await hk!.requestAuthorization({ toRead: READ });
-  } catch {
-    return false;
+    if (!(await hk.isHealthDataAvailable())) return { ok: false, reason: 'isHealthDataAvailable = false' };
+  } catch (e) {
+    return { ok: false, reason: `isHealthDataAvailable: ${e instanceof Error ? e.message : e}` };
+  }
+  try {
+    const ok = await hk.requestAuthorization({ toRead: READ });
+    return ok ? { ok } : { ok, reason: 'requestAuthorization вернул false' };
+  } catch (e) {
+    return { ok: false, reason: `requestAuthorization: ${e instanceof Error ? e.message : e}` };
   }
 }
 

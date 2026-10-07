@@ -182,7 +182,7 @@ export default function Onboarding() {
                   title={health === true ? 'Подключено' : health === false ? 'Недоступно — введу вручную' : 'Разрешить'}
                   kind={health === null ? 'primary' : 'ghost'}
                   disabled={health !== null}
-                  onPress={async () => setHealth(await requestHealthAccess())}
+                  onPress={async () => setHealth((await requestHealthAccess()).ok)}
                 />
               </Card>
               <Card style={{ gap: 8 }}>
