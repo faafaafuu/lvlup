@@ -1,0 +1,43 @@
+{
+  "expo": {
+    "name": "Level Up",
+    "slug": "levelup",
+    "scheme": "levelup",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "bundleIdentifier": "com.faraday13.levelup",
+      "supportsTablet": false,
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "com.faraday13.levelup"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "Level Up слушает фразу о еде, чтобы записать её голосом.",
+          "speechRecognitionPermission": "Распознавание речи превращает фразу «тарелка плова» в запись еды."
+        }
+      ],
+      [
+        "@kingstinct/react-native-healthkit",
+        {
+          "NSHealthShareUsageDescription": "Level Up читает шаги, сон и вес, чтобы начислять опыт и засчитывать квесты.",
+          "NSHealthUpdateUsageDescription": "Level Up ничего не записывает в Здоровье.",
+          "background": false
+        }
+      ],
+      "expo-notifications"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

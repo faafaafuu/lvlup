@@ -6,6 +6,8 @@ export interface DayStats {
   meals: number;
   kcal: number;
   protein: number;
+  fat: number;
+  carbs: number;
   waterMl: number;
   steps: number;
   sleepHours: number;
@@ -24,6 +26,8 @@ export function dayStats(date: DateKey, meals: MealLog[], activity?: DayActivity
     meals: today.length,
     kcal: 0,
     protein: 0,
+    fat: 0,
+    carbs: 0,
     waterMl: activity?.waterMl ?? 0,
     steps: activity?.steps ?? 0,
     sleepHours: activity?.sleepHours ?? 0,
@@ -40,6 +44,8 @@ export function dayStats(date: DateKey, meals: MealLog[], activity?: DayActivity
     if (hour < 10) stats.breakfastBy10 = true;
     stats.kcal += meal.totals.kcal;
     stats.protein += meal.totals.protein;
+    stats.fat += meal.totals.fat;
+    stats.carbs += meal.totals.carbs;
     for (const item of meal.items) {
       const tags = CATALOG_BY_ID.get(item.foodId)?.tags ?? [];
       if (tags.includes('water')) stats.waterMl += item.grams;
