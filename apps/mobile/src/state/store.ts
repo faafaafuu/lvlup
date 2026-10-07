@@ -49,7 +49,9 @@ interface Ephemeral {
 
 interface Actions {
   completeOnboarding(profile: Profile, look: AvatarLook, portions: UserPortions): void;
-  addMeal(draft: MealDraft, at?: string): MealLog | null;
+  /** Записывает и еду, и активность из одной фразы. Возвращает true, если что-то записано. */
+  addEntry(draft: MealDraft, at?: string): boolean;
+  deleteSession(date: DateKey, id: string): void;
   deleteMeal(id: string): void;
   addWeight(kg: number, date?: DateKey): void;
   patchActivity(date: DateKey, patch: Partial<DayActivity>): void;
@@ -96,12 +98,33 @@ export const useStore = create<AppState>()(
         set({ onboarded: true, profile, look, portions, weights: [{ date: today, kg: profile.startWeightKg }] });
       },
 
-      addMeal(draft, at = new Date().toISOString()) {
-        if (!draft.items.length) return null;
-        const meal: MealLog = { id: newId(), at, text: draft.sourceText, items: draft.items, totals: draft.totals };
-        set((s) => ({ meals: [...s.meals, meal] }));
+      addEntry(draft, at = new Date().toISOString()) {
+        const activities = draft.activities ?? [];
+        if (!draft.items.length && !activities.length) return false;
+        const day = dateKey(new Date(at));
+        set((s) => {
+          const patch: Partial<Data> = {};
+          if (draft.items.length) {
+            const meal: MealLog = { id: newId(), at, text: draft.sourceText, items: draft.items, totals: draft.totals };
+            patch.meals = [...s.meals, meal];
+          }
+          if (activities.length) {
+            const prev = s.activity[day];
+            const sessions = [...(prev?.sessions ?? []), ...activities.map((a) => ({ ...a, id: newId(), at }))];
+            patch.activity = { ...s.activity, [day]: { ...prev, date: day, sessions } };
+          }
+          return patch;
+        });
         get().settle();
-        return meal;
+        return true;
+      },
+
+      deleteSession(date, id) {
+        set((s) => {
+          const prev = s.activity[date];
+          if (!prev) return {};
+          return { activity: { ...s.activity, [date]: { ...prev, sessions: (prev.sessions ?? []).filter((x) => x.id !== id) } } };
+        });
       },
 
       deleteMeal(id) {
@@ -200,7 +223,7 @@ export const useStore = create<AppState>()(
       },
 
       shiftReward() {
-        set((s) => ({ rewardQueue: s.rewardQueue.slice(1) }));
+        set({ rewardQueue: [] });
       },
 
       dismissLevelUp() {

@@ -8,15 +8,19 @@ import { ConfirmSheet } from '@/components/ConfirmSheet';
 import { HeroHeader } from '@/components/HeroHeader';
 import { QuestList } from '@/components/QuestList';
 import { Bar, Card, Row, T } from '@/components/ui';
+import { OverlayMode, VoiceOverlay } from '@/components/VoiceOverlay';
 import { MicButton, TemplateChip } from '@/design/components';
 import { Icon } from '@/design/Icon';
-import { OverlayMode, VoiceOverlay } from '@/components/VoiceOverlay';
+import { IconName } from '@/design/icons';
 import { fmt } from '@/lib/format';
 import { useVoice, voiceSupported } from '@/lib/voice';
 import { useStore } from '@/state/store';
 import { useGame } from '@/state/useGame';
 import { useMealCapture } from '@/state/useMealCapture';
 import { useTheme } from '@/theme';
+
+/** Высота нижней панели с микрофоном — контент прокручивается над ней, а не под ней. */
+const DOCK = 104;
 
 export default function HomeScreen() {
   const t = useTheme();
@@ -48,55 +52,70 @@ export default function HomeScreen() {
   };
 
   const logTemplate = (tpl: MealTemplate) => {
-    useStore.getState().addMeal({ sourceText: tpl.label, items: tpl.items, unknown: [], questions: [], totals: sumNutrients(tpl.items) });
+    useStore.getState().addEntry({ sourceText: tpl.label, items: tpl.items, activities: [], unknown: [], questions: [], totals: sumNutrients(tpl.items) });
   };
 
-  const left = game.norm - game.stats.kcal;
+  const { stats } = game;
+  const left = game.norm - stats.kcal;
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: c.bg }} edges={['top']}>
-      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 140, gap: 16 }}>
+      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: DOCK + 24, gap: 14 }}>
         <HeroHeader level={game.level} coins={progress.coins} streak={game.streak} doubleXp={game.doubleXp} />
 
-        <View style={{ alignItems: 'center' }}>
+        <Card style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12 }}>
           <Avatar
             sex={profile.sex}
             look={look}
             stage={game.stage}
             outfitId={progress.equipped.outfit}
             accessoryId={progress.equipped.accessory}
-            size={150}
+            size={92}
             animated
             onPress={() => router.push('/rewards')}
           />
-        </View>
-
-        <Card style={{ gap: 10 }}>
-          <Row style={{ justifyContent: 'space-between' }}>
-            <T bold display size="lg">
-              {fmt(game.stats.kcal)} <T tone="muted">из {fmt(game.norm)} ккал</T>
+          <View style={{ flex: 1, gap: 8 }}>
+            <T size="xs" tone="muted">
+              Сегодня
             </T>
-            <T size="sm" tone="muted">
-              {game.stats.kcal === 0 ? 'Пока пусто — скажи, что ел' : left >= 0 ? `Осталось ${fmt(left)}` : 'Чуть выше плана — это нормально'}
+            <View>
+              <T bold display size="xl">
+                {fmt(stats.kcal)}
+              </T>
+              <T size="sm" tone="muted">
+                из {fmt(game.norm)} ккал
+              </T>
+            </View>
+            {/* Превышение — нейтральный цвет, без «красной ошибки». */}
+            <Bar value={stats.kcal} max={game.norm} color={left >= 0 ? c.primary : c.over} height={8} />
+            <T size="xs" tone="muted">
+              {stats.kcal === 0 ? 'Пока пусто — скажи, что ел' : left >= 0 ? `Осталось ${fmt(left)} ккал` : 'Чуть выше плана — это нормально'}
             </T>
-          </Row>
-          {/* Превышение — нейтральный цвет, без «красной ошибки». */}
-          <Bar value={game.stats.kcal} max={game.norm} color={left >= 0 ? c.primary : c.over} height={10} />
-          <Row gap={14}>
-            <Macro label="Б" value={game.stats.protein} color={c.protein} />
-            <Macro label="Ж" value={game.stats.fat} color={c.fat} />
-            <Macro label="У" value={game.stats.carbs} color={c.carbs} />
-          </Row>
+            <Row gap={10} style={{ flexWrap: 'wrap' }}>
+              <Macro label="Б" value={stats.protein} color={c.protein} />
+              <Macro label="Ж" value={stats.fat} color={c.fat} />
+              <Macro label="У" value={stats.carbs} color={c.carbs} />
+            </Row>
+          </View>
         </Card>
+
+        <Pressable onPress={() => router.push('/progress')} accessibilityLabel="Активность за сегодня">
+          <Card style={{ flexDirection: 'row', paddingVertical: 12 }}>
+            <Stat icon="steps" color={c.xp} value={fmt(stats.steps)} label={`из ${fmt(profile.stepsGoal)} шагов`} />
+            <Stat icon="workout" color={c.primary} value={`${stats.activeMinutes}`} label="мин спорта" />
+            <Stat icon="streak" color={c.streak} value={fmt(stats.burnedKcal)} label="ккал сожжено" />
+          </Card>
+        </Pressable>
 
         {pending > 0 && (
           <Pressable onPress={() => router.push('/diary')}>
-            <Card style={{ borderColor: c.warning }}>
+            <Card style={{ borderColor: c.warning, paddingVertical: 12 }}>
               <Row gap={10}>
                 <Icon name="cloudOff" size={20} color={c.warning} />
                 <T style={{ flex: 1 }}>
-                  {pending} {pending === 1 ? 'запись ждёт' : 'записи ждут'} интернета — открыть дневник
+                  {pending} {pending === 1 ? 'запись ждёт' : 'записи ждут'} интернета
                 </T>
+                <Icon name="chevronRight" size={18} color={c.textMuted} />
               </Row>
             </Card>
           </Pressable>
@@ -104,29 +123,46 @@ export default function HomeScreen() {
 
         {game.templates.length > 0 && (
           <View style={{ gap: 8 }}>
-            <T bold display>Быстро записать</T>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
+            <T bold display>
+              Быстро записать
+            </T>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }} style={{ marginHorizontal: -16 }}>
+              <View style={{ width: 8 }} />
               {game.templates.map((tpl) => (
                 <TemplateChip key={tpl.key} t={t} name={tpl.label} kcal={tpl.totals.kcal} onPress={() => logTemplate(tpl)} />
               ))}
+              <View style={{ width: 8 }} />
             </ScrollView>
           </View>
         )}
 
         <View style={{ gap: 8 }}>
-          <T bold display>Квесты дня</T>
+          <T bold display>
+            Квесты дня
+          </T>
           <QuestList quests={game.quests} />
         </View>
       </ScrollView>
 
-      <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, alignItems: 'center' }}>
-        <Row gap={20}>
-          <View style={{ width: 44 }} />
-          <MicButton t={t} recording={voice.state === 'listening'} onPress={() => void onMic()} />
-          <Pressable accessibilityLabel="Ввести текстом" hitSlop={10} onPress={() => setOverlay('text')} style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: c.surface, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: c.border }}>
-            <Icon name="keyboard" size={22} color={c.text} />
-          </Pressable>
-        </Row>
+      <View
+        style={{
+          position: 'absolute', left: 0, right: 0, bottom: 0, height: DOCK, backgroundColor: c.bg,
+          borderTopWidth: 1, borderTopColor: c.border, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 28,
+        }}
+      >
+        <View style={{ width: 52, marginLeft: 20 }} />
+        <MicButton t={t} recording={voice.state === 'listening'} onPress={() => void onMic()} />
+        <Pressable
+          accessibilityLabel="Ввести текстом"
+          hitSlop={10}
+          onPress={() => setOverlay('text')}
+          style={({ pressed }) => ({
+            width: 52, height: 52, borderRadius: 26, backgroundColor: pressed ? c.pressed : c.surface,
+            alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: c.border, marginRight: 20,
+          })}
+        >
+          <Icon name="keyboard" size={22} color={c.text} />
+        </Pressable>
       </View>
 
       <VoiceOverlay
@@ -143,19 +179,33 @@ export default function HomeScreen() {
           voice.reset();
           setOverlay('text');
         }}
-        onSubmitText={(t) => void handlePhrase(t)}
+        onSubmitText={(text) => void handlePhrase(text)}
       />
       <ConfirmSheet draft={capture.draft} source={capture.source} onChange={capture.setDraft} onConfirm={capture.confirm} onCancel={capture.cancel} />
     </SafeAreaView>
   );
 }
 
+function Stat({ icon, color, value, label }: { icon: IconName; color: string; value: string; label: string }) {
+  return (
+    <View style={{ flex: 1, alignItems: 'center', gap: 4 }}>
+      <Icon name={icon} size={20} color={color} />
+      <T bold display size="md">
+        {value}
+      </T>
+      <T size="xs" tone="muted" style={{ textAlign: 'center' }}>
+        {label}
+      </T>
+    </View>
+  );
+}
+
 function Macro({ label, value, color }: { label: string; value: number; color: string }) {
   return (
-    <Row gap={6}>
+    <Row gap={4}>
       <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: color }} />
-      <T size="sm" tone="muted">
-        {label} {Math.round(value)} г
+      <T size="xs" tone="muted">
+        {label} {Math.round(value)}
       </T>
     </Row>
   );

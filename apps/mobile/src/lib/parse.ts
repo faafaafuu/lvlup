@@ -1,4 +1,4 @@
-import { MealDraft, UserPortions, parseHeuristic, resolveMeal } from '@levelup/domain';
+import { MealDraft, UserPortions, parseActivitiesHeuristic, parseHeuristic, resolveMeal } from '@levelup/domain';
 import { Settings } from '@/state/store';
 
 export interface PhraseResult {
@@ -14,8 +14,8 @@ const SERVER_TIMEOUT_MS = 6000;
  * Сначала сервер (LLM понимает разговорную речь лучше), при любой ошибке — офлайн-разбор
  * прямо на телефоне. Пользователь никогда не остаётся с пустым экраном из-за сети.
  */
-export async function parsePhrase(text: string, settings: Settings, portions: UserPortions): Promise<PhraseResult> {
-  const offline = () => resolveMeal(text, parseHeuristic(text), { portions });
+export async function parsePhrase(text: string, settings: Settings, portions: UserPortions, bodyWeightKg: number): Promise<PhraseResult> {
+  const offline = () => resolveMeal(text, parseHeuristic(text), { portions, activities: parseActivitiesHeuristic(text), bodyWeightKg });
   if (!settings.apiUrl.trim()) return { draft: offline(), source: 'offline', serverFailed: false };
 
   try {
@@ -25,10 +25,12 @@ export async function parsePhrase(text: string, settings: Settings, portions: Us
       method: 'POST',
       signal: controller.signal,
       headers: { 'content-type': 'application/json', 'x-api-key': settings.apiToken },
-      body: JSON.stringify({ text, portions }),
+      body: JSON.stringify({ text, portions, bodyWeightKg }),
     }).finally(() => clearTimeout(timer));
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const body = (await res.json()) as { draft: MealDraft };
+    // Старый сервер без активностей — дополним офлайн-разбором.
+    if (!body.draft.activities) body.draft.activities = offline().activities;
     return { draft: body.draft, source: 'server', serverFailed: false };
   } catch {
     return { draft: offline(), source: 'offline', serverFailed: true };

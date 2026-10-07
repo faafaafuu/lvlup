@@ -6,10 +6,10 @@ import { AppState } from 'react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { addDays, dateKey } from '@levelup/domain';
+import { ACTIVITY_BY_ID, activityKcal, addDays, currentWeight, dateKey } from '@levelup/domain';
 import { LevelUpModal } from '@/components/LevelUpModal';
 import { RewardToast } from '@/components/RewardToast';
-import { readHealthDay, readLatestWeight } from '@/lib/health';
+import { readHealthDay, readHealthWorkouts, readLatestWeight } from '@/lib/health';
 import { syncReminders } from '@/lib/notifications';
 import { useStore } from '@/state/store';
 import { useTheme } from '@/theme';
@@ -26,6 +26,18 @@ async function refresh() {
       if (h.steps != null) patch.steps = h.steps;
       if (h.sleepHours != null) patch.sleepHours = h.sleepHours;
       if (Object.keys(patch).length) useStore.getState().patchActivity(day, patch);
+
+      // Тренировки с часов/из фитнес-приложений — без дублей: id из HealthKit.
+      const st = useStore.getState();
+      const known = new Set((st.activity[day]?.sessions ?? []).map((x) => x.id));
+      const kg = st.profile ? currentWeight(st.profile, st.weights) : 75;
+      const fresh = (await readHealthWorkouts(day))
+        .filter((w) => !known.has(w.id))
+        .map((w) => {
+          const def = ACTIVITY_BY_ID.get(w.activityId)!;
+          return { id: w.id, at: w.at, activityId: def.id, name: def.name, text: 'Здоровье', minutes: w.minutes, reps: null, weightKg: null, assumed: false, kcal: w.kcal ?? activityKcal(def, w.minutes, kg) };
+        });
+      if (fresh.length) st.patchActivity(day, { sessions: [...(st.activity[day]?.sessions ?? []), ...fresh] });
     }
     const w = await readLatestWeight();
     if (w) {
@@ -62,6 +74,7 @@ export default function RootLayout() {
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: c.bg } }}>
         <Stack.Protected guard={onboarded}>
           <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="log" options={{ presentation: 'transparentModal', animation: 'fade' }} />
           <Stack.Screen
             name="settings"
             options={{ presentation: 'modal', headerShown: true, title: 'Настройки', headerStyle: { backgroundColor: c.bg }, headerTintColor: c.text }}

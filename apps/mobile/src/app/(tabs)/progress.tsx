@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react';
 import { ScrollView, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Svg, { Circle, Line, Polyline } from 'react-native-svg';
-import { addDays, dateKey, dayStats, smoothWeights } from '@levelup/domain';
+import Svg, { Circle, Line, Polyline, Rect } from 'react-native-svg';
+import { ACTIVITY_BY_ID, activityKcal, addDays, currentWeight, dateKey, dayStats, smoothWeights } from '@levelup/domain';
+import { newId } from '@/lib/id';
 import { Btn, Card, Chip, Row, SectionTitle, T, textInputStyle } from '@/components/ui';
 import { fmt } from '@/lib/format';
 import { useStore } from '@/state/store';
@@ -52,12 +53,13 @@ export default function ProgressScreen() {
           </Row>
           <WeightChart points={series} target={profile.targetWeightKg} />
           <T size="xs" tone="muted">
-            Линия — сглаженный тренд, точки — реальные взвешивания. Скачки воды за день на тренд почти не влияют.
+            Линия — сглаженный тренд, точки — взвешивания. Цель: {profile.targetWeightKg} кг.
           </T>
           <Row>
-            <TextInput value={kg} onChangeText={setKg} keyboardType="decimal-pad" placeholder="Вес, кг" placeholderTextColor={c.textMuted} style={[textInputStyle(c), { flex: 1 }]} />
+            <TextInput value={kg} onChangeText={setKg} keyboardType="decimal-pad" placeholder="Вес, кг" placeholderTextColor={c.textMuted} style={[textInputStyle(c), { flex: 1, minWidth: 0 }]} />
             <Btn
               title="Добавить"
+              style={{ height: 48, paddingHorizontal: 16 }}
               disabled={!(Number(kg.replace(',', '.')) > 20)}
               onPress={() => {
                 addWeight(Number(kg.replace(',', '.')));
@@ -84,10 +86,11 @@ export default function ProgressScreen() {
                 Здоровье не подключено — можно ввести за сегодня вручную:
               </T>
               <Row>
-                <TextInput value={steps} onChangeText={setSteps} keyboardType="number-pad" placeholder="Шаги" placeholderTextColor={c.textMuted} style={[textInputStyle(c), { flex: 1 }]} />
-                <TextInput value={sleep} onChangeText={setSleep} keyboardType="decimal-pad" placeholder="Сон, ч" placeholderTextColor={c.textMuted} style={[textInputStyle(c), { flex: 1 }]} />
+                <TextInput value={steps} onChangeText={setSteps} keyboardType="number-pad" placeholder="Шаги" placeholderTextColor={c.textMuted} style={[textInputStyle(c), { flex: 1, minWidth: 0 }]} />
+                <TextInput value={sleep} onChangeText={setSleep} keyboardType="decimal-pad" placeholder="Сон, ч" placeholderTextColor={c.textMuted} style={[textInputStyle(c), { flex: 1, minWidth: 0 }]} />
                 <Btn
                   title="OK"
+                  style={{ height: 48, paddingHorizontal: 16 }}
                   disabled={!steps && !sleep}
                   onPress={() => {
                     const patch: { steps?: number; sleepHours?: number } = {};
@@ -99,7 +102,16 @@ export default function ProgressScreen() {
                   }}
                 />
               </Row>
-              <Btn title="+ Тренировка сегодня (+50 XP)" kind="ghost" onPress={() => patchActivity(today, { workouts: (activity[today]?.workouts ?? 0) + 1 })} />
+              <Btn
+                title="+ Тренировка 45 минут (+50 XP)"
+                kind="ghost"
+                onPress={() => {
+                  const def = ACTIVITY_BY_ID.get('strength')!;
+                  const kcal = activityKcal(def, 45, currentWeight(profile, weights));
+                  const session = { id: newId(), at: new Date().toISOString(), activityId: def.id, name: def.name, text: 'вручную', minutes: 45, reps: null, weightKg: null, assumed: false, kcal };
+                  patchActivity(today, { sessions: [...(activity[today]?.sessions ?? []), session] });
+                }}
+              />
             </View>
           )}
         </Card>
@@ -119,14 +131,16 @@ function WeightChart({ points, target }: { points: Array<{ date: string; kg: num
       </T>
     );
   }
-  const all = [...points.flatMap((p) => [p.kg, p.trend]), target];
+  // Масштаб — по реальным данным: цель далеко внизу сплющила бы график в линию.
+  const all = points.flatMap((p) => [p.kg, p.trend]);
   const min = Math.min(...all) - 0.5;
   const max = Math.max(...all) + 0.5;
+  const showTarget = target >= min && target <= max;
   const x = (i: number) => 8 + (i / (points.length - 1)) * (W - 16);
   const y = (v: number) => 8 + (1 - (v - min) / (max - min)) * (H - 16);
   return (
     <Svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`}>
-      <Line x1={0} x2={W} y1={y(target)} y2={y(target)} stroke={c.success} strokeDasharray="4 4" strokeWidth={1} />
+      {showTarget && <Line x1={0} x2={W} y1={y(target)} y2={y(target)} stroke={c.success} strokeDasharray="4 4" strokeWidth={1} />}
       {points.map((p, i) => (
         <Circle key={p.date} cx={x(i)} cy={y(p.kg)} r={3} fill={c.textMuted} opacity={0.5} />
       ))}
@@ -146,8 +160,8 @@ function Bars({ values, labels, line, color }: { values: number[]; labels: strin
     <View>
       <Svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`}>
         {values.map((v, i) => {
-          const h = (v / max) * H;
-          return <Line key={i} x1={i * bw + bw / 2} x2={i * bw + bw / 2} y1={H} y2={H - h} stroke={color} strokeWidth={bw * 0.5} strokeLinecap="round" opacity={v > 0 ? 1 : 0} />;
+          const h = Math.max(v > 0 ? 4 : 0, (v / max) * H);
+          return <Rect key={i} x={i * bw + bw * 0.25} y={H - h} width={bw * 0.5} height={h} rx={6} fill={color} />;
         })}
         <Line x1={0} x2={W} y1={ly} y2={ly} stroke={c.textMuted} strokeDasharray="4 4" />
       </Svg>

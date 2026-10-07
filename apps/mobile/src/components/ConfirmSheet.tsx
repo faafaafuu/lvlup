@@ -1,6 +1,7 @@
 import { Modal, Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { MealDraft, XP, answerQuestion, describePortion, removeItem, setItemGrams } from '@levelup/domain';
+import { MealDraft, XP, answerQuestion, currentWeight, describePortion, removeItem, setActivityMinutes, setItemGrams } from '@levelup/domain';
+import { useStore } from '@/state/store';
 import { ConfirmItem } from '@/design/components';
 import { Icon } from '@/design/Icon';
 import { useTheme } from '@/theme';
@@ -20,7 +21,16 @@ export function ConfirmSheet({ draft, source, onChange, onConfirm, onCancel }: P
   const t = useTheme();
   const { c } = t;
   const insets = useSafeAreaInsets();
+  const profile = useStore((s) => s.profile);
+  const weights = useStore((s) => s.weights);
   if (!draft) return null;
+  const kg = profile ? currentWeight(profile, weights) : 75;
+  const activities = draft.activities ?? [];
+  const setMinutes = (i: number, m: number) =>
+    onChange({ ...draft, activities: activities.map((a, j) => (j === i ? setActivityMinutes(a, m, kg) : a)) });
+  const removeActivity = (i: number) => onChange({ ...draft, activities: activities.filter((_, j) => j !== i) });
+  const xp = (draft.items.length ? XP.meal : 0) + Math.min(activities.length, 2) * XP.workout;
+  const nothing = draft.items.length === 0 && activities.length === 0;
   const totals = draft.totals;
 
   return (
@@ -73,15 +83,36 @@ export function ConfirmSheet({ draft, source, onChange, onConfirm, onCancel }: P
             );
           })}
 
+          {activities.map((a, i) => (
+            <Row key={`act-${i}`} gap={6}>
+              <View style={{ flex: 1 }}>
+                <ConfirmItem
+                  t={t}
+                  name={a.name}
+                  portion={[a.reps ? `${a.reps} повт.` : '', a.weightKg ? `снаряд ${a.weightKg} кг` : '', `−${a.kcal} ккал`].filter(Boolean).join(' · ')}
+                  grams={a.minutes}
+                  unit="мин"
+                  kcal={a.kcal}
+                  approx={a.assumed}
+                  onMinus={() => setMinutes(i, Math.max(1, a.minutes - (a.minutes > 20 ? 10 : 5)))}
+                  onPlus={() => setMinutes(i, a.minutes + (a.minutes >= 20 ? 10 : 5))}
+                />
+              </View>
+              <Pressable accessibilityLabel={`Убрать ${a.name}`} hitSlop={8} onPress={() => removeActivity(i)} style={{ padding: 8 }}>
+                <Icon name="trash" size={20} color={c.textMuted} />
+              </Pressable>
+            </Row>
+          ))}
+
           {draft.unknown.map((u) => (
             <T key={u} tone="muted" size="sm">
               Не знаю, что такое «{u}» — пропущу. Можно сказать иначе или выбрать похожее блюдо.
             </T>
           ))}
 
-          {draft.items.length === 0 ? (
-            <T tone="muted">Не нашёл еды во фразе. Попробуй сказать проще: «тарелка борща и хлеб».</T>
-          ) : (
+          {nothing ? (
+            <T tone="muted">Не понял, что записать. Попробуй проще: «тарелка борща и хлеб» или «бегал полчаса».</T>
+          ) : draft.items.length === 0 ? null : (
             <Row style={{ justifyContent: 'space-between' }}>
               <T size="lg" bold>
                 ~{fmt(totals.kcal)} ккал
@@ -93,7 +124,7 @@ export function ConfirmSheet({ draft, source, onChange, onConfirm, onCancel }: P
           )}
         </ScrollView>
         <View style={{ paddingHorizontal: 20, gap: 8 }}>
-          <Btn title={`Записать · +${XP.meal} XP`} onPress={onConfirm} disabled={draft.items.length === 0} />
+          <Btn title={`Записать · +${xp} XP`} onPress={onConfirm} disabled={nothing} />
           <Btn title="Отмена" kind="ghost" onPress={onCancel} />
         </View>
       </View>

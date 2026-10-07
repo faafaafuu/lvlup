@@ -20,6 +20,7 @@ const READ = [
   'HKQuantityTypeIdentifierStepCount',
   'HKQuantityTypeIdentifierBodyMass',
   'HKCategoryTypeIdentifierSleepAnalysis',
+  'HKWorkoutTypeIdentifier',
 ] as const;
 
 export async function healthAvailable(): Promise<boolean> {
@@ -91,5 +92,42 @@ export async function readLatestWeight(): Promise<{ kg: number; date: Date } | n
     return sample ? { kg: Math.round(sample.quantity * 10) / 10, date: new Date(sample.startDate) } : null;
   } catch {
     return null;
+  }
+}
+
+/** Типы тренировок HealthKit (HKWorkoutActivityType) → наши виды активности. */
+const HK_ACTIVITY: Record<number, string> = {
+  37: 'running', 52: 'walking', 13: 'cycling', 46: 'swimming', 57: 'yoga', 63: 'hiit',
+  50: 'strength', 20: 'strength', 14: 'dancing', 9: 'boxing', 41: 'team_sport', 6: 'team_sport', 48: 'team_sport',
+};
+
+export interface HealthWorkout {
+  id: string;
+  at: string;
+  activityId: string;
+  minutes: number;
+  kcal: number | null;
+}
+
+/** Тренировки за день из Здоровья (Apple Watch, Strava, Nike Run и т. п.). */
+export async function readHealthWorkouts(date: DateKey): Promise<HealthWorkout[]> {
+  if (!hk) return [];
+  const { start, end } = dayBounds(date);
+  try {
+    const workouts = await hk.queryWorkoutSamples({ limit: -1, filter: { date: { startDate: start, endDate: end } } });
+    return workouts.map((w) => {
+      const startDate = new Date(w.startDate);
+      const minutes = Math.max(1, Math.round((new Date(w.endDate).getTime() - startDate.getTime()) / 60_000));
+      const kcal = w.totalEnergyBurned?.quantity;
+      return {
+        id: `hk-${w.uuid}`,
+        at: startDate.toISOString(),
+        activityId: HK_ACTIVITY[Number(w.workoutActivityType)] ?? 'cardio',
+        minutes,
+        kcal: kcal != null ? Math.round(kcal) : null,
+      };
+    });
+  } catch {
+    return [];
   }
 }

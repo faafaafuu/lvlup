@@ -27,7 +27,7 @@ export default function RewardsScreen() {
     <SafeAreaView style={{ flex: 1, backgroundColor: c.bg }} edges={['top']}>
       <ScrollView contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 40 }}>
         <SectionTitle right={<T tone="muted" size="sm">обновятся в полночь</T>}>Квесты дня</SectionTitle>
-        <QuestList quests={game.quests} hint />
+        <QuestList quests={game.quests} />
         <T size="sm" tone="muted">
           Выполни все три — получишь сундук с монетами
         </T>

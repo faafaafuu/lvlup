@@ -138,8 +138,8 @@ export function TemplateChip({ t, name, kcal, onPress, disabled, loading }: Base
 }
 
 /* ───────────────────────── QuestCard ───────────────────────── */
-export function QuestCard({ t, icon, title, current, target, unit = '', xp, onPress, disabled, loading }: Base & {
-  icon: IconName; title: string; current: number; target: number; unit?: string; xp: number; onPress?: () => void;
+export function QuestCard({ t, icon, title, current, target, unit = '', xp, manual, onPress, disabled, loading }: Base & {
+  icon: IconName; title: string; current: number; target: number; unit?: string; xp: number; manual?: boolean; onPress?: () => void;
 }) {
   const c = t.c;
   const done = current >= target;
@@ -153,20 +153,27 @@ export function QuestCard({ t, icon, title, current, target, unit = '', xp, onPr
     );
   }
   const fmt = (n: number) => n.toLocaleString('ru-RU');
+  const label = manual
+    ? `${title}: ${done ? 'выполнено' : 'не выполнено'}. Награда ${xp} XP`
+    : `${title}: ${fmt(current)} из ${fmt(target)}${unit}. Награда ${xp} XP`;
   return (
-    <Pressable onPress={onPress} disabled={disabled} accessibilityLabel={`${title}: ${fmt(current)} из ${fmt(target)}${unit}. Награда ${xp} XP`}
-      style={({ pressed }) => [s.quest, { backgroundColor: pressed ? c.pressed : c.surface, borderColor: c.border, opacity: disabled ? 0.6 : 1 }, pressed && { transform: [{ scale: 0.98 }] }]}>
+    <Pressable onPress={onPress} disabled={disabled || !onPress} accessibilityLabel={label} accessibilityRole={manual ? 'checkbox' : undefined} accessibilityState={manual ? { checked: done } : undefined}
+      style={({ pressed }) => [s.quest, { backgroundColor: pressed ? c.pressed : c.surface, borderColor: done ? c.success : c.border, opacity: disabled ? 0.6 : 1 }, pressed && { transform: [{ scale: 0.98 }] }]}>
       <View style={[s.questIcon, { backgroundColor: done ? c.successSoft : c.primarySoft }]}>
         <Icon name={done ? 'check' : icon} size={18} color={done ? c.success : c.primary} />
       </View>
-      <View style={{ flex: 1, gap: 5 }}>
-        <View style={s.rowBetween}>
-          <Text style={[s.questTitle, { color: c.text }]}>{title}</Text>
-          <Text style={[s.caption, { color: c.textMuted }]}>{fmt(current)} / {fmt(target)}</Text>
-        </View>
-        <View style={[s.questTrack, { backgroundColor: c.track }]}>
-          <View style={{ width: `${pct * 100}%`, height: 4, backgroundColor: done ? c.success : c.primary }} />
-        </View>
+      <View style={{ flex: 1, gap: 6 }}>
+        <Text style={[s.questTitle, { color: c.text }]} numberOfLines={2}>{title}</Text>
+        {manual ? (
+          <Text style={[s.caption, { color: done ? c.success : c.textMuted }]}>{done ? 'Готово' : 'Нажми, когда сделаешь'}</Text>
+        ) : (
+          <View style={s.row}>
+            <View style={[s.questTrack, { backgroundColor: c.track, flex: 1 }]}>
+              <View style={{ width: `${pct * 100}%`, height: 4, backgroundColor: done ? c.success : c.primary }} />
+            </View>
+            <Text style={[s.caption, { color: c.textMuted }]}>{fmt(current)} / {fmt(target)}{unit}</Text>
+          </View>
+        )}
       </View>
       <Text style={[s.questXp, { color: c.xp }]}>+{xp} XP</Text>
     </Pressable>
@@ -271,7 +278,7 @@ const s = StyleSheet.create({
   caption: { fontSize: size.xs, fontWeight: '600', fontVariant: ['tabular-nums'] },
   btn: { height: 56, borderRadius: 16, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 20 },
   btnText: { fontSize: 17, fontWeight: '600' },
-  micWrap: { width: 120, height: 120, alignItems: 'center', justifyContent: 'center' },
+  micWrap: { width: 96, height: 96, alignItems: 'center', justifyContent: 'center' },
   mic: { width: 76, height: 76, borderRadius: 38, alignItems: 'center', justifyContent: 'center' },
   micRing: { position: 'absolute', width: 76, height: 76, borderRadius: 38 },
   xpTrack: { flex: 1, height: 8, borderRadius: 4, overflow: 'hidden' },
@@ -282,9 +289,9 @@ const s = StyleSheet.create({
   chip: { height: 44, borderRadius: radius.pill, borderWidth: 1, paddingHorizontal: 14, flexDirection: 'row', alignItems: 'center', gap: 6 },
   chipText: { fontSize: size.sm, fontWeight: '600' },
   chipKcal: { fontSize: size.sm },
-  quest: { minHeight: 52, borderRadius: 14, borderWidth: 1, paddingHorizontal: 12, paddingVertical: 8, flexDirection: 'row', alignItems: 'center', gap: 10 },
+  quest: { minHeight: 60, borderRadius: 14, borderWidth: 1, paddingHorizontal: 12, paddingVertical: 10, flexDirection: 'row', alignItems: 'center', gap: 10 },
   questIcon: { width: 32, height: 32, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
-  questTitle: { fontSize: 13, fontWeight: '600' },
+  questTitle: { fontSize: 15, fontWeight: '600' },
   questTrack: { height: 4, borderRadius: 2, overflow: 'hidden' },
   questXp: { fontSize: size.xs, fontWeight: '700' },
   skel: { height: 10, borderRadius: 5 },

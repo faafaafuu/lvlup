@@ -18,6 +18,8 @@ export default function DiaryScreen() {
   const meals = useStore((s) => s.meals);
   const pending = useStore((s) => s.pending);
   const deleteMeal = useStore((s) => s.deleteMeal);
+  const deleteSession = useStore((s) => s.deleteSession);
+  const sessions = useStore((s) => s.activity[day]?.sessions ?? []);
   const removePending = useStore((s) => s.removePending);
   const game = useGame();
   const capture = useMealCapture();
@@ -84,7 +86,32 @@ export default function DiaryScreen() {
           </View>
         )}
 
-        {dayMeals.length === 0 ? (
+        {sessions.map((a) => (
+          <Card key={a.id} style={{ gap: 4 }}>
+            <Row style={{ justifyContent: 'space-between' }}>
+              <Row gap={8} style={{ flex: 1 }}>
+                <Icon name="workout" size={18} color={c.primary} />
+                <T bold style={{ flex: 1 }}>
+                  {a.name}
+                </T>
+              </Row>
+              <Row gap={12}>
+                <T bold tone="streak">
+                  −{a.kcal} ккал
+                </T>
+                <Pressable accessibilityLabel="Удалить тренировку" hitSlop={10} onPress={() => deleteSession(day, a.id)}>
+                  <Icon name="trash" size={18} color={c.textMuted} />
+                </Pressable>
+              </Row>
+            </Row>
+            <T size="sm" tone="muted">
+              {timeOf(a.at)} · {a.minutes} мин{a.reps ? ` · ${a.reps} повт.` : ''}
+              {a.weightKg ? ` · снаряд ${a.weightKg} кг` : ''}
+            </T>
+          </Card>
+        ))}
+
+        {dayMeals.length === 0 && sessions.length === 0 ? (
           <Card style={{ alignItems: 'center', gap: 8, paddingVertical: 32 }}>
             <Icon name="plate" size={40} color={c.textMuted} />
             <T tone="muted" style={{ textAlign: 'center' }}>

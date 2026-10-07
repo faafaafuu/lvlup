@@ -102,6 +102,17 @@ export default function SettingsScreen() {
         {serverStatus && <T size="sm">{serverStatus}</T>}
       </Card>
 
+      <SectionTitle>Siri</SectionTitle>
+      <Card style={{ gap: 8 }}>
+        <T>«Привет, Siri, запиши в Level Up» — и диктуешь: «тарелка плова и чай» или «час в зале с гантелями».</T>
+        <T size="sm" tone="muted">Настройка один раз, в приложении «Команды»:</T>
+        <T size="sm">1. «+» → новая команда, назови её «Запиши в Level Up».</T>
+        <T size="sm">2. Добавь действие «Диктовать текст», язык — русский.</T>
+        <T size="sm">3. Добавь «Кодировать URL» (вход — Диктованный текст).</T>
+        <T size="sm">4. Добавь «Открыть URL» и впиши: levelup://log?text= и затем переменную «Кодированный URL».</T>
+        <T size="sm" tone="muted">Если всё понятно — запись сохранится сама, если нужно уточнение — откроется подтверждение.</T>
+      </Card>
+
       <SectionTitle>Здоровье и напоминания</SectionTitle>
       <Card style={{ gap: 12 }}>
         <Row style={{ justifyContent: 'space-between' }}>

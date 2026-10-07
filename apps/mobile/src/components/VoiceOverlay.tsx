@@ -3,7 +3,7 @@ import { ActivityIndicator, KeyboardAvoidingView, Modal, Platform, Pressable, Te
 import { useTheme } from '@/theme';
 import { Btn, T, textInputStyle } from './ui';
 
-const EXAMPLES = ['тарелка борща и два куска хлеба', '200 грамм гречки и котлета', 'капучино и круассан'];
+const EXAMPLES = ['тарелка борща и два куска хлеба', '200 грамм гречки и котлета', 'занимался с гантелями час', 'пробежал полчаса и съел банан'];
 
 export type OverlayMode = 'listening' | 'parsing' | 'text' | 'error';
 
@@ -56,7 +56,7 @@ export function VoiceOverlay({ mode, transcript, error, onStop, onCancel, onSubm
         {mode === 'text' && (
           <View style={{ gap: 12, backgroundColor: c.bg, padding: 20, borderRadius: 20 }}>
             <T size="lg" bold>
-              Что съел?
+              Что съел или как тренировался?
             </T>
             <TextInput
               autoFocus
