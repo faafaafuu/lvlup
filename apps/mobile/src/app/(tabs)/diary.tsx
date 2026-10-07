@@ -11,6 +11,8 @@ import { useGame } from '@/state/useGame';
 import { useMealCapture } from '@/state/useMealCapture';
 import { useTheme } from '@/theme';
 
+const NO_SESSIONS: never[] = [];
+
 export default function DiaryScreen() {
   const { c } = useTheme();
   const today = dateKey(new Date());
@@ -19,7 +21,9 @@ export default function DiaryScreen() {
   const pending = useStore((s) => s.pending);
   const deleteMeal = useStore((s) => s.deleteMeal);
   const deleteSession = useStore((s) => s.deleteSession);
-  const sessions = useStore((s) => s.activity[day]?.sessions ?? []);
+  // Селектор zustand должен возвращать стабильную ссылку: `?? []` внутри создавал бы
+  // новый массив на каждый рендер → бесконечный перерендер и вылет в дни без тренировок.
+  const sessions = useStore((s) => s.activity[day]?.sessions) ?? NO_SESSIONS;
   const removePending = useStore((s) => s.removePending);
   const game = useGame();
   const capture = useMealCapture();

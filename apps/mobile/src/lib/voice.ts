@@ -16,6 +16,17 @@ export const voiceSupported = speech != null;
 
 export type VoiceState = 'idle' | 'listening' | 'error';
 
+const ERRORS: Record<string, string> = {
+  'no-speech': 'Не расслышал, попробуй ещё раз',
+  'speech-timeout': 'Не расслышал, попробуй ещё раз',
+  'not-allowed': 'Нет доступа к микрофону или распознаванию — включи в Настройках iPhone → Level Up',
+  'audio-capture': 'Микрофон занят другим приложением',
+  interrupted: 'Запись прервалась (звонок или Siri) — попробуй ещё раз',
+  network: 'Нет связи с сервером распознавания Apple — попробуй ещё раз',
+  'language-not-supported': 'Русский язык распознавания недоступен на этом iPhone',
+  'service-not-allowed': 'Распознавание речи выключено — Настройки → Siri → включи Siri или диктовку',
+};
+
 export function useVoice(onFinal: (text: string) => void) {
   const [state, setStateRaw] = useState<VoiceState>('idle');
   // Дублируем состояние в ref: обработчики нативных событий не должны зависеть от замыканий.
@@ -40,8 +51,14 @@ export function useVoice(onFinal: (text: string) => void) {
         setTranscript(text);
       }),
       m.addListener('error', (e) => {
-        // «no-speech» — человек промолчал: просто закрываем, без красной ошибки.
-        setError(e.error === 'no-speech' ? 'Не расслышал, попробуй ещё раз' : e.message || e.error);
+        // «aborted» шлёт сам модуль в ответ на наш abort() — это отмена, а не ошибка.
+        // Раньше она снова открывала экран ошибки, его «Закрыть» звал abort() — и по кругу.
+        if (e.error === 'aborted') {
+          setState('idle');
+          return;
+        }
+        if (stateRef.current !== 'listening') return;
+        setError(ERRORS[e.error] ?? 'Не получилось распознать, попробуй ещё раз или введи текстом');
         setState('error');
       }),
       m.addListener('end', () => {
@@ -74,8 +91,9 @@ export function useVoice(onFinal: (text: string) => void) {
   const stop = useCallback(() => speech?.ExpoSpeechRecognitionModule.stop(), []);
   const cancel = useCallback(() => {
     latest.current = '';
+    const wasListening = stateRef.current === 'listening';
     setState('idle');
-    speech?.ExpoSpeechRecognitionModule.abort();
+    if (wasListening) speech?.ExpoSpeechRecognitionModule.abort();
   }, [setState]);
   const reset = useCallback(() => {
     setState('idle');

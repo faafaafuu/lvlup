@@ -24,7 +24,7 @@ export function VoiceOverlay({ mode, transcript, error, onStop, onCancel, onSubm
   const example = EXAMPLES[new Date().getMinutes() % EXAMPLES.length];
 
   return (
-    <Modal visible transparent animationType="fade" onRequestClose={onCancel}>
+    <Modal visible transparent animationType="fade" onRequestClose={mode === "listening" ? undefined : onCancel}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1, backgroundColor: '#000C', justifyContent: 'center', padding: 24 }}>
         {mode === 'listening' && (
           <View style={{ gap: 24, alignItems: 'center' }}>
