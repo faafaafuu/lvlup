@@ -4,6 +4,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ActivityLevel, Profile, Sex, UserPortions, dailyCalorieTarget, minHealthyWeight } from '@levelup/domain';
 import { Avatar, HAIR_COLORS, SKIN_TONES } from '@/components/Avatar';
 import { Btn, Card, Chip, Row, Stepper, T, textInputStyle } from '@/components/ui';
+import { Icon } from '@/design/Icon';
+import { IconName } from '@/design/icons';
 import { requestHealthAccess } from '@/lib/health';
 import { syncReminders } from '@/lib/notifications';
 import { AvatarLook, useStore } from '@/state/store';
@@ -76,8 +78,8 @@ export default function Onboarding() {
         <ScrollView contentContainerStyle={{ padding: 20, gap: 16, flexGrow: 1 }} keyboardShouldPersistTaps="handled">
           {step === 0 && (
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', gap: 16 }}>
-              <Avatar sex={sex} look={look} stage={0} outfitId="outfit_gray" pose="cheer" size={160} />
-              <T size="xxl" bold style={{ textAlign: 'center' }}>
+              <Avatar sex={sex} look={look} stage={0} outfitId="outfit_violet" pose="wave" size={160} animated />
+              <T size="xxl" bold display style={{ textAlign: 'center' }}>
                 Level Up
               </T>
               <T size="lg" tone="muted" style={{ textAlign: 'center' }}>
@@ -88,11 +90,11 @@ export default function Onboarding() {
 
           {step === 1 && (
             <>
-              <T size="xl" bold>
+              <T size="xl" bold display>
                 Твой герой
               </T>
               <View style={{ alignItems: 'center' }}>
-                <Avatar sex={sex} look={look} stage={0} outfitId="outfit_gray" size={140} />
+                <Avatar sex={sex} look={look} stage={0} outfitId="outfit_violet" size={140} />
               </View>
               <Row>
                 <Chip label="Мужчина" active={sex === 'male'} onPress={() => setSex('male')} />
@@ -120,7 +122,7 @@ export default function Onboarding() {
 
           {step === 2 && (
             <>
-              <T size="xl" bold>
+              <T size="xl" bold display>
                 Параметры
               </T>
               <Row>
@@ -157,24 +159,24 @@ export default function Onboarding() {
 
           {step === 3 && (
             <>
-              <T size="xl" bold>
+              <T size="xl" bold display>
                 Ленивый режим
               </T>
               <T tone="muted">Один раз скажи, какая у тебя посуда — дальше «тарелка плова» будет считаться по твоей тарелке.</T>
-              <PortionRow emoji="🍽" label="Моя тарелка" value={portions.plate} unit=" г" step={25} onChange={(v) => setPortions({ ...portions, plate: v })} />
-              <PortionRow emoji="☕️" label="Моя кружка" value={portions.cup} unit=" мл" step={25} onChange={(v) => setPortions({ ...portions, cup: v })} />
-              <PortionRow emoji="🥪" label="Мой бутерброд" value={portions.sandwich} unit=" г" step={10} onChange={(v) => setPortions({ ...portions, sandwich: v })} />
-              <PortionRow emoji="🥄" label="Моя ложка" value={portions.tbsp} unit=" г" step={5} onChange={(v) => setPortions({ ...portions, tbsp: v })} />
+              <PortionRow icon="plate" label="Моя тарелка" value={portions.plate} unit=" г" step={25} onChange={(v) => setPortions({ ...portions, plate: v })} />
+              <PortionRow icon="mug" label="Моя кружка" value={portions.cup} unit=" мл" step={25} onChange={(v) => setPortions({ ...portions, cup: v })} />
+              <PortionRow icon="sandwich" label="Мой бутерброд" value={portions.sandwich} unit=" г" step={10} onChange={(v) => setPortions({ ...portions, sandwich: v })} />
+              <PortionRow icon="spoon" label="Моя ложка" value={portions.tbsp} unit=" г" step={5} onChange={(v) => setPortions({ ...portions, tbsp: v })} />
             </>
           )}
 
           {step === 4 && (
             <>
-              <T size="xl" bold>
+              <T size="xl" bold display>
                 Разрешения
               </T>
               <Card style={{ gap: 8 }}>
-                <T bold>❤️ Здоровье</T>
+                <Row gap={10}><PermIcon name="health" /><T bold>Здоровье</T></Row>
                 <T tone="muted">Шаги, сон и вес подтянутся сами — за них начисляется опыт.</T>
                 <Btn
                   title={health === true ? 'Подключено' : health === false ? 'Недоступно — введу вручную' : 'Разрешить'}
@@ -184,7 +186,7 @@ export default function Onboarding() {
                 />
               </Card>
               <Card style={{ gap: 8 }}>
-                <T bold>🔔 Напоминания</T>
+                <Row gap={10}><PermIcon name="bell" /><T bold>Напоминания</T></Row>
                 <T tone="muted">Два мягких напоминания в день: про обед и про квесты.</T>
                 <Btn
                   title={notif === true ? 'Включены' : notif === false ? 'Не разрешено' : 'Разрешить'}
@@ -194,7 +196,7 @@ export default function Onboarding() {
                 />
               </Card>
               <Card style={{ gap: 8 }}>
-                <T bold>🎙 Микрофон</T>
+                <Row gap={10}><PermIcon name="mic" /><T bold>Микрофон</T></Row>
                 <T tone="muted">iPhone спросит при первом нажатии на микрофон.</T>
               </Card>
             </>
@@ -213,6 +215,11 @@ export default function Onboarding() {
   );
 }
 
+function PermIcon({ name }: { name: IconName }) {
+  const { c } = useTheme();
+  return <Icon name={name} size={22} color={c.primary} />;
+}
+
 function Swatch({ color, active, onPress }: { color: string; active: boolean; onPress: () => void }) {
   const { c } = useTheme();
   return (
@@ -224,13 +231,14 @@ function Swatch({ color, active, onPress }: { color: string; active: boolean; on
   );
 }
 
-function PortionRow({ emoji, label, value, unit, step, onChange }: { emoji: string; label: string; value: number; unit: string; step: number; onChange: (v: number) => void }) {
+function PortionRow({ icon, label, value, unit, step, onChange }: { icon: IconName; label: string; value: number; unit: string; step: number; onChange: (v: number) => void }) {
   return (
     <Card>
       <Row style={{ justifyContent: 'space-between' }}>
-        <T bold>
-          {emoji} {label}
-        </T>
+        <Row gap={10}>
+          <PermIcon name={icon} />
+          <T bold>{label}</T>
+        </Row>
         <Stepper value={value} step={step} min={step} suffix={unit} onChange={onChange} />
       </Row>
     </Card>

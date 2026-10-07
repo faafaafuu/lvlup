@@ -4,6 +4,7 @@ import { ACHIEVEMENTS, SHOP_ITEMS, activeDays, isUnlocked, rescuableDay } from '
 import { Avatar } from '@/components/Avatar';
 import { QuestList } from '@/components/QuestList';
 import { Btn, Card, Row, SectionTitle, T } from '@/components/ui';
+import { Icon } from '@/design/Icon';
 import { useStore } from '@/state/store';
 import { useGame } from '@/state/useGame';
 import { useTheme } from '@/theme';
@@ -26,9 +27,9 @@ export default function RewardsScreen() {
     <SafeAreaView style={{ flex: 1, backgroundColor: c.bg }} edges={['top']}>
       <ScrollView contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 40 }}>
         <SectionTitle right={<T tone="muted" size="sm">обновятся в полночь</T>}>Квесты дня</SectionTitle>
-        <QuestList quests={game.quests} />
+        <QuestList quests={game.quests} hint />
         <T size="sm" tone="muted">
-          Выполни все три — получишь сундук с монетами 🎁
+          Выполни все три — получишь сундук с монетами
         </T>
 
         <SectionTitle>Достижения</SectionTitle>
@@ -37,7 +38,7 @@ export default function RewardsScreen() {
             const got = unlockedAch.has(a.id);
             return (
               <Card key={a.id} style={{ width: '48.5%', gap: 4, opacity: got ? 1 : 0.55, borderColor: got ? c.coin : c.border }}>
-                <T size="xl">{got ? '🏆' : '🔒'}</T>
+                <Icon name={got ? 'medal' : 'lock'} size={28} color={got ? c.coin : c.textMuted} />
                 <T bold>{a.title}</T>
                 <T size="xs" tone="muted">
                   {a.description}
@@ -47,7 +48,7 @@ export default function RewardsScreen() {
           })}
         </View>
 
-        <SectionTitle right={<T bold tone="coin">● {progress.coins}</T>}>Гардероб</SectionTitle>
+        <SectionTitle right={<Row gap={4}><Icon name="coin" size={18} color={c.coin} /><T bold tone="coin">{progress.coins}</T></Row>}>Гардероб</SectionTitle>
         <Card style={{ alignItems: 'center' }}>
           <Avatar sex={s.profile.sex} look={s.look} stage={game.stage} outfitId={progress.equipped.outfit} accessoryId={progress.equipped.accessory} size={110} />
         </Card>
@@ -61,7 +62,7 @@ export default function RewardsScreen() {
                   {item.slot === 'outfit' ? (
                     <View style={{ width: 24, height: 24, borderRadius: 12, backgroundColor: item.value }} />
                   ) : (
-                    <T size="lg">{({ headband: '🎽', cape: '🦸', crown: '👑', glasses: '🕶' } as Record<string, string>)[item.value] ?? '✨'}</T>
+                    <Icon name={item.value === 'crown' ? 'star' : 'shirt'} size={22} color={c.primary} />
                   )}
                   <T bold>{item.name}</T>
                 </Row>
@@ -70,7 +71,10 @@ export default function RewardsScreen() {
                 ) : item.price ? (
                   <Btn title={`Купить · ${item.price}`} disabled={progress.coins < item.price} onPress={() => buy(item.id)} style={{ minHeight: 38 }} />
                 ) : (
-                  <T tone="muted">🔒 Ур. {item.unlockLevel}</T>
+                  <Row gap={4}>
+                    <Icon name="lock" size={16} color={c.textMuted} />
+                    <T tone="muted">Ур. {item.unlockLevel}</T>
+                  </Row>
                 )}
               </Row>
             </Card>

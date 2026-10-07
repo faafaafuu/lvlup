@@ -1,9 +1,11 @@
 import { Modal, Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MealDraft, XP, answerQuestion, describePortion, removeItem, setItemGrams } from '@levelup/domain';
+import { ConfirmItem } from '@/design/components';
+import { Icon } from '@/design/Icon';
 import { useTheme } from '@/theme';
 import { fmt } from '@/lib/format';
-import { Btn, Chip, Row, Stepper, T } from './ui';
+import { Btn, Chip, Row, T } from './ui';
 
 interface Props {
   draft: MealDraft | null;
@@ -15,10 +17,11 @@ interface Props {
 
 /** Подтверждение записи: позиции, уточняющие вопросы, итог. Цель — один тап «Записать». */
 export function ConfirmSheet({ draft, source, onChange, onConfirm, onCancel }: Props) {
-  const { c } = useTheme();
+  const t = useTheme();
+  const { c } = t;
   const insets = useSafeAreaInsets();
   if (!draft) return null;
-  const t = draft.totals;
+  const totals = draft.totals;
 
   return (
     <Modal visible transparent animationType="slide" onRequestClose={onCancel}>
@@ -27,7 +30,7 @@ export function ConfirmSheet({ draft, source, onChange, onConfirm, onCancel }: P
         <View style={{ alignSelf: 'center', width: 40, height: 5, borderRadius: 3, backgroundColor: c.border, marginTop: 8 }} />
         <ScrollView contentContainerStyle={{ padding: 20, gap: 14 }}>
           <View>
-            <T size="xl" bold>
+            <T size="xl" bold display>
               Записываю
             </T>
             <T tone="muted" numberOfLines={2}>
@@ -46,23 +49,29 @@ export function ConfirmSheet({ draft, source, onChange, onConfirm, onCancel }: P
             </View>
           ))}
 
-          {draft.items.map((item, i) => (
-            <Row key={`${item.foodId}-${i}`} style={{ justifyContent: 'space-between', paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: c.border }}>
-              <View style={{ flex: 1, gap: 2 }}>
-                <T bold>
-                  {item.assumed ? '≈ ' : ''}
-                  {item.name}
-                </T>
-                <T size="sm" tone="muted">
-                  {describePortion(item)} · {item.nutrients.kcal} ккал
-                </T>
-              </View>
-              <Stepper value={item.grams} step={item.grams >= 100 ? 25 : 10} min={5} suffix=" г" onChange={(g) => onChange(setItemGrams(draft, i, g))} />
-              <Pressable accessibilityLabel={`Убрать ${item.name}`} hitSlop={10} onPress={() => onChange(removeItem(draft, i))} style={{ marginLeft: 8 }}>
-                <T tone="muted">✕</T>
-              </Pressable>
-            </Row>
-          ))}
+          {draft.items.map((item, i) => {
+            const step = item.grams >= 100 ? 25 : 10;
+            return (
+              <Row key={`${item.foodId}-${i}`} gap={6}>
+                <View style={{ flex: 1 }}>
+                  <ConfirmItem
+                    t={t}
+                    name={item.name}
+                    portion={describePortion(item)}
+                    grams={item.grams}
+                    unit={item.unit === 'ml' ? 'мл' : 'г'}
+                    kcal={item.nutrients.kcal}
+                    approx={item.assumed}
+                    onMinus={() => onChange(setItemGrams(draft, i, Math.max(5, item.grams - step)))}
+                    onPlus={() => onChange(setItemGrams(draft, i, item.grams + step))}
+                  />
+                </View>
+                <Pressable accessibilityLabel={`Убрать ${item.name}`} hitSlop={8} onPress={() => onChange(removeItem(draft, i))} style={{ padding: 8 }}>
+                  <Icon name="trash" size={20} color={c.textMuted} />
+                </Pressable>
+              </Row>
+            );
+          })}
 
           {draft.unknown.map((u) => (
             <T key={u} tone="muted" size="sm">
@@ -75,10 +84,10 @@ export function ConfirmSheet({ draft, source, onChange, onConfirm, onCancel }: P
           ) : (
             <Row style={{ justifyContent: 'space-between' }}>
               <T size="lg" bold>
-                ~{fmt(t.kcal)} ккал
+                ~{fmt(totals.kcal)} ккал
               </T>
               <T size="sm" tone="muted">
-                Б {Math.round(t.protein)} · Ж {Math.round(t.fat)} · У {Math.round(t.carbs)}
+                Б {Math.round(totals.protein)} · Ж {Math.round(totals.fat)} · У {Math.round(totals.carbs)}
               </T>
             </Row>
           )}

@@ -50,15 +50,15 @@ export default function SettingsScreen() {
       <SectionTitle>Мои порции</SectionTitle>
       <Card style={{ gap: 12 }}>
         <Row style={{ justifyContent: 'space-between' }}>
-          <T>🍽 Тарелка</T>
+          <T>Тарелка</T>
           <Stepper value={units.plate ?? 300} step={25} min={50} suffix=" г" onChange={(v) => setUnit('plate', v)} />
         </Row>
         <Row style={{ justifyContent: 'space-between' }}>
-          <T>☕️ Кружка</T>
+          <T>Кружка</T>
           <Stepper value={units.cup ?? 250} step={25} min={50} suffix=" мл" onChange={(v) => setUnit('cup', v)} />
         </Row>
         <Row style={{ justifyContent: 'space-between' }}>
-          <T>🥄 Ложка</T>
+          <T>Ложка</T>
           <Stepper value={units.tbsp ?? 15} step={5} min={5} suffix=" г" onChange={(v) => setUnit('tbsp', v)} />
         </Row>
       </Card>
@@ -105,7 +105,7 @@ export default function SettingsScreen() {
       <SectionTitle>Здоровье и напоминания</SectionTitle>
       <Card style={{ gap: 12 }}>
         <Row style={{ justifyContent: 'space-between' }}>
-          <T>❤️ Шаги, сон, вес из Здоровья</T>
+          <T style={{ flex: 1 }}>Шаги, сон, вес из Здоровья</T>
           <Switch
             value={s.settings.health}
             onValueChange={async (on) => {
@@ -117,7 +117,7 @@ export default function SettingsScreen() {
           />
         </Row>
         <Row style={{ justifyContent: 'space-between' }}>
-          <T>🔔 Напоминания</T>
+          <T>Напоминания</T>
           <Switch value={s.settings.reminders} onValueChange={(reminders) => s.updateSettings({ reminders })} />
         </Row>
       </Card>

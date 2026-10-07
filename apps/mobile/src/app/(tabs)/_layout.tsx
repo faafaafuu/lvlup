@@ -1,8 +1,10 @@
-import { Text } from 'react-native';
+import { ColorValue } from 'react-native';
 import { Tabs } from 'expo-router';
+import { Icon } from '@/design/Icon';
+import { IconName } from '@/design/icons';
 import { useTheme } from '@/theme';
 
-const icon = (glyph: string) => ({ focused }: { focused: boolean }) => <Text style={{ fontSize: 20, opacity: focused ? 1 : 0.5 }}>{glyph}</Text>;
+const icon = (name: IconName) => ({ focused, color }: { focused: boolean; color: ColorValue }) => <Icon name={name} color={String(color)} filled={focused} />;
 
 export default function TabsLayout() {
   const { c } = useTheme();
@@ -16,10 +18,10 @@ export default function TabsLayout() {
         sceneStyle: { backgroundColor: c.bg },
       }}
     >
-      <Tabs.Screen name="index" options={{ title: 'Герой', tabBarIcon: icon('🛡') }} />
-      <Tabs.Screen name="diary" options={{ title: 'Дневник', tabBarIcon: icon('📖') }} />
-      <Tabs.Screen name="progress" options={{ title: 'Прогресс', tabBarIcon: icon('📈') }} />
-      <Tabs.Screen name="rewards" options={{ title: 'Награды', tabBarIcon: icon('🏆') }} />
+      <Tabs.Screen name="index" options={{ title: 'Герой', tabBarIcon: icon('tabHero') }} />
+      <Tabs.Screen name="diary" options={{ title: 'Дневник', tabBarIcon: icon('tabDiary') }} />
+      <Tabs.Screen name="progress" options={{ title: 'Прогресс', tabBarIcon: icon('tabProgress') }} />
+      <Tabs.Screen name="rewards" options={{ title: 'Награды', tabBarIcon: icon('tabRewards') }} />
     </Tabs>
   );
 }

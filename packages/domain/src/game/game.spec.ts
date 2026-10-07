@@ -19,7 +19,7 @@ function state(partial: Partial<GameState> = {}): GameState {
 describe('уровни', () => {
   it('1000 XP на уровень и титулы', () => {
     expect(levelInfo(0)).toMatchObject({ level: 1, current: 0, title: 'Новичок' });
-    expect(levelInfo(2340)).toMatchObject({ level: 3, current: 340, title: 'Странник' });
+    expect(levelInfo(2340)).toMatchObject({ level: 3, current: 340, title: 'Путник' });
   });
 });
 

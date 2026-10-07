@@ -1,61 +1,39 @@
-import { Pressable, View } from 'react-native';
-import { QUEST_COINS, QUEST_XP, QuestStatus } from '@levelup/domain';
+import { View } from 'react-native';
+import { QUEST_XP, QuestStatus } from '@levelup/domain';
+import { QuestCard } from '@/design/components';
+import { IconName } from '@/design/icons';
 import { useStore } from '@/state/store';
 import { useTheme } from '@/theme';
-import { fmt } from '@/lib/format';
-import { Bar, Card, Row, T } from './ui';
+import { T } from './ui';
 
-const ICONS: Record<string, string> = {
-  meal: '🍽', steps: '👟', water: '💧', sleep: '🌙', workout: '💪', veg: '🥦', protein: '🥩', clock: '⏰', nosweet: '🍬',
+const ICONS: Record<string, IconName> = {
+  meal: 'plate', steps: 'steps', water: 'water', sleep: 'sleep', workout: 'workout', veg: 'star', protein: 'workout', clock: 'timer', nosweet: 'freeze',
 };
 
-export function QuestList({ quests, compact }: { quests: QuestStatus[]; compact?: boolean }) {
-  const { c } = useTheme();
+export function QuestList({ quests, hint }: { quests: QuestStatus[]; hint?: boolean }) {
+  const t = useTheme();
   const toggle = useStore((s) => s.toggleManualQuest);
   return (
     <View style={{ gap: 8 }}>
-      {quests.map(({ quest, progress, target, done }) => (
-        <Pressable
-          key={quest.id}
-          disabled={!quest.manual}
-          onPress={() => toggle(quest.id)}
-          accessibilityRole={quest.manual ? 'checkbox' : undefined}
-          accessibilityState={{ checked: done }}
-        >
-          <Card style={{ padding: compact ? 12 : 16, borderColor: done ? c.success : c.border }}>
-            <Row gap={12}>
-              <T size="lg">{done ? '✅' : ICONS[quest.icon] ?? '⭐'}</T>
-              <View style={{ flex: 1, gap: 6 }}>
-                <Row style={{ justifyContent: 'space-between' }}>
-                  <T bold style={{ flex: 1, textDecorationLine: done ? 'line-through' : 'none' }}>
-                    {quest.title}
-                  </T>
-                  <T size="xs" tone="xp" bold>
-                    +{QUEST_XP} XP
-                  </T>
-                </Row>
-                {quest.manual ? (
-                  <T size="xs" tone="muted">
-                    {done ? 'Готово! Нажми, чтобы снять отметку' : 'Нажми, когда сделаешь'}
-                  </T>
-                ) : target > 1 ? (
-                  <Row>
-                    <Bar value={progress} max={target} color={done ? c.success : c.primary} style={{ flex: 1 }} />
-                    <T size="xs" tone="muted">
-                      {fmt(progress)} / {fmt(target)}
-                      {quest.unit ? ` ${quest.unit}` : ''}
-                    </T>
-                  </Row>
-                ) : null}
-                {!compact && (
-                  <T size="xs" tone="coin">
-                    +{QUEST_COINS} монет
-                  </T>
-                )}
-              </View>
-            </Row>
-          </Card>
-        </Pressable>
+      {quests.map(({ quest, progress, target }) => (
+        <View key={quest.id} style={{ gap: 4 }}>
+          <QuestCard
+            t={t}
+            icon={ICONS[quest.icon] ?? 'quest'}
+            title={quest.title}
+            current={progress}
+            target={target}
+            unit={quest.unit ? ` ${quest.unit}` : ''}
+            xp={QUEST_XP}
+            onPress={quest.manual ? () => toggle(quest.id) : undefined}
+            disabled={false}
+          />
+          {hint && quest.manual && (
+            <T size="xs" tone="muted" style={{ marginLeft: 12 }}>
+              {progress >= target ? 'Нажми ещё раз, чтобы снять отметку' : 'Нажми на карточку, когда сделаешь'}
+            </T>
+          )}
+        </View>
       ))}
     </View>
   );

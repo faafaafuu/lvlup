@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { addDays, dateKey, describePortion, mealDateKey, sumNutrients } from '@levelup/domain';
 import { ConfirmSheet } from '@/components/ConfirmSheet';
 import { Btn, Card, Row, SectionTitle, T } from '@/components/ui';
+import { Icon } from '@/design/Icon';
 import { fmt, humanDate, timeOf } from '@/lib/format';
 import { useStore } from '@/state/store';
 import { useGame } from '@/state/useGame';
@@ -36,7 +37,7 @@ export default function DiaryScreen() {
       <ScrollView contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 40 }}>
         <Row style={{ justifyContent: 'space-between' }}>
           <Pressable accessibilityLabel="Предыдущий день" hitSlop={12} onPress={() => setDay(addDays(day, -1))}>
-            <T size="xl">‹</T>
+            <Icon name="chevronLeft" color={c.text} />
           </Pressable>
           <Pressable onPress={() => setDay(today)}>
             <T size="lg" bold>
@@ -44,14 +45,14 @@ export default function DiaryScreen() {
             </T>
           </Pressable>
           <Pressable accessibilityLabel="Следующий день" hitSlop={12} disabled={day >= today} onPress={() => setDay(addDays(day, 1))}>
-            <T size="xl" style={{ opacity: day >= today ? 0.2 : 1 }}>
-              ›
-            </T>
+            <View style={{ opacity: day >= today ? 0.2 : 1 }}>
+              <Icon name="chevronRight" color={c.text} />
+            </View>
           </Pressable>
         </Row>
 
         <Card>
-          <T size="lg" bold>
+          <T size="lg" bold display>
             {fmt(totals.kcal)} ккал{game ? <T tone="muted"> из {fmt(game.norm)}</T> : null}
           </T>
           <T tone="muted" size="sm">
@@ -85,7 +86,7 @@ export default function DiaryScreen() {
 
         {dayMeals.length === 0 ? (
           <Card style={{ alignItems: 'center', gap: 8, paddingVertical: 32 }}>
-            <T size="xxl">🍽</T>
+            <Icon name="plate" size={40} color={c.textMuted} />
             <T tone="muted" style={{ textAlign: 'center' }}>
               Пока пусто. Нажми на микрофон на главном экране и скажи, что ел.
             </T>
@@ -101,7 +102,7 @@ export default function DiaryScreen() {
                   <Row gap={12}>
                     <T bold>{fmt(m.totals.kcal)} ккал</T>
                     <Pressable accessibilityLabel="Удалить запись" hitSlop={10} onPress={() => askDelete(m.id, m.text)}>
-                      <T tone="muted">✕</T>
+                      <Icon name="trash" size={18} color={c.textMuted} />
                     </Pressable>
                   </Row>
                 </Row>

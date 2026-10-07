@@ -74,7 +74,7 @@ export type AppState = Data & Ephemeral & Actions;
 const INITIAL: Data = {
   onboarded: false,
   profile: null,
-  look: { skin: '#E8B48F', hair: 0, hairColor: '#3B2A20' },
+  look: { skin: '#EDBB97', hair: 0, hairColor: '#6B3E26' },
   portions: { units: { plate: 300, cup: 250, glass: 250, tbsp: 15 }, foods: {} },
   meals: [],
   activity: {},
