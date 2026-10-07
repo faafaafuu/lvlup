@@ -25,5 +25,9 @@
     "ts-jest": "^29.4.5",
     "tsx": "^4.20.6",
     "typescript": "~5.9.3"
+  },
+  "overrides": {
+    "react-native-worklets": "0.10.1",
+    "react-native-reanimated": "4.5.1"
   }
 }
