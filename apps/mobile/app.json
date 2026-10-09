@@ -35,7 +35,17 @@
         }
       ],
       "expo-font",
-      "./plugins/withoutPush"
+      "./plugins/withoutPush",
+      [
+        "./plugins/withSiriShortcut",
+        {
+          "altNames": [
+            "Левел ап",
+            "Левелап",
+            "Левел"
+          ]
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
