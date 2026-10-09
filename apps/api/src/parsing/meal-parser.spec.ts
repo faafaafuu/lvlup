@@ -34,3 +34,17 @@ describe('MealParser', () => {
     expect(result.latencyMs).toBeLessThan(1000);
   });
 });
+
+describe('withMissed', () => {
+  it('добавляет пропущенную LLM добавку, но не дублирует блюдо', async () => {
+    const { withMissed } = await import('./meal-parser');
+    const llm = [{ text: 'борщ', foodId: 'borsch', quantity: 1, unit: 'plate' as const, grams: null }];
+    const dict = [
+      { text: 'борща', foodId: 'borsch', quantity: 1, unit: 'plate' as const, grams: null },
+      { text: 'сметаной', foodId: 'sour_cream', quantity: null, unit: null, grams: null },
+    ];
+    expect(withMissed(llm, dict).map((e) => e.foodId)).toEqual(['borsch', 'sour_cream']);
+    const llm2 = [{ text: 'котлета куриная', foodId: 'chicken_cutlet', quantity: 1, unit: null, grams: null }];
+    expect(withMissed(llm2, [{ text: 'котлета', foodId: 'cutlet', quantity: 1, unit: null, grams: null }]).map((e) => e.foodId)).toEqual(['chicken_cutlet']);
+  });
+});

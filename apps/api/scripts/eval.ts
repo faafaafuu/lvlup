@@ -8,6 +8,8 @@ import { join } from 'node:path';
 import { ParsedEntity, resolveMeal } from '@levelup/domain';
 import { ExtractorName, loadConfig } from '../src/config';
 import { createExtractor } from '../src/parsing/extractors';
+import { withMissed } from '../src/parsing/meal-parser';
+import { parseHeuristic } from '@levelup/domain';
 
 interface Case {
   text: string;
@@ -29,6 +31,7 @@ async function main() {
     let got: ParsedEntity[] = [];
     try {
       got = (await extractor.extract(c.text, AbortSignal.timeout(20000))).items;
+      if (name !== 'heuristic') got = withMissed(got, parseHeuristic(c.text));
     } catch (err) {
       failures.push(`ОШИБКА «${c.text}»: ${err instanceof Error ? err.message : err}`);
     }

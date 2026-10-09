@@ -569,5 +569,27 @@
     "foodId": "soda"
    }
   ]
+ },
+ {
+  "text": "2 стакана колы без сахара",
+  "expect": [
+   {
+    "foodId": "soda_zero",
+    "quantity": 2,
+    "unit": "glass"
+   }
+  ]
+ },
+ {
+  "text": "выпил кофе без сахара и съел бутерброд",
+  "expect": [
+   {
+    "foodId": "coffee"
+   },
+   {
+    "foodId": "sandwich",
+    "quantity": 1
+   }
+  ]
  }
 ]

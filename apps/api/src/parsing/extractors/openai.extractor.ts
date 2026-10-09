@@ -14,6 +14,16 @@ export class OpenAiExtractor implements FoodExtractor {
   constructor(private readonly apiKey: string, private readonly model: string, private readonly baseUrl: string) {}
 
   async extract(text: string, signal: AbortSignal): Promise<Extraction> {
+    try {
+      return await this.once(text, signal);
+    } catch (e) {
+      // Оборванный или пустой JSON случается у дешёвых моделей — один повтор почти всегда спасает.
+      if (e instanceof SyntaxError && !signal.aborted) return this.once(text, signal);
+      throw e;
+    }
+  }
+
+  private async once(text: string, signal: AbortSignal): Promise<Extraction> {
     if (this.strictSupported) {
       const res = await this.call(text, signal, true);
       if (res.ok) return this.parse(res.body);
@@ -51,7 +61,11 @@ export class OpenAiExtractor implements FoodExtractor {
         response_format: strict ? { type: 'json_schema', json_schema: { name: 'meal', strict: true, schema } } : { type: 'json_object' },
         // «Думающие» модели (DeepSeek V4 и др.) иначе тратят секунды и токены на рассуждения,
         // а для извлечения сущностей они не нужны. OpenRouter понимает этот параметр, остальные игнорируют.
-        ...(this.baseUrl.includes('openrouter') ? { reasoning: { enabled: false } } : {}),
+        // Маршрутизация OpenRouter: самый быстрый провайдер; AtlasCloud игнорирует отключение
+        // рассуждений и сжигает все токены на «размышления» — его не используем.
+        ...(this.baseUrl.includes('openrouter')
+          ? { reasoning: { enabled: false }, provider: { sort: 'latency', ignore: ['AtlasCloud'] } }
+          : {}),
       }),
     });
     return { ok: res.ok, status: res.status, body: await res.text() };

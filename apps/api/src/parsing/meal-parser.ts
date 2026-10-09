@@ -1,4 +1,4 @@
-import { MealDraft, UserPortions, resolveMeal } from '@levelup/domain';
+import { CATALOG_BY_ID, MealDraft, ParsedEntity, UserPortions, resolveMeal, stem, tokenize } from '@levelup/domain';
 import { FoodExtractor, HeuristicExtractor } from './extractors';
 
 export interface ParseResult {
@@ -25,7 +25,8 @@ export class MealParser {
     const clean = text.trim().slice(0, 500);
     try {
       const x = await this.primary.extract(clean, AbortSignal.timeout(this.timeoutMs));
-      return { draft: resolveMeal(clean, x.items, { portions, activities: x.activities, bodyWeightKg }), parser: this.primary.name, fallback: false, latencyMs: Date.now() - started };
+      const items = this.primary.name === this.heuristic.name ? x.items : withMissed(x.items, (await this.heuristic.extract(clean)).items);
+      return { draft: resolveMeal(clean, items, { portions, activities: x.activities, bodyWeightKg }), parser: this.primary.name, fallback: false, latencyMs: Date.now() - started };
     } catch (err) {
       const x = await this.heuristic.extract(clean);
       return {
@@ -37,4 +38,20 @@ export class MealParser {
       };
     }
   }
+}
+
+/**
+ * LLM иногда «съедает» добавки («борщ со сметаной» → только борщ), а словарь их видит.
+ * Добавляем из словаря блюда, которых у LLM нет и которые не являются вариантом её блюд
+ * (котлета ≈ куриная котлета — общие слова в названиях; сметана ≠ борщ).
+ */
+export function withMissed(llm: ParsedEntity[], dict: ParsedEntity[]): ParsedEntity[] {
+  const foodStems = (id: string | null | undefined) => {
+    const food = id ? CATALOG_BY_ID.get(id) : undefined;
+    return new Set((food?.aliases ?? []).flatMap((a) => tokenize(a).map(stem)).filter((w) => w.length > 2));
+  };
+  const ids = new Set(llm.map((e) => e.foodId).filter(Boolean));
+  const llmStems = new Set(llm.flatMap((e) => [...foodStems(e.foodId)]));
+  const extra = dict.filter((d) => d.foodId && !ids.has(d.foodId) && ![...foodStems(d.foodId)].some((w) => llmStems.has(w)));
+  return [...llm, ...extra];
 }

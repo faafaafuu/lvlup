@@ -126,3 +126,14 @@ describe('количество принадлежит своей части фр
     expect(ids('2 бутылки пива по 0,5 и макароны')[0]).toEqual(['beer', 2, 'bottle']);
   });
 });
+
+describe('«без …» — этого не ели', () => {
+  const ids = (text: string) => parse(text).items.map((i) => i.foodId);
+  it('кола без сахара — отдельный напиток, сахара нет', () => {
+    expect(parse('2 стакана колы без сахара').items.map((i) => [i.foodId, i.quantity, i.unit])).toEqual([['soda_zero', 2, 'glass']]);
+  });
+  it('добавка после «без» выбрасывается', () => {
+    expect(ids('чай без сахара с печеньем')).toEqual(['tea', 'cookies']);
+    expect(ids('салат без майонеза')).toEqual(['veg_salad']);
+  });
+});

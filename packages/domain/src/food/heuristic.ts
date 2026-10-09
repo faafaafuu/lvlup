@@ -14,7 +14,9 @@ export function parseHeuristic(text: string, catalog: readonly Food[] = CATALOG)
   const tokens = splitHalfPrefix(tokenize(markBoundaries(text)));
   // «гантели 10 кг, потом гречка»: слова про спорт закрываем, чтобы «10 кг» не ушли в гречку.
   for (const a of findActivities(tokens)) for (let i = a.start; i < a.end; i++) tokens[i] = '·';
-  const matches = findFoods(tokens, catalog);
+  // «без сахара», «без майонеза» — этого как раз не ели: блюдо сразу после «без» выкидываем.
+  // Готовые позиции вида «кола без сахара» находятся раньше как целый алиас и не страдают.
+  const matches = findFoods(tokens, catalog).filter((m) => tokens[m.start - 1] !== 'без');
 
   // Фраза режется на части по «и», запятым и глаголам («выпил», «съел»): количество
   // берётся только из своей части, в каком бы порядке его ни сказали —
