@@ -23,7 +23,7 @@ cd apps/api && set -a && . ./.env && set +a && npm start
 (`.github/workflows/ios.yml`) и выкладывает его в релиз `latest`:
 
 ```
-https://github.com/faafaafuu/lvlup/releases/download/latest/LevelUp.ipa
+https://github.com/faafaafuu/lvlup/releases/download/latest/Hrum.ipa
 ```
 
 Собрать вручную: вкладка Actions → «iOS IPA» → Run workflow. Сборка ~15–25 минут.

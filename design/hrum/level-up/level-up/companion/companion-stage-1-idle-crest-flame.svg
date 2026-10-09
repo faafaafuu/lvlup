@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+  <defs>
+    <radialGradient id="body-lime" cx="0.36" cy="0.28" r="0.82"><stop offset="0" style="stop-color: var(--body-hi, #F6FFC4)"/><stop offset="0.45" style="stop-color: var(--body-mid, #D2F54A)"/><stop offset="1" style="stop-color: var(--body-lo, #8DBE1C)"/></radialGradient>
+    <radialGradient id="shade-lime" cx="0.42" cy="0.3" r="0.78"><stop offset="0.62" style="stop-color: var(--body-deep, #557A0A)" stop-opacity="0"/><stop offset="1" style="stop-color: var(--body-deep, #557A0A)" stop-opacity="0.55"/></radialGradient>
+    <linearGradient id="limb-lime" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color: var(--body-mid, #D2F54A)"/><stop offset="1" style="stop-color: var(--body-lo, #8DBE1C)"/></linearGradient>
+    <linearGradient id="foot-lime" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color: var(--body-lo, #8DBE1C)"/><stop offset="1" style="stop-color: var(--body-deep, #557A0A)"/></linearGradient>
+    <linearGradient id="gloss" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0.85"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/></linearGradient>
+    <radialGradient id="cheek" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#FF7E92" stop-opacity="0.6"/><stop offset="1" stop-color="#FF7E92" stop-opacity="0"/></radialGradient>
+    <radialGradient id="ground" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#000000" stop-opacity="0.38"/><stop offset="1" stop-color="#000000" stop-opacity="0"/></radialGradient>
+    <radialGradient id="aura" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#E4FF6B" stop-opacity="0.55"/><stop offset="0.55" stop-color="#D4FF3A" stop-opacity="0.16"/><stop offset="1" stop-color="#D4FF3A" stop-opacity="0"/></radialGradient>
+    <linearGradient id="crest-flame" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFE38A"/><stop offset="1" stop-color="#FF6A2B"/></linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFE7A0"/><stop offset="1" stop-color="#E39A1E"/></linearGradient>
+    <linearGradient id="band" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FF7A6B"/><stop offset="1" stop-color="#D93A3A"/></linearGradient>
+    <linearGradient id="cape" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFC56B"/><stop offset="1" stop-color="#C9700F"/></linearGradient>
+  </defs>
+  <g id="aura"></g>
+  <g id="shadow"><ellipse cx="100" cy="189" rx="40" ry="7" fill="url(#ground)"/></g>
+  <g transform="translate(100 188) scale(0.8) translate(-100 -188)">
+    <g id="cape"></g>
+    <g id="feet"><ellipse cx="82" cy="182" rx="15" ry="8" fill="url(#foot-lime)"/><ellipse cx="118" cy="182" rx="15" ry="8" fill="url(#foot-lime)"/></g>
+    <g id="arms"><ellipse cx="36" cy="142" rx="9.5" ry="15" transform="rotate(22 36 142)" fill="url(#limb-lime)"/><ellipse cx="164" cy="142" rx="9.5" ry="15" transform="rotate(-22 164 142)" fill="url(#limb-lime)"/></g>
+    <g id="body">
+      <path d="M100 62C140 62 164 94 164 130C164 164 136 184 100 184C64 184 36 164 36 130C36 94 60 62 100 62Z" fill="url(#body-lime)"/>
+      <path d="M100 62C140 62 164 94 164 130C164 164 136 184 100 184C64 184 36 164 36 130C36 94 60 62 100 62Z" fill="url(#shade-lime)"/>
+      <ellipse cx="100" cy="166" rx="30" ry="14" style="fill: var(--body-hi, #F6FFC4)" fill-opacity="0.16"/>
+      <ellipse cx="74" cy="86" rx="24" ry="12" transform="rotate(-30 74 86)" fill="url(#gloss)"/>
+      <circle cx="56" cy="108" r="3.2" fill="#FFFFFF" fill-opacity="0.55"/>
+    </g>
+    <g id="collar"></g>
+    <g id="face">
+      <ellipse cx="70" cy="136" rx="11" ry="7" fill="url(#cheek)"/>
+      <ellipse cx="130" cy="136" rx="11" ry="7" fill="url(#cheek)"/>
+      <g id="eyes" opacity="1">
+        <ellipse cx="84" cy="121" rx="8.4" ry="10.6" fill="#141416"/>
+        <ellipse cx="116" cy="121" rx="8.4" ry="10.6" fill="#141416"/>
+        <circle cx="87.2" cy="116.2" r="3.4" fill="#FFFFFF"/>
+        <circle cx="119.2" cy="116.2" r="3.4" fill="#FFFFFF"/>
+        <circle cx="81.6" cy="126" r="1.6" fill="#FFFFFF" fill-opacity="0.8"/>
+        <circle cx="113.6" cy="126" r="1.6" fill="#FFFFFF" fill-opacity="0.8"/>
+      </g>
+      <path d="M94 135Q100 141 106 135" fill="none" stroke="#141416" stroke-width="2.6" stroke-linecap="round"/>
+    </g>
+    <g id="crest" transform=""><path d="M100 66C90 60 92 48 98 42C98 50 102 51 104 47C108 54 110 61 100 66Z" fill="url(#crest-flame)"/></g>
+    <g id="accessory"></g>
+  </g>
+</svg>

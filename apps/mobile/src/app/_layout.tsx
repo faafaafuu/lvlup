@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
-import { Unbounded_500Medium } from '@expo-google-fonts/unbounded/500Medium';
-import { Unbounded_700Bold } from '@expo-google-fonts/unbounded/700Bold';
+import { Geologica_600SemiBold } from '@expo-google-fonts/geologica/600SemiBold';
+import { Geologica_700Bold } from '@expo-google-fonts/geologica/700Bold';
 import { useFonts } from 'expo-font';
 import { AppState } from 'react-native';
 import { Stack } from 'expo-router';
@@ -51,7 +51,7 @@ export default function RootLayout() {
   const { c, dark } = useTheme();
   const onboarded = useStore((s) => s.onboarded);
   const reminders = useStore((s) => s.settings.reminders);
-  const [fontsLoaded, fontError] = useFonts({ Unbounded_700Bold, Unbounded_500Medium });
+  const [fontsLoaded, fontError] = useFonts({ Geologica_600SemiBold, Geologica_700Bold });
 
   useEffect(() => {
     void refresh();

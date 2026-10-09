@@ -30,10 +30,10 @@ export function DayCard({ day }: { day: DayResult }) {
           <View
             style={{
               width: 32, height: 32, borderRadius: 10, alignItems: 'center', justifyContent: 'center',
-              backgroundColor: ch.done ? c.successSoft : c.surfaceAlt,
+              backgroundColor: ch.done ? c.doneFill : c.surfaceAlt,
             }}
           >
-            <Icon name={ch.done ? 'check' : ICON[ch.id] ?? 'star'} size={18} color={ch.done ? c.success : c.textMuted} />
+            <Icon name={ch.done ? 'check' : ICON[ch.id] ?? 'sparkle'} size={18} color={ch.done ? c.success : c.textMuted} />
           </View>
           <View style={{ flex: 1 }}>
             <T bold>{ch.title}</T>

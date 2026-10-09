@@ -1,74 +1,75 @@
-import { useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MealTemplate, sumNutrients } from '@levelup/domain';
-import { ConfirmSheet } from '@/components/ConfirmSheet';
+import { useCapture } from '@/components/CaptureHost';
 import { DayCard } from '@/components/DayCard';
-import { WishProgress } from '@/components/WishProgress';
 import { Bar, Card, Row, T } from '@/components/ui';
-import { OverlayMode, VoiceOverlay } from '@/components/VoiceOverlay';
-import { MicButton, TemplateChip } from '@/design/components';
+import { WishProgress } from '@/components/WishProgress';
+import { Companion } from '@/design/companion/Companion';
+import { TemplateChip } from '@/design/components';
 import { Icon } from '@/design/Icon';
 import { IconName } from '@/design/icons';
-import { fmt } from '@/lib/format';
-import { useVoice, voiceSupported } from '@/lib/voice';
+import { companionState } from '@/lib/companion';
+import { fmt, plural } from '@/lib/format';
 import { useStore } from '@/state/store';
 import { useToday } from '@/state/useToday';
-import { useMealCapture } from '@/state/useMealCapture';
 import { useTheme } from '@/theme';
 
-/** Высота нижней панели с микрофоном — контент прокручивается над ней, а не под ней. */
-const DOCK = 104;
+/** Над плавающим таб-баром остаётся место, чтобы последний блок не прятался под стекло. */
+export const TAB_BAR_SPACE = 120;
 
-export default function HomeScreen() {
+export default function TodayScreen() {
   const t = useTheme();
   const { c } = t;
   const game = useToday();
   const profile = useStore((s) => s.profile);
   const pending = useStore((s) => s.pending.length);
-  const capture = useMealCapture();
-  const [overlay, setOverlay] = useState<OverlayMode | null>(null);
-  const [heard, setHeard] = useState('');
-
-  const handlePhrase = async (text: string) => {
-    setHeard(text);
-    setOverlay('parsing');
-    await capture.parse(text);
-    setOverlay(null);
-  };
-  const voice = useVoice((text) => void handlePhrase(text));
-
+  const capture = useCapture();
   if (!game || !profile) return null;
-  const mode: OverlayMode | null = voice.state === 'listening' ? 'listening' : voice.state === 'error' ? 'error' : overlay;
 
-  const onMic = async () => {
-    if (voice.state === 'listening') return voice.stop();
-    if (!voiceSupported) return setOverlay('text');
-    await voice.start();
-  };
+  const { stats, bank } = game;
+  const left = game.norm - stats.kcal;
+  const lime = companionState(bank, new Date().getHours());
 
   const logTemplate = (tpl: MealTemplate) => {
     useStore.getState().addEntry({ sourceText: tpl.label, items: tpl.items, activities: [], unknown: [], questions: [], totals: sumNutrients(tpl.items) });
   };
 
-  const { stats } = game;
-  const left = game.norm - stats.kcal;
-
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: c.bg }} edges={['top']}>
-      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: DOCK + 24, gap: 14 }}>
+      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: TAB_BAR_SPACE, gap: 14 }}>
         <Row style={{ justifyContent: 'space-between' }}>
           <T size="xl" bold display>
             Сегодня
           </T>
-          <Pressable accessibilityLabel="Настройки" hitSlop={12} onPress={() => router.push('/settings')}>
-            <Icon name="gear" size={24} color={c.textMuted} />
-          </Pressable>
+          <Row gap={18}>
+            <Pressable accessibilityLabel="Записать текстом" hitSlop={12} onPress={capture.openText}>
+              <Icon name="keyboard" size={24} color={c.textMuted} />
+            </Pressable>
+            <Pressable accessibilityLabel="Настройки" hitSlop={12} onPress={() => router.push('/settings')}>
+              <Icon name="settings" size={24} color={c.textMuted} />
+            </Pressable>
+          </Row>
         </Row>
 
-        <WishProgress bank={game.bank} />
-        <DayCard day={game.bank.today} />
+        <Card style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: 8, paddingLeft: 4 }}>
+          <Companion stage={lime.stage} mood={lime.mood} accessory={lime.accessory} size={124} animated />
+          <View style={{ flex: 1, gap: 6, paddingRight: 8 }}>
+            <T bold display>
+              Лайм · {lime.stageName}
+            </T>
+            <T size="sm">{lime.line}</T>
+            {lime.toNext != null && (
+              <T size="xs" tone="muted">
+                До следующей стадии — {lime.toNext} {plural(lime.toNext, 'хороший день', 'хороших дня', 'хороших дней')}
+              </T>
+            )}
+          </View>
+        </Card>
+
+        <WishProgress bank={bank} />
+        <DayCard day={bank.today} />
 
         <Card style={{ gap: 8 }}>
           <Row style={{ justifyContent: 'space-between', alignItems: 'flex-end' }}>
@@ -88,7 +89,7 @@ export default function HomeScreen() {
             </T>
           </Row>
           {/* Превышение — нейтральный цвет, без «красной ошибки». */}
-          <Bar value={stats.kcal} max={game.norm} color={left >= 0 ? c.primary : c.over} height={8} />
+          <Bar value={stats.kcal} max={game.norm} color={left >= 0 ? c.bar : c.over} height={8} />
           <Row gap={12} style={{ flexWrap: 'wrap' }}>
             <Macro label="Б" value={stats.protein} color={c.protein} />
             <Macro label="Ж" value={stats.fat} color={c.fat} />
@@ -98,9 +99,9 @@ export default function HomeScreen() {
 
         <Pressable onPress={() => router.push('/progress')} accessibilityLabel="Активность за сегодня">
           <Card style={{ flexDirection: 'row', paddingVertical: 12 }}>
-            <Stat icon="steps" color={c.xp} value={fmt(stats.steps)} label={`из ${fmt(profile.stepsGoal)} шагов`} />
-            <Stat icon="workout" color={c.primary} value={`${stats.activeMinutes}`} label="мин спорта" />
-            <Stat icon="streak" color={c.streak} value={fmt(stats.burnedKcal)} label="ккал сожжено" />
+            <Stat icon="steps" value={fmt(stats.steps)} label={`из ${fmt(profile.stepsGoal)} шагов`} />
+            <Stat icon="workout" value={`${stats.activeMinutes}`} label="мин спорта" />
+            <Stat icon="streak" value={fmt(stats.burnedKcal)} label="ккал сожжено" />
           </Card>
         </Pressable>
 
@@ -133,53 +134,15 @@ export default function HomeScreen() {
           </View>
         )}
       </ScrollView>
-
-      <View
-        style={{
-          position: 'absolute', left: 0, right: 0, bottom: 0, height: DOCK, backgroundColor: c.bg,
-          borderTopWidth: 1, borderTopColor: c.border, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 28,
-        }}
-      >
-        <View style={{ width: 52, marginLeft: 20 }} />
-        <MicButton t={t} recording={voice.state === 'listening'} onPress={() => void onMic()} />
-        <Pressable
-          accessibilityLabel="Ввести текстом"
-          hitSlop={10}
-          onPress={() => setOverlay('text')}
-          style={({ pressed }) => ({
-            width: 52, height: 52, borderRadius: 26, backgroundColor: pressed ? c.pressed : c.surface,
-            alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: c.border, marginRight: 20,
-          })}
-        >
-          <Icon name="keyboard" size={22} color={c.text} />
-        </Pressable>
-      </View>
-
-      <VoiceOverlay
-        mode={mode}
-        transcript={voice.state === 'listening' ? voice.transcript : heard}
-        error={voice.error}
-        onStop={voice.stop}
-        onCancel={() => {
-          voice.cancel();
-          voice.reset();
-          setOverlay(null);
-        }}
-        onSwitchToText={() => {
-          voice.reset();
-          setOverlay('text');
-        }}
-        onSubmitText={(text) => void handlePhrase(text)}
-      />
-      <ConfirmSheet draft={capture.draft} source={capture.source} onChange={capture.setDraft} onConfirm={capture.confirm} onCancel={capture.cancel} />
     </SafeAreaView>
   );
 }
 
-function Stat({ icon, color, value, label }: { icon: IconName; color: string; value: string; label: string }) {
+function Stat({ icon, value, label }: { icon: IconName; value: string; label: string }) {
+  const { c } = useTheme();
   return (
     <View style={{ flex: 1, alignItems: 'center', gap: 4 }}>
-      <Icon name={icon} size={20} color={color} />
+      <Icon name={icon} size={20} color={c.accentText} />
       <T bold display size="md">
         {value}
       </T>

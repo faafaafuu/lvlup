@@ -46,8 +46,8 @@ jobs:
         run: |
           set -o pipefail
           xcodebuild \
-            -workspace LevelUp.xcworkspace \
-            -scheme LevelUp \
+            -workspace Hrum.xcworkspace \
+            -scheme Hrum \
             -configuration Release \
             -sdk iphoneos \
             -destination 'generic/platform=iOS' \
@@ -60,31 +60,31 @@ jobs:
       - name: Ad-hoc подпись с правами (HealthKit)
         working-directory: apps/mobile/ios
         run: |
-          APP=build/Build/Products/Release-iphoneos/LevelUp.app
+          APP=build/Build/Products/Release-iphoneos/Hrum.app
           find "$APP/Frameworks" -maxdepth 1 \( -name '*.framework' -o -name '*.dylib' \) -exec codesign --force --sign - {} \; 2>/dev/null || true
-          codesign --force --sign - --entitlements LevelUp/LevelUp.entitlements "$APP"
+          codesign --force --sign - --entitlements Hrum/Hrum.entitlements "$APP"
           codesign -d --entitlements - "$APP"
 
       - name: Упаковка IPA
         working-directory: apps/mobile/ios
         run: |
           mkdir Payload
-          cp -R build/Build/Products/Release-iphoneos/LevelUp.app Payload/
-          zip -qr LevelUp.ipa Payload
-          ls -lh LevelUp.ipa
+          cp -R build/Build/Products/Release-iphoneos/Hrum.app Payload/
+          zip -qr Hrum.ipa Payload
+          ls -lh Hrum.ipa
 
       - uses: actions/upload-artifact@v4
         with:
-          name: LevelUp-ipa
-          path: apps/mobile/ios/LevelUp.ipa
+          name: Hrum-ipa
+          path: apps/mobile/ios/Hrum.ipa
 
-      # Постоянная ссылка для телефона: .../releases/download/latest/LevelUp.ipa
+      # Постоянная ссылка для телефона: .../releases/download/latest/Hrum.ipa
       - name: Релиз latest
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release delete latest --yes --cleanup-tag || true
-          gh release create latest apps/mobile/ios/LevelUp.ipa \
-            --title "Level Up — свежая сборка" \
+          gh release create latest apps/mobile/ios/Hrum.ipa \
+            --title "Хрум — свежая сборка" \
             --notes "Коммит ${GITHUB_SHA::7}. Открой ссылку на IPA в SideStore (+ → вставить URL) или скачай и открой файлом." \
             --latest

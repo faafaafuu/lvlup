@@ -67,8 +67,7 @@ export function ConfirmSheet({ draft, source, onChange, onConfirm, onCancel }: P
                     t={t}
                     name={item.name}
                     portion={describePortion(item)}
-                    grams={item.grams}
-                    unit={item.unit === 'ml' ? 'мл' : 'г'}
+                    amount={`${item.grams} ${item.unit === 'ml' ? 'мл' : 'г'}`}
                     kcal={item.nutrients.kcal}
                     approx={item.assumed}
                     onMinus={() => onChange(setItemGrams(draft, i, Math.max(5, item.grams - step)))}
@@ -89,8 +88,7 @@ export function ConfirmSheet({ draft, source, onChange, onConfirm, onCancel }: P
                   t={t}
                   name={a.name}
                   portion={[a.reps ? `${a.reps} повт.` : '', a.weightKg ? `снаряд ${a.weightKg} кг` : '', `−${a.kcal} ккал`].filter(Boolean).join(' · ')}
-                  grams={a.minutes}
-                  unit="мин"
+                  amount={`${a.minutes} мин`}
                   kcal={a.kcal}
                   approx={a.assumed}
                   onMinus={() => setMinutes(i, Math.max(1, a.minutes - (a.minutes > 20 ? 10 : 5)))}

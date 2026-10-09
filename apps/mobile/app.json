@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "Level Up",
+    "name": "Хрум",
     "slug": "levelup",
     "scheme": "levelup",
     "version": "0.1.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/icon/app-icon-default-1024.png",
     "userInterfaceStyle": "automatic",
     "ios": {
       "bundleIdentifier": "com.faraday13.levelup",
@@ -16,6 +16,11 @@
           "NSAllowsArbitraryLoads": true,
           "NSAllowsLocalNetworking": true
         }
+      },
+      "icon": {
+        "light": "./assets/icon/app-icon-default-1024.png",
+        "dark": "./assets/icon/app-icon-dark-1024.png",
+        "tinted": "./assets/icon/app-icon-tinted-1024.png"
       }
     },
     "android": {
@@ -26,15 +31,15 @@
       [
         "expo-speech-recognition",
         {
-          "microphonePermission": "Level Up слушает фразу о еде, чтобы записать её голосом.",
-          "speechRecognitionPermission": "Распознавание речи превращает фразу «тарелка плова» в запись еды."
+          "microphonePermission": "Хрум слушает фразу о еде или тренировке, чтобы записать её голосом.",
+          "speechRecognitionPermission": "Распознавание речи превращает «тарелка плова» в запись."
         }
       ],
       [
         "@kingstinct/react-native-healthkit",
         {
-          "NSHealthShareUsageDescription": "Level Up читает шаги, сон и вес, чтобы начислять опыт и засчитывать квесты.",
-          "NSHealthUpdateUsageDescription": "Level Up ничего не записывает в Здоровье.",
+          "NSHealthShareUsageDescription": "Хрум читает шаги, сон, вес и тренировки, чтобы засчитывать хорошие дни.",
+          "NSHealthUpdateUsageDescription": "Хрум ничего не записывает в Здоровье.",
           "background": false
         }
       ],
@@ -44,9 +49,8 @@
         "./plugins/withSiriShortcut",
         {
           "altNames": [
-            "Левел ап",
-            "Левелап",
-            "Левел"
+            "Хрума",
+            "Хрумм"
           ]
         }
       ]

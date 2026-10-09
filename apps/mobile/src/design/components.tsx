@@ -1,48 +1,44 @@
 /**
- * Level Up — base components (React Native / Expo, StyleSheet + react-native-svg).
- * Every component supports: default / pressed / disabled / loading.
+ * Level Up — базовые компоненты (React Native / Expo, StyleSheet + react-native-svg).
+ * Состояния у каждого: default / pressed / disabled / loading.
  */
 import React, { useEffect, useRef } from 'react';
-import {
-  ActivityIndicator, Animated, Easing, Modal as RNModal, Pressable, StyleSheet, Text, View, ViewStyle,
-} from 'react-native';
+import { ActivityIndicator, Animated, Easing, Pressable, StyleSheet, Text, View, ViewStyle } from 'react-native';
+import Svg, { Circle } from 'react-native-svg';
 import * as Haptics from 'expo-haptics';
 import { Icon } from './Icon';
 import { IconName } from './icons';
-import { fonts, radius, size, Theme } from './theme';
+import { fonts, size, Theme } from './theme';
 
 type Base = { t: Theme; disabled?: boolean; loading?: boolean; style?: ViewStyle };
 
-/* ───────────────────────── Button ───────────────────────── */
+/* ───────── Button: primary / secondary / destructive, pill 56 ───────── */
 export function Button({ t, title, onPress, variant = 'primary', disabled, loading, style }: Base & {
-  title: string; onPress?: () => void; variant?: 'primary' | 'secondary' | 'danger';
+  title: string; onPress?: () => void; variant?: 'primary' | 'secondary' | 'destructive';
 }) {
   const c = t.c;
-  const inactive = disabled || loading;
+  const bg = (pressed: boolean) => {
+    if (disabled) return c.btnDisabled;
+    if (variant === 'primary') return pressed ? c.btnPressed : c.btn;
+    if (variant === 'destructive') return '#CC2F35';
+    return pressed ? c.fillPressed : c.fill;
+  };
+  const fg = disabled ? c.onBtnDisabled : variant === 'primary' ? c.onBtn : variant === 'destructive' ? '#FFFFFF' : c.text;
   return (
     <Pressable
       onPress={onPress}
-      disabled={inactive}
+      onPressIn={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
+      disabled={disabled || loading}
       accessibilityRole="button"
       accessibilityState={{ disabled: !!disabled, busy: !!loading }}
-      style={({ pressed }) => [
-        s.btn,
-        variant === 'primary' && { backgroundColor: pressed ? c.primaryPressed : c.primary },
-        variant === 'danger' && { backgroundColor: c.danger },
-        variant === 'secondary' && { backgroundColor: pressed ? c.pressed : 'transparent', borderWidth: 1, borderColor: c.border, height: 48 },
-        disabled && { backgroundColor: variant === 'secondary' ? 'transparent' : c.surfaceAlt },
-        pressed && !inactive && { transform: [{ scale: 0.97 }] },
-        style,
-      ]}
+      style={({ pressed }) => [s.btn, { backgroundColor: bg(pressed) }, pressed && !disabled && { transform: [{ scale: 0.97 }] }, style]}
     >
-      {loading
-        ? <ActivityIndicator color={variant === 'secondary' ? c.text : c.onPrimary} />
-        : <Text style={[s.btnText, { color: disabled ? c.disabledText : variant === 'secondary' ? c.text : variant === 'danger' ? (t.name === 'dark' ? '#2A0A0A' : '#FFFFFF') : c.onPrimary }]}>{title}</Text>}
+      {loading ? <ActivityIndicator color={fg} /> : <Text style={[s.btnText, { color: fg }]}>{title}</Text>}
     </Pressable>
   );
 }
 
-/* ───────────────────────── MicButton ───────────────────────── */
+/* ───────── MicButton: 64, живёт справа от таб-бара ───────── */
 export function MicButton({ t, recording = false, onPress, disabled, loading }: Base & { recording?: boolean; onPress?: () => void }) {
   const c = t.c;
   const pulse = useRef(new Animated.Value(0)).current;
@@ -54,159 +50,133 @@ export function MicButton({ t, recording = false, onPress, disabled, loading }: 
   }, [recording, pulse]);
   const ring = (offset: number) => {
     const v = Animated.modulo(Animated.add(pulse, offset), 1);
-    return {
-      transform: [{ scale: v.interpolate({ inputRange: [0, 1], outputRange: [1, 1.6] }) }],
-      opacity: v.interpolate({ inputRange: [0, 1], outputRange: [0.24, 0] }),
-    };
+    return { transform: [{ scale: v.interpolate({ inputRange: [0, 1], outputRange: [1, 1.5] }) }], opacity: v.interpolate({ inputRange: [0, 1], outputRange: [0.2, 0] }) };
   };
   return (
     <View style={s.micWrap}>
-      {recording && <Animated.View style={[s.micRing, { backgroundColor: c.primary }, ring(0)]} />}
-      {recording && <Animated.View style={[s.micRing, { backgroundColor: c.primary }, ring(0.5)]} />}
+      {recording && <Animated.View style={[s.micRing, { backgroundColor: c.btn }, ring(0)]} />}
+      {recording && <Animated.View style={[s.micRing, { backgroundColor: c.btn }, ring(0.5)]} />}
       <Pressable
         onPressIn={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)}
         onPress={onPress}
         disabled={disabled || loading}
         accessibilityRole="button"
         accessibilityLabel={recording ? 'Остановить запись' : 'Записать голосом'}
-        style={({ pressed }) => [
-          s.mic,
-          { backgroundColor: disabled ? c.surfaceAlt : pressed || recording ? c.primaryPressed : c.primary },
-          !disabled && t.shadow.glow,
-          pressed && { transform: [{ scale: 0.94 }] },
-        ]}
+        style={({ pressed }) => [s.mic, { backgroundColor: disabled ? c.btnDisabled : pressed ? c.btnPressed : c.btn }, !disabled && t.shadow.glow, pressed && { transform: [{ scale: 0.94 }] }]}
       >
-        {loading ? <ActivityIndicator color={c.onPrimary} /> : <Icon name="mic" size={34} strokeWidth={2.4} color={disabled ? c.disabledText : c.onPrimary} />}
+        {loading ? <ActivityIndicator color={c.onBtn} /> : <Icon name="mic" size={28} strokeWidth={2.2} color={disabled ? c.onBtnDisabled : c.onBtn} />}
       </Pressable>
     </View>
   );
 }
 
-/* ───────────────────────── XPBar ───────────────────────── */
-export function XPBar({ t, value, max, loading }: Base & { value: number; max: number }) {
-  const c = t.c;
-  const w = useRef(new Animated.Value(value / max)).current;
-  useEffect(() => {
-    Animated.timing(w, { toValue: Math.min(1, value / max), duration: 600, easing: Easing.bezier(0.22, 1, 0.36, 1), useNativeDriver: false }).start();
-  }, [value, max, w]);
+/* ───────── Ring: прогресс-кольцо (уровень, квест, день недели) ───────── */
+export function Ring({ t, value, size: d = 44, stroke = 3.5, color, fill = 'none', children }: {
+  t: Theme; value: number; size?: number; stroke?: number; color?: string; fill?: string; children?: React.ReactNode;
+}) {
+  const r = (d - stroke) / 2;
+  const C = 2 * Math.PI * r;
+  const v = Math.max(0, Math.min(1, value));
   return (
-    <View style={s.row} accessibilityRole="progressbar" accessibilityLabel="Опыт" accessibilityValue={{ min: 0, max, now: value }}>
-      <View style={[s.xpTrack, { backgroundColor: c.track }]}>
-        {!loading && <Animated.View style={[s.xpFill, { backgroundColor: c.xp, width: w.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />}
-      </View>
-      <Text style={[s.caption, { color: c.textMuted }]}>{loading ? '…' : `${value} / ${max} XP`}</Text>
+    <View style={{ width: d, height: d, alignItems: 'center', justifyContent: 'center' }}>
+      <Svg width={d} height={d} style={StyleSheet.absoluteFill}>
+        <Circle cx={d / 2} cy={d / 2} r={r} fill={fill} stroke={t.c.track} strokeWidth={stroke} />
+        {v > 0 && <Circle cx={d / 2} cy={d / 2} r={r} fill="none" stroke={color ?? t.c.ring} strokeWidth={stroke} strokeLinecap="round" strokeDasharray={`${C * v} ${C}`} rotation={-90} origin={`${d / 2}, ${d / 2}`} />}
+      </Svg>
+      {children}
     </View>
   );
 }
 
-/** «+10 XP» floats up and fades (900 ms). Mount it with a new key each time XP is granted. */
+/** Уровень в шапке: кольцо XP 44 + цифра. Доливается за 600 мс. */
+export function LevelRing({ t, level, xp, xpMax, onPress }: { t: Theme; level: number; xp: number; xpMax: number; onPress?: () => void }) {
+  const anim = useRef(new Animated.Value(xp / xpMax)).current;
+  const [v, setV] = React.useState(xp / xpMax);
+  useEffect(() => {
+    const id = anim.addListener(({ value }) => setV(value));
+    Animated.timing(anim, { toValue: xp / xpMax, duration: 600, easing: Easing.bezier(0.22, 1, 0.36, 1), useNativeDriver: false }).start();
+    return () => anim.removeListener(id);
+  }, [xp, xpMax, anim]);
+  return (
+    <Pressable onPress={onPress} accessibilityLabel={`Уровень ${level}, ${xp} из ${xpMax} XP`} hitSlop={4}>
+      <Ring t={t} value={v}><Text style={[s.level, { color: t.c.text }]}>{level}</Text></Ring>
+    </Pressable>
+  );
+}
+
+/** «+10 XP» всплывает и тает (900 мс). Монтировать с новым key на каждое начисление. */
 export function XPFloat({ t, amount }: { t: Theme; amount: number }) {
   const v = useRef(new Animated.Value(0)).current;
   useEffect(() => { Animated.timing(v, { toValue: 1, duration: 900, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start(); }, [v]);
   return (
-    <Animated.Text style={[s.xpFloat, { color: t.c.xp, opacity: v.interpolate({ inputRange: [0, 0.5, 1], outputRange: [1, 1, 0] }), transform: [{ translateY: v.interpolate({ inputRange: [0, 1], outputRange: [0, -24] }) }] }]}>
+    <Animated.Text style={[s.xpFloat, { color: t.c.accentText, opacity: v.interpolate({ inputRange: [0, 0.5, 1], outputRange: [1, 1, 0] }), transform: [{ translateY: v.interpolate({ inputRange: [0, 1], outputRange: [0, -24] }) }] }]}>
       +{amount} XP
     </Animated.Text>
   );
 }
 
-/* ───────────────────────── LevelBadge ───────────────────────── */
-export function LevelBadge({ t, level, onPress }: { t: Theme; level: number; onPress?: () => void }) {
-  return (
-    <Pressable onPress={onPress} accessibilityLabel={`Уровень ${level}`} style={({ pressed }) => [s.badge, { backgroundColor: pressed ? t.c.primaryPressed : t.c.primary }, t.shadow.glow, pressed && { transform: [{ scale: 0.94 }] }]}>
-      <Text style={[s.badgeText, { color: t.c.onPrimary }]}>{level}</Text>
-    </Pressable>
-  );
-}
-
-/* ───────────────────────── TemplateChip ───────────────────────── */
+/* ───────── TemplateChip: 44, pill ───────── */
 export function TemplateChip({ t, name, kcal, onPress, disabled, loading }: Base & { name: string; kcal: number; onPress?: () => void }) {
   const c = t.c;
+  const muted = disabled ? c.onBtnDisabled : c.textMuted;
   return (
-    <Pressable
-      onPress={onPress}
-      disabled={disabled || loading}
-      accessibilityRole="button"
-      accessibilityLabel={`Записать: ${name}, ${kcal} ккал`}
-      style={({ pressed }) => [s.chip, { backgroundColor: pressed ? c.pressed : c.surface, borderColor: pressed ? c.primary : c.border }, pressed && { transform: [{ scale: 0.97 }] }]}
-    >
-      {loading && <ActivityIndicator size="small" color={c.text} />}
-      <Text style={[s.chipText, { color: disabled ? c.disabledText : c.text }]}>{name}</Text>
-      <Text style={[s.chipKcal, { color: c.textMuted }]}>· {kcal}</Text>
+    <Pressable onPress={onPress} disabled={disabled || loading} accessibilityRole="button" accessibilityLabel={`Записать: ${name}, ${kcal} ккал`}
+      style={({ pressed }) => [s.chip, { backgroundColor: pressed ? c.fillPressed : c.surface }, pressed && { transform: [{ scale: 0.97 }] }]}>
+      {loading ? <ActivityIndicator size="small" color={c.text} /> : <Icon name="plus" size={16} strokeWidth={2} color={muted} />}
+      <Text style={[s.chipText, { color: disabled ? c.onBtnDisabled : c.text }]}>{name}</Text>
+      <Text style={[s.chipText, { color: muted, fontWeight: '400' }]}>{kcal}</Text>
     </Pressable>
   );
 }
 
-/* ───────────────────────── QuestCard ───────────────────────── */
-export function QuestCard({ t, icon, title, current, target, unit = '', xp, manual, onPress, disabled, loading }: Base & {
-  icon: IconName; title: string; current: number; target: number; unit?: string; xp: number; manual?: boolean; onPress?: () => void;
+/* ───────── QuestRow: 62, кольцо 36 ───────── */
+export function QuestRow({ t, icon, title, progressText, value, xp, onPress, disabled, loading, first }: Base & {
+  icon: IconName; title: string; progressText: string; value: number; xp: number; onPress?: () => void; first?: boolean;
 }) {
   const c = t.c;
-  const done = current >= target;
-  const pct = Math.min(1, current / target);
-  if (loading) {
-    return (
-      <View style={[s.quest, { backgroundColor: c.surface, borderColor: c.border }]}>
-        <View style={[s.skel, { width: 32, height: 32, backgroundColor: c.track }]} />
-        <View style={{ flex: 1, gap: 6 }}><View style={[s.skel, { width: '60%', backgroundColor: c.track }]} /><View style={[s.skel, { height: 4, backgroundColor: c.track }]} /></View>
-      </View>
-    );
-  }
-  const fmt = (n: number) => n.toLocaleString('ru-RU');
-  const label = manual
-    ? `${title}: ${done ? 'выполнено' : 'не выполнено'}. Награда ${xp} XP`
-    : `${title}: ${fmt(current)} из ${fmt(target)}${unit}. Награда ${xp} XP`;
+  const done = value >= 1;
   return (
-    <Pressable onPress={onPress} disabled={disabled || !onPress} accessibilityLabel={label} accessibilityRole={manual ? 'checkbox' : undefined} accessibilityState={manual ? { checked: done } : undefined}
-      style={({ pressed }) => [s.quest, { backgroundColor: pressed ? c.pressed : c.surface, borderColor: done ? c.success : c.border, opacity: disabled ? 0.6 : 1 }, pressed && { transform: [{ scale: 0.98 }] }]}>
-      <View style={[s.questIcon, { backgroundColor: done ? c.successSoft : c.primarySoft }]}>
-        <Icon name={done ? 'check' : icon} size={18} color={done ? c.success : c.primary} />
+    <Pressable onPress={onPress} disabled={disabled || loading} accessibilityLabel={`${title}: ${progressText}. Награда ${xp} XP`}
+      style={({ pressed }) => [s.quest, !first && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: c.sep }, pressed && { backgroundColor: c.fillPressed }, disabled && { opacity: 0.6 }]}>
+      <Ring t={t} value={loading ? 0 : value} size={36} stroke={3} fill={done ? c.doneFill : 'none'}>
+        {!loading && <Icon name={done ? 'check' : icon} size={16} strokeWidth={2} color={c.text} />}
+      </Ring>
+      <View style={{ flex: 1, gap: 2 }}>
+        {loading ? <View style={[s.skel, { width: '60%', backgroundColor: c.track }]} /> : <Text style={[s.questTitle, { color: c.text }]}>{title}</Text>}
+        {loading ? <View style={[s.skel, { width: '35%', height: 8, backgroundColor: c.track }]} /> : <Text style={[s.caption, { color: c.textMuted }]}>{progressText}</Text>}
       </View>
-      <View style={{ flex: 1, gap: 6 }}>
-        <Text style={[s.questTitle, { color: c.text }]} numberOfLines={2}>{title}</Text>
-        {manual ? (
-          <Text style={[s.caption, { color: done ? c.success : c.textMuted }]}>{done ? 'Готово' : 'Нажми, когда сделаешь'}</Text>
-        ) : (
-          <View style={s.row}>
-            <View style={[s.questTrack, { backgroundColor: c.track, flex: 1 }]}>
-              <View style={{ width: `${pct * 100}%`, height: 4, backgroundColor: done ? c.success : c.primary }} />
-            </View>
-            <Text style={[s.caption, { color: c.textMuted }]}>{fmt(current)} / {fmt(target)}{unit}</Text>
-          </View>
-        )}
-      </View>
-      <Text style={[s.questXp, { color: c.xp }]}>+{xp} XP</Text>
+      {!loading && <Text style={[s.reward, { color: done ? c.textMuted : c.accentText }]}>+{xp} XP</Text>}
     </Pressable>
   );
 }
 
-/* ───────────────────────── ConfirmItem ───────────────────────── */
-export function ConfirmItem({ t, name, portion, grams, unit = 'г', kcal, approx, onMinus, onPlus, disabled, loading }: Base & {
-  name: string; portion: string; grams: number; unit?: string; kcal: number; approx?: boolean; onMinus?: () => void; onPlus?: () => void;
+/* ───────── ConfirmItem: строка в шите «Записываю» ───────── */
+export function ConfirmItem({ t, name, portion, amount, kcal, approx, onMinus, onPlus, disabled, loading, first }: Base & {
+  name: string; portion: string; amount: string; kcal: number; approx?: boolean; onMinus?: () => void; onPlus?: () => void; first?: boolean;
 }) {
   const c = t.c;
   if (loading) {
-    return <View style={[s.item, { backgroundColor: c.surfaceAlt, gap: 10 }]}><View style={[s.skel, { width: '70%', backgroundColor: c.track }]} /><View style={[s.skel, { width: '40%', backgroundColor: c.track }]} /></View>;
+    return <View style={[s.item, { gap: 10 }]}><View style={[s.skel, { width: '70%', backgroundColor: c.track }]} /><View style={[s.skel, { width: '40%', backgroundColor: c.track }]} /></View>;
   }
   const Step = ({ icon, onPress, label }: { icon: IconName; onPress?: () => void; label: string }) => (
-    <Pressable onPress={onPress} disabled={disabled} accessibilityLabel={label} hitSlop={4} style={s.stepHit}>
-      {({ pressed }) => <View style={[s.stepBox, { backgroundColor: pressed ? c.track : c.surface }]}><Icon name={icon} size={18} color={c.text} /></View>}
+    <Pressable onPress={onPress} disabled={disabled} accessibilityLabel={label} style={s.stepHit} hitSlop={4}>
+      <Icon name={icon} size={16} strokeWidth={2.2} color={c.text} />
     </Pressable>
   );
   return (
-    <View style={[s.item, { backgroundColor: c.surfaceAlt, opacity: disabled ? 0.45 : 1 }]}>
-      <View style={[s.rowBetween, { paddingRight: 8 }]}>
+    <View style={[s.item, !first && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: c.sep }, disabled && { opacity: 0.45 }]}>
+      <View style={s.rowBetween}>
         <View style={[s.row, { flex: 1 }]}>
           <Text style={[s.itemName, { color: c.text }]}>{name}</Text>
-          {approx && <View style={[s.approx, { backgroundColor: c.warningSoft }]} accessibilityLabel="количество угадано"><Text style={{ color: c.warning, fontWeight: '700', fontSize: 13 }}>≈ угадал</Text></View>}
+          {approx && <View style={[s.pill, { backgroundColor: c.fill }]} accessibilityLabel="количество на глаз"><Text style={{ color: c.textMuted, fontSize: 12, fontWeight: '600' }}>≈ на глаз</Text></View>}
         </View>
         <Text style={[s.itemName, { color: c.text, fontVariant: ['tabular-nums'] }]}>{kcal}</Text>
       </View>
       <View style={s.rowBetween}>
         <Text style={{ color: c.textMuted, fontSize: size.sm }}>{portion}</Text>
-        <View style={s.row}>
+        <View style={[s.stepper, { backgroundColor: c.fill }]}>
           <Step icon="minus" onPress={onMinus} label="Меньше" />
-          <Text style={[s.grams, { color: c.text }]}>{grams} {unit}</Text>
+          <Text style={[s.amount, { color: c.text }]}>{amount}</Text>
           <Step icon="plus" onPress={onPlus} label="Больше" />
         </View>
       </View>
@@ -214,97 +184,76 @@ export function ConfirmItem({ t, name, portion, grams, unit = 'г', kcal, approx
   );
 }
 
-/* ───────────────────────── Toast ───────────────────────── */
-export function Toast({ t, kind = 'saved', title, subtitle, reward, coins, onHide }: {
-  t: Theme; kind?: 'saved' | 'quest' | 'achievement' | 'offline'; title: string; subtitle?: string; reward?: number; coins?: number; onHide?: () => void;
+/* ───────── Toast: pill 60, выезжает из-под Dynamic Island ───────── */
+export function Toast({ t, kind = 'saved', title, subtitle, reward, onHide }: {
+  t: Theme; kind?: 'saved' | 'quest' | 'achievement' | 'offline'; title: string; subtitle?: string; reward?: string; onHide?: () => void;
 }) {
   const c = t.c;
-  const y = useRef(new Animated.Value(-80)).current;
+  const y = useRef(new Animated.Value(-90)).current;
   useEffect(() => {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     Animated.sequence([
       Animated.spring(y, { toValue: 0, damping: 18, stiffness: 240, useNativeDriver: true }),
       Animated.delay(kind === 'achievement' ? 3000 : 2500),
-      Animated.timing(y, { toValue: -80, duration: 200, easing: Easing.in(Easing.ease), useNativeDriver: true }),
+      Animated.timing(y, { toValue: -90, duration: 220, easing: Easing.in(Easing.ease), useNativeDriver: true }),
     ]).start(() => onHide?.());
   }, [kind, y, onHide]);
-  const xpOnToast = t.name === 'dark' ? '#0A75B5' : '#5CC8FF';
-  const coinOnToast = t.name === 'dark' ? '#8F6200' : '#FFC845';
+  const iconBg = kind === 'offline' ? c.fill : kind === 'achievement' ? '#F2B33A' : '#D4FF3A';
+  const iconName: IconName = kind === 'offline' ? 'cloudOff' : kind === 'achievement' ? 'streak' : kind === 'quest' ? 'quest' : 'check';
   return (
     <Animated.View accessibilityLiveRegion="polite" accessibilityRole="alert" style={[s.toast, { backgroundColor: c.toastBg, transform: [{ translateY: y }] }]}>
-      <View style={[s.toastIcon, { backgroundColor: kind === 'achievement' ? '#F5B83D' : kind === 'offline' ? c.textMuted : c.success }]}>
-        <Icon name={kind === 'achievement' ? 'medal' : kind === 'offline' ? 'cloudOff' : 'check'} size={18} strokeWidth={2.4} color={kind === 'achievement' ? '#3B2400' : c.onPrimary === '#FFFFFF' ? '#FFFFFF' : '#06281A'} />
-      </View>
+      <View style={[s.toastIcon, { backgroundColor: iconBg }]}><Icon name={iconName} size={20} strokeWidth={2.4} color={kind === 'offline' ? c.toastText : '#0C0C0E'} /></View>
       <View style={{ flex: 1 }}>
         <Text style={[s.toastTitle, { color: c.toastText }]}>{title}</Text>
-        {!!subtitle && <Text style={{ color: c.toastText, opacity: 0.75, fontSize: 13 }}>{subtitle}</Text>}
+        {!!subtitle && <Text style={{ color: c.toastText, opacity: 0.6, fontSize: 13 }}>{subtitle}</Text>}
       </View>
-      <View style={{ alignItems: 'flex-end' }}>
-        {!!reward && <Text style={[s.toastReward, { color: xpOnToast }]}>+{reward} XP</Text>}
-        {!!coins && <Text style={[s.toastReward, { color: coinOnToast }]}>+{coins} монет</Text>}
-      </View>
+      {!!reward && <Text style={[s.toastReward, { color: c.toastText }]}>{reward}</Text>}
     </Animated.View>
   );
 }
 
-/* ───────────────────────── RewardModal (level-up / chest) ───────────────────────── */
-export function RewardModal({ t, visible, title, subtitle, cta, onClose, children, loading }: {
-  t: Theme; visible: boolean; title: string; subtitle?: string; cta: string; onClose: () => void; children?: React.ReactNode; loading?: boolean;
-}) {
+/* ───────── Segmented: pill 36 ───────── */
+export function Segmented({ t, items, value, onChange }: { t: Theme; items: string[]; value: number; onChange: (i: number) => void }) {
   const c = t.c;
-  const pop = useRef(new Animated.Value(0)).current;
-  useEffect(() => {
-    if (visible) { pop.setValue(0); Animated.spring(pop, { toValue: 1, damping: 9, stiffness: 180, delay: 150, useNativeDriver: true }).start(); }
-  }, [visible, pop]);
   return (
-    <RNModal visible={visible} animationType="fade" onRequestClose={onClose} statusBarTranslucent>
-      {/* Tap anywhere closes: never blocks input > 1.5 s */}
-      <Pressable style={[s.modal, { backgroundColor: c.bg }]} onPress={onClose} accessibilityLabel="Закрыть">
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-          {children}
-          {loading ? <ActivityIndicator color={c.primary} /> : (
-            <Animated.Text style={[s.modalTitle, { color: c.primary, transform: [{ scale: pop.interpolate({ inputRange: [0, 1], outputRange: [0.6, 1] }) }] }]}>{title}</Animated.Text>
-          )}
-          {!!subtitle && <Text style={{ color: c.text, fontSize: 17 }}>{subtitle}</Text>}
-        </View>
-        <Button t={t} title={cta} onPress={onClose} />
-      </Pressable>
-    </RNModal>
+    <View accessibilityRole="tablist" style={[s.seg, { backgroundColor: c.fill }]}>
+      {items.map((x, i) => (
+        <Pressable key={x} onPress={() => { Haptics.selectionAsync(); onChange(i); }} accessibilityRole="tab" accessibilityState={{ selected: i === value }}
+          style={[s.segItem, i === value && [{ backgroundColor: c.segOn }, t.shadow.card]]}>
+          <Text style={{ fontSize: 13, fontWeight: '600', color: i === value ? c.text : c.textMuted }}>{x}</Text>
+        </Pressable>
+      ))}
+    </View>
   );
 }
 
 const s = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   rowBetween: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  caption: { fontSize: size.xs, fontWeight: '600', fontVariant: ['tabular-nums'] },
-  btn: { height: 56, borderRadius: 16, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 20 },
+  caption: { fontSize: 13, fontVariant: ['tabular-nums'] },
+  btn: { height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24 },
   btnText: { fontSize: 17, fontWeight: '600' },
-  micWrap: { width: 96, height: 96, alignItems: 'center', justifyContent: 'center' },
-  mic: { width: 76, height: 76, borderRadius: 38, alignItems: 'center', justifyContent: 'center' },
-  micRing: { position: 'absolute', width: 76, height: 76, borderRadius: 38 },
-  xpTrack: { flex: 1, height: 8, borderRadius: 4, overflow: 'hidden' },
-  xpFill: { height: 8, borderRadius: 4 },
-  xpFloat: { position: 'absolute', right: 16, fontFamily: fonts.display, fontSize: 18 },
-  badge: { width: 44, height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-  badgeText: { fontFamily: fonts.display, fontSize: 20 },
-  chip: { height: 44, borderRadius: radius.pill, borderWidth: 1, paddingHorizontal: 14, flexDirection: 'row', alignItems: 'center', gap: 6 },
-  chipText: { fontSize: size.sm, fontWeight: '600' },
-  chipKcal: { fontSize: size.sm },
-  quest: { minHeight: 60, borderRadius: 14, borderWidth: 1, paddingHorizontal: 12, paddingVertical: 10, flexDirection: 'row', alignItems: 'center', gap: 10 },
-  questIcon: { width: 32, height: 32, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
-  questTitle: { fontSize: 15, fontWeight: '600' },
-  questTrack: { height: 4, borderRadius: 2, overflow: 'hidden' },
-  questXp: { fontSize: size.xs, fontWeight: '700' },
+  micWrap: { width: 64, height: 64, alignItems: 'center', justifyContent: 'center' },
+  mic: { width: 64, height: 64, borderRadius: 32, alignItems: 'center', justifyContent: 'center' },
+  micRing: { position: 'absolute', width: 64, height: 64, borderRadius: 32 },
+  level: { fontFamily: fonts.displayBold, fontSize: 17 },
+  xpFloat: { position: 'absolute', fontFamily: fonts.display, fontSize: 18 },
+  chip: { height: 44, borderRadius: 22, paddingLeft: 12, paddingRight: 16, flexDirection: 'row', alignItems: 'center', gap: 6 },
+  chipText: { fontSize: 15, fontWeight: '500' },
+  quest: { height: 62, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center', gap: 12 },
+  questTitle: { fontSize: 15, fontWeight: '500' },
+  reward: { fontSize: 13, fontWeight: '600' },
   skel: { height: 10, borderRadius: 5 },
-  item: { borderRadius: 16, paddingTop: 10, paddingBottom: 6, paddingLeft: 14, paddingRight: 6, gap: 2 },
+  item: { paddingTop: 12, paddingBottom: 10, paddingLeft: 16, paddingRight: 10, gap: 4 },
   itemName: { fontSize: size.md, fontWeight: '600' },
-  approx: { height: 22, paddingHorizontal: 7, borderRadius: 6, justifyContent: 'center' },
+  pill: { height: 20, paddingHorizontal: 7, borderRadius: 10, justifyContent: 'center' },
+  stepper: { height: 36, borderRadius: 18, flexDirection: 'row', alignItems: 'center' },
   stepHit: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
-  stepBox: { width: 32, height: 32, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
-  grams: { minWidth: 52, textAlign: 'center', fontSize: 15, fontWeight: '600', fontVariant: ['tabular-nums'] },
-  toast: { position: 'absolute', top: 59, left: 16, right: 16, minHeight: 60, borderRadius: 18, paddingHorizontal: 16, paddingVertical: 10, flexDirection: 'row', alignItems: 'center', gap: 12, shadowColor: '#000', shadowOpacity: 0.3, shadowRadius: 14, shadowOffset: { width: 0, height: 8 }, elevation: 8 },
-  toastIcon: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
+  amount: { minWidth: 54, textAlign: 'center', fontSize: 14, fontWeight: '600', fontVariant: ['tabular-nums'] },
+  toast: { position: 'absolute', top: 56, left: 16, right: 16, height: 60, borderRadius: 30, paddingLeft: 10, paddingRight: 18, flexDirection: 'row', alignItems: 'center', gap: 12, shadowColor: '#000', shadowOpacity: 0.3, shadowRadius: 16, shadowOffset: { width: 0, height: 12 }, elevation: 10 },
+  toastIcon: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
   toastTitle: { fontSize: 15, fontWeight: '600' },
-  toastReward: { fontSize: 15, fontWeight: '700' },
-  modal: { flex: 1, paddingHorizontal: 16, paddingTop: 59, paddingBottom: 50 },
-  modalTitle: { fontFamily: fonts.display, fontSize: size.xxl, textAlign: 'center' },
+  toastReward: { fontFamily: fonts.display, fontSize: 17 },
+  seg: { height: 36, borderRadius: 18, padding: 2, flexDirection: 'row' },
+  segItem: { flex: 1, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
 });

@@ -40,7 +40,7 @@ export default function DiaryScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: c.bg }} edges={['top']}>
-      <ScrollView contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 40 }}>
+      <ScrollView contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 120 }}>
         <Row style={{ justifyContent: 'space-between' }}>
           <Pressable accessibilityLabel="Предыдущий день" hitSlop={12} onPress={() => setDay(addDays(day, -1))}>
             <Icon name="chevronLeft" color={c.text} />

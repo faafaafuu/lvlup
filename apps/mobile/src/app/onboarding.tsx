@@ -217,7 +217,7 @@ function Point({ icon, text }: { icon: IconName; text: string }) {
   const { c } = useTheme();
   return (
     <Row gap={14} style={{ alignItems: 'flex-start' }}>
-      <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: c.primarySoft, alignItems: 'center', justifyContent: 'center' }}>
+      <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: c.fill, alignItems: 'center', justifyContent: 'center' }}>
         <Icon name={icon} size={22} color={c.primary} />
       </View>
       <T style={{ flex: 1 }}>{text}</T>

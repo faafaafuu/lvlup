@@ -13,7 +13,7 @@ type Tone = 'text' | 'muted' | 'primary' | 'xp' | 'coin' | 'streak' | 'danger' |
 export function T({ size = 'md', tone = 'text', bold, display, style, ...rest }: TextProps & { size?: keyof typeof sizes; tone?: Tone; bold?: boolean; display?: boolean }) {
   const { c } = useTheme();
   const color = tone === 'muted' ? c.textMuted : tone === 'text' ? c.text : c[tone];
-  const font = display ? { fontFamily: bold ? fonts.display : fonts.displayMedium } : { fontWeight: bold ? ('700' as const) : ('400' as const) };
+  const font = display ? { fontFamily: bold ? fonts.displayBold : fonts.display } : { fontWeight: bold ? ('700' as const) : ('400' as const) };
   return <Text {...rest} style={[{ color, fontSize: sizes[size] }, font, style]} />;
 }
 
@@ -30,7 +30,7 @@ export function Btn({
   title, onPress, kind = 'primary', disabled, loading, style,
 }: { title: string; onPress: () => void; kind?: 'primary' | 'ghost' | 'danger'; disabled?: boolean; loading?: boolean; style?: ViewStyle }) {
   const t = useTheme();
-  const variant = kind === 'ghost' ? 'secondary' : kind;
+  const variant = kind === 'ghost' ? 'secondary' : kind === 'danger' ? 'destructive' : 'primary';
   return (
     <Button
       t={t}
