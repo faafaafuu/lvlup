@@ -53,19 +53,22 @@ export default function TodayScreen() {
           </Row>
         </Row>
 
-        <Card style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: 8, paddingLeft: 4 }}>
-          <Companion stage={lime.stage} mood={lime.mood} accessory={lime.accessory} size={124} animated />
-          <View style={{ flex: 1, gap: 6, paddingRight: 8 }}>
-            <T bold display>
-              Лайм · {lime.stageName}
-            </T>
-            <T size="sm">{lime.line}</T>
-            {lime.toNext != null && (
-              <T size="xs" tone="muted">
-                До следующей стадии — {lime.toNext} {plural(lime.toNext, 'хороший день', 'хороших дня', 'хороших дней')}
-              </T>
-            )}
+        <Card style={{ alignItems: 'center', gap: 6, paddingTop: 4 }}>
+          {/* У рисунка Лайма много воздуха сверху (место под листик и корону) — подрезаем, чтобы карточка не пустовала. */}
+          <View style={{ height: 120, overflow: 'hidden', alignItems: 'center' }}>
+            <View style={{ marginTop: -24 }}>
+              <Companion stage={lime.stage} mood={lime.mood} accessory={lime.accessory} size={150} animated />
+            </View>
           </View>
+          <T bold display size="lg" style={{ textAlign: 'center' }}>
+            Лайм · {lime.stageName}
+          </T>
+          <T style={{ textAlign: 'center' }}>{lime.line}</T>
+          {lime.toNext != null && (
+            <T size="xs" tone="muted" style={{ textAlign: 'center' }}>
+              До следующей стадии — {lime.toNext} {plural(lime.toNext, 'хороший день', 'хороших дня', 'хороших дней')}
+            </T>
+          )}
         </Card>
 
         <WishProgress bank={bank} />

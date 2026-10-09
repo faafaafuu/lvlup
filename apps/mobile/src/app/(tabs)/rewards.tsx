@@ -98,7 +98,7 @@ export default function PiggyScreen() {
                 <Btn
                   title={can ? 'Забрать награду' : `Ещё ${fmt(w.price - Math.max(0, bank.balance))} ₽`}
                   disabled={!can}
-                  style={{ flex: 1, height: 44 }}
+                  style={{ flex: 1 }}
                   onPress={() =>
                     Alert.alert(w.title, `Списать ${fmt(w.price)} ₽ из копилки и купить себе награду?`, [
                       { text: 'Не сейчас', style: 'cancel' },
@@ -118,7 +118,7 @@ export default function PiggyScreen() {
           <TextInput value={title} onChangeText={setTitle} placeholder="Например: новые кроссовки" placeholderTextColor={c.textMuted} style={textInputStyle(c)} />
           <Row>
             <TextInput value={price} onChangeText={setPrice} keyboardType="number-pad" placeholder="Цена, ₽" placeholderTextColor={c.textMuted} style={[textInputStyle(c), { flex: 1, minWidth: 0 }]} />
-            <Btn title="Добавить" onPress={addWish} disabled={!title.trim() || !(Number(price) > 0)} style={{ height: 48, paddingHorizontal: 16 }} />
+            <Btn title="Добавить" onPress={addWish} disabled={!title.trim() || !(Number(price) > 0)} style={{ paddingHorizontal: 20 }} />
           </Row>
         </Card>
 

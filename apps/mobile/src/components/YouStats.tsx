@@ -17,7 +17,7 @@ export function YouStats({ stats }: { stats: YouStat[] }) {
       {stats.map((s) => {
         const delta = s.value - s.previous;
         return (
-          <Card key={s.id} style={{ width: '48%', flexGrow: 1, gap: 6, padding: 14 }}>
+          <Card key={s.id} style={{ width: '47%', flexGrow: 1, gap: 6, padding: 16, minHeight: 156 }}>
             <Row gap={6}>
               <Icon name={ICON[s.id]} size={18} color={color[s.id]} />
               <T bold size="sm">

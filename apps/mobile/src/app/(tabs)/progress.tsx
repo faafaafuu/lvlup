@@ -72,7 +72,7 @@ export default function ProgressScreen() {
             <TextInput value={kg} onChangeText={setKg} keyboardType="decimal-pad" placeholder="Вес, кг" placeholderTextColor={c.textMuted} style={[textInputStyle(c), { flex: 1, minWidth: 0 }]} />
             <Btn
               title="Добавить"
-              style={{ height: 48, paddingHorizontal: 16 }}
+              style={{ paddingHorizontal: 20 }}
               disabled={!(Number(kg.replace(',', '.')) > 20)}
               onPress={() => {
                 addWeight(Number(kg.replace(',', '.')));
@@ -103,7 +103,7 @@ export default function ProgressScreen() {
                 <TextInput value={sleep} onChangeText={setSleep} keyboardType="decimal-pad" placeholder="Сон, ч" placeholderTextColor={c.textMuted} style={[textInputStyle(c), { flex: 1, minWidth: 0 }]} />
                 <Btn
                   title="OK"
-                  style={{ height: 48, paddingHorizontal: 16 }}
+                  style={{ paddingHorizontal: 20 }}
                   disabled={!steps && !sleep}
                   onPress={() => {
                     const patch: { steps?: number; sleepHours?: number } = {};

@@ -57,7 +57,9 @@ export function CaptureHost({ children }: { children: ReactNode }) {
       {children}
       <VoiceOverlay
         mode={mode}
-        transcript={voice.state === 'listening' ? voice.transcript : heard}
+        level={voice.level}
+        heardSomething={voice.heardSomething}
+        phrase={heard}
         error={voice.error}
         onStop={voice.stop}
         onCancel={() => {

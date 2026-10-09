@@ -29,8 +29,8 @@ export function DayCard({ day }: { day: DayResult }) {
         <Row key={ch.id} gap={12}>
           <View
             style={{
-              width: 32, height: 32, borderRadius: 10, alignItems: 'center', justifyContent: 'center',
-              backgroundColor: ch.done ? c.doneFill : c.surfaceAlt,
+              width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center',
+              backgroundColor: ch.done ? c.doneFill : c.fill,
             }}
           >
             <Icon name={ch.done ? 'check' : ICON[ch.id] ?? 'sparkle'} size={18} color={ch.done ? c.success : c.textMuted} />

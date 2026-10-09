@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { Pressable, StyleProp, Text, TextProps, TextStyle, View, ViewStyle } from 'react-native';
+import { Pressable, StyleProp, StyleSheet, Text, TextProps, TextStyle, View, ViewStyle } from 'react-native';
 import { Button } from '@/design/components';
 import { Icon } from '@/design/Icon';
 import { fonts, tokens, useTheme } from '@/theme';
@@ -20,7 +20,7 @@ export function T({ size = 'md', tone = 'text', bold, display, style, ...rest }:
 export function Card({ children, style }: { children: ReactNode; style?: StyleProp<ViewStyle> }) {
   const { c } = useTheme();
   return (
-    <View style={[{ backgroundColor: c.surface, borderRadius: tokens.radius.lg, padding: 16, borderWidth: 1, borderColor: c.border }, style]}>
+    <View style={[{ backgroundColor: c.surface, borderRadius: tokens.radius.lg, padding: 18, borderWidth: StyleSheet.hairlineWidth, borderColor: c.border }, style]}>
       {children}
     </View>
   );
@@ -79,7 +79,7 @@ export function Stepper({ value, onChange, step = 10, min = 0, suffix = '' }: { 
         onChange(Math.max(min, Math.round((value + delta) * 10) / 10));
       }}
       hitSlop={6}
-      style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: c.surfaceAlt, alignItems: 'center', justifyContent: 'center' }}
+      style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: c.fill, alignItems: 'center', justifyContent: 'center' }}
     >
       <Icon name={icon} size={18} color={c.text} />
     </Pressable>
@@ -116,7 +116,7 @@ export function Row({ children, style, gap = 8, accessibilityLabel }: { children
 
 export function SectionTitle({ children, right }: { children: ReactNode; right?: ReactNode }) {
   return (
-    <Row style={{ justifyContent: 'space-between', marginTop: 8, marginBottom: 8 }}>
+    <Row style={{ justifyContent: 'space-between', marginTop: 12, marginBottom: 2, minHeight: 28 }}>
       <T size="lg" bold display>
         {children}
       </T>
@@ -125,7 +125,7 @@ export function SectionTitle({ children, right }: { children: ReactNode; right?:
   );
 }
 
-export const textInputStyle = (c: { surfaceAlt: string; text: string; border: string }): TextStyle => ({
-  backgroundColor: c.surfaceAlt, color: c.text, borderRadius: tokens.radius.md, borderWidth: 1, borderColor: c.border,
-  paddingHorizontal: 14, minHeight: 48, fontSize: sizes.md,
+export const textInputStyle = (c: { fill: string; text: string; border: string }): TextStyle => ({
+  backgroundColor: c.fill, color: c.text, borderRadius: 28, borderWidth: 0, borderColor: c.border,
+  paddingHorizontal: 16, minHeight: 56, fontSize: sizes.md,
 });

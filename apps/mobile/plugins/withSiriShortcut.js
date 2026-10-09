@@ -1,5 +1,5 @@
 // Встроенная команда Siri (App Intent + App Shortcuts) без ручной настройки «Команд»:
-// «Привет, Siri, запиши в <название>» → Siri спрашивает «Что съел или как тренировался?» →
+// «Привет, Siri, добавь в Хрум» / «Хрум, запиши» → Siri спрашивает «Что съел или как тренировался?» →
 // приложение открывается на levelup://log?text=…, которое пишет фразу сразу.
 // Фразы в коде на русском, поэтому язык разработки проекта ставится «ru».
 const fs = require('fs');
@@ -45,10 +45,12 @@ struct LevelUpShortcuts: AppShortcutsProvider {
     AppShortcut(
       intent: LogEntryIntent(),
       phrases: [
-        "Запиши в \\(.applicationName)",
-        "Записать в \\(.applicationName)",
         "Добавь в \\(.applicationName)",
-        "\\(.applicationName) запиши"
+        "\\(.applicationName), запиши",
+        "\\(.applicationName), добавь",
+        "Отметь в \\(.applicationName)",
+        "Записать в \\(.applicationName)",
+        "Запиши в \\(.applicationName)"
       ],
       shortTitle: "Записать",
       systemImageName: "mic.fill"
