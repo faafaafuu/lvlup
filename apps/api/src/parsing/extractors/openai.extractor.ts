@@ -49,6 +49,9 @@ export class OpenAiExtractor implements FoodExtractor {
           { role: 'user', content: text },
         ],
         response_format: strict ? { type: 'json_schema', json_schema: { name: 'meal', strict: true, schema } } : { type: 'json_object' },
+        // «Думающие» модели (DeepSeek V4 и др.) иначе тратят секунды и токены на рассуждения,
+        // а для извлечения сущностей они не нужны. OpenRouter понимает этот параметр, остальные игнорируют.
+        ...(this.baseUrl.includes('openrouter') ? { reasoning: { enabled: false } } : {}),
       }),
     });
     return { ok: res.ok, status: res.status, body: await res.text() };

@@ -78,6 +78,7 @@ export default function RootLayout() {
             options={{ presentation: 'modal', headerShown: true, title: 'Настройки', headerStyle: { backgroundColor: c.bg }, headerTintColor: c.text }}
           />
         </Stack.Protected>
+        <Stack.Screen name="connect" options={{ presentation: 'transparentModal', animation: 'fade' }} />
         <Stack.Protected guard={!onboarded}>
           <Stack.Screen name="onboarding" />
         </Stack.Protected>

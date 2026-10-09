@@ -8,7 +8,7 @@ export interface PhraseResult {
   serverFailed: boolean;
 }
 
-const SERVER_TIMEOUT_MS = 6000;
+const SERVER_TIMEOUT_MS = 10000;
 
 /**
  * Сначала сервер (LLM понимает разговорную речь лучше), при любой ошибке — офлайн-разбор
