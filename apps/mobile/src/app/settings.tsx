@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Alert, ScrollView, Switch, TextInput, View } from 'react-native';
-import { ActivityLevel, minHealthyWeight } from '@levelup/domain';
+import { ActivityLevel, dateKey, minHealthyWeight, rateOn } from '@levelup/domain';
 import { Btn, Card, Chip, Row, SectionTitle, Stepper, T, textInputStyle } from '@/components/ui';
 import { requestHealthAccess } from '@/lib/health';
 import { checkServer } from '@/lib/parse';
@@ -45,6 +45,15 @@ export default function SettingsScreen() {
             <Chip key={id} label={label} active={p.activity === id} onPress={() => s.updateProfile({ activity: id })} />
           ))}
         </View>
+      </Card>
+
+      <SectionTitle>Копилка</SectionTitle>
+      <Card style={{ gap: 8 }}>
+        <Row style={{ justifyContent: 'space-between' }}>
+          <T style={{ flex: 1 }}>За идеальный день</T>
+          <Stepper value={rateOn(s.motivation.rates, dateKey(new Date()))} step={50} min={0} suffix=" ₽" onChange={(v) => s.setRate(v)} />
+        </Row>
+        <T size="xs" tone="muted">Новая сумма действует с сегодняшнего дня, прошлые дни не пересчитываются.</T>
       </Card>
 
       <SectionTitle>Мои порции</SectionTitle>

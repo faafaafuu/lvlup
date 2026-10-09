@@ -1,6 +1,6 @@
 import { Modal, Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { MealDraft, XP, answerQuestion, currentWeight, describePortion, removeItem, setActivityMinutes, setItemGrams } from '@levelup/domain';
+import { MealDraft, answerQuestion, currentWeight, describePortion, removeItem, setActivityMinutes, setItemGrams } from '@levelup/domain';
 import { useStore } from '@/state/store';
 import { ConfirmItem } from '@/design/components';
 import { Icon } from '@/design/Icon';
@@ -29,7 +29,6 @@ export function ConfirmSheet({ draft, source, onChange, onConfirm, onCancel }: P
   const setMinutes = (i: number, m: number) =>
     onChange({ ...draft, activities: activities.map((a, j) => (j === i ? setActivityMinutes(a, m, kg) : a)) });
   const removeActivity = (i: number) => onChange({ ...draft, activities: activities.filter((_, j) => j !== i) });
-  const xp = (draft.items.length ? XP.meal : 0) + Math.min(activities.length, 2) * XP.workout;
   const nothing = draft.items.length === 0 && activities.length === 0;
   const totals = draft.totals;
 
@@ -124,7 +123,7 @@ export function ConfirmSheet({ draft, source, onChange, onConfirm, onCancel }: P
           )}
         </ScrollView>
         <View style={{ paddingHorizontal: 20, gap: 8 }}>
-          <Btn title={`Записать · +${xp} XP`} onPress={onConfirm} disabled={nothing} />
+          <Btn title="Записать" onPress={onConfirm} disabled={nothing} />
           <Btn title="Отмена" kind="ghost" onPress={onCancel} />
         </View>
       </View>

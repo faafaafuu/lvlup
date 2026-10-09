@@ -7,7 +7,7 @@ import { Btn, Card, Row, SectionTitle, T } from '@/components/ui';
 import { Icon } from '@/design/Icon';
 import { fmt, humanDate, timeOf } from '@/lib/format';
 import { useStore } from '@/state/store';
-import { useGame } from '@/state/useGame';
+import { useToday } from '@/state/useToday';
 import { useMealCapture } from '@/state/useMealCapture';
 import { useTheme } from '@/theme';
 
@@ -25,7 +25,7 @@ export default function DiaryScreen() {
   // новый массив на каждый рендер → бесконечный перерендер и вылет в дни без тренировок.
   const sessions = useStore((s) => s.activity[day]?.sessions) ?? NO_SESSIONS;
   const removePending = useStore((s) => s.removePending);
-  const game = useGame();
+  const game = useToday();
   const capture = useMealCapture();
   const [busy, setBusy] = useState<string | null>(null);
 

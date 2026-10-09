@@ -3,10 +3,9 @@ import { Pressable, ScrollView, View } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MealTemplate, sumNutrients } from '@levelup/domain';
-import { Avatar } from '@/components/Avatar';
 import { ConfirmSheet } from '@/components/ConfirmSheet';
-import { HeroHeader } from '@/components/HeroHeader';
-import { QuestList } from '@/components/QuestList';
+import { DayCard } from '@/components/DayCard';
+import { WishProgress } from '@/components/WishProgress';
 import { Bar, Card, Row, T } from '@/components/ui';
 import { OverlayMode, VoiceOverlay } from '@/components/VoiceOverlay';
 import { MicButton, TemplateChip } from '@/design/components';
@@ -15,7 +14,7 @@ import { IconName } from '@/design/icons';
 import { fmt } from '@/lib/format';
 import { useVoice, voiceSupported } from '@/lib/voice';
 import { useStore } from '@/state/store';
-import { useGame } from '@/state/useGame';
+import { useToday } from '@/state/useToday';
 import { useMealCapture } from '@/state/useMealCapture';
 import { useTheme } from '@/theme';
 
@@ -25,10 +24,8 @@ const DOCK = 104;
 export default function HomeScreen() {
   const t = useTheme();
   const { c } = t;
-  const game = useGame();
+  const game = useToday();
   const profile = useStore((s) => s.profile);
-  const look = useStore((s) => s.look);
-  const progress = useStore((s) => s.progress);
   const pending = useStore((s) => s.pending.length);
   const capture = useMealCapture();
   const [overlay, setOverlay] = useState<OverlayMode | null>(null);
@@ -61,42 +58,42 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: c.bg }} edges={['top']}>
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: DOCK + 24, gap: 14 }}>
-        <HeroHeader level={game.level} coins={progress.coins} streak={game.streak} doubleXp={game.doubleXp} />
+        <Row style={{ justifyContent: 'space-between' }}>
+          <T size="xl" bold display>
+            Сегодня
+          </T>
+          <Pressable accessibilityLabel="Настройки" hitSlop={12} onPress={() => router.push('/settings')}>
+            <Icon name="gear" size={24} color={c.textMuted} />
+          </Pressable>
+        </Row>
 
-        <Card style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12 }}>
-          <Avatar
-            sex={profile.sex}
-            look={look}
-            stage={game.stage}
-            outfitId={progress.equipped.outfit}
-            accessoryId={progress.equipped.accessory}
-            size={92}
-            animated
-            onPress={() => router.push('/rewards')}
-          />
-          <View style={{ flex: 1, gap: 8 }}>
-            <T size="xs" tone="muted">
-              Сегодня
-            </T>
+        <WishProgress bank={game.bank} />
+        <DayCard day={game.bank.today} />
+
+        <Card style={{ gap: 8 }}>
+          <Row style={{ justifyContent: 'space-between', alignItems: 'flex-end' }}>
             <View>
-              <T bold display size="xl">
-                {fmt(stats.kcal)}
+              <T size="xs" tone="muted">
+                Съедено
               </T>
-              <T size="sm" tone="muted">
-                из {fmt(game.norm)} ккал
+              <T bold display size="xl">
+                {fmt(stats.kcal)}{' '}
+                <T size="sm" tone="muted">
+                  из {fmt(game.norm)} ккал
+                </T>
               </T>
             </View>
-            {/* Превышение — нейтральный цвет, без «красной ошибки». */}
-            <Bar value={stats.kcal} max={game.norm} color={left >= 0 ? c.primary : c.over} height={8} />
             <T size="xs" tone="muted">
-              {stats.kcal === 0 ? 'Пока пусто — скажи, что ел' : left >= 0 ? `Осталось ${fmt(left)} ккал` : 'Чуть выше плана — это нормально'}
+              {stats.kcal === 0 ? 'скажи, что ел' : left >= 0 ? `осталось ${fmt(left)}` : 'чуть выше плана'}
             </T>
-            <Row gap={10} style={{ flexWrap: 'wrap' }}>
-              <Macro label="Б" value={stats.protein} color={c.protein} />
-              <Macro label="Ж" value={stats.fat} color={c.fat} />
-              <Macro label="У" value={stats.carbs} color={c.carbs} />
-            </Row>
-          </View>
+          </Row>
+          {/* Превышение — нейтральный цвет, без «красной ошибки». */}
+          <Bar value={stats.kcal} max={game.norm} color={left >= 0 ? c.primary : c.over} height={8} />
+          <Row gap={12} style={{ flexWrap: 'wrap' }}>
+            <Macro label="Б" value={stats.protein} color={c.protein} />
+            <Macro label="Ж" value={stats.fat} color={c.fat} />
+            <Macro label="У" value={stats.carbs} color={c.carbs} />
+          </Row>
         </Card>
 
         <Pressable onPress={() => router.push('/progress')} accessibilityLabel="Активность за сегодня">
@@ -135,13 +132,6 @@ export default function HomeScreen() {
             </ScrollView>
           </View>
         )}
-
-        <View style={{ gap: 8 }}>
-          <T bold display>
-            Квесты дня
-          </T>
-          <QuestList quests={game.quests} />
-        </View>
       </ScrollView>
 
       <View

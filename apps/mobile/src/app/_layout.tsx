@@ -7,8 +7,7 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ACTIVITY_BY_ID, activityKcal, addDays, currentWeight, dateKey } from '@levelup/domain';
-import { LevelUpModal } from '@/components/LevelUpModal';
-import { RewardToast } from '@/components/RewardToast';
+import { AppToast } from '@/components/AppToast';
 import { readHealthDay, readHealthWorkouts, readLatestWeight } from '@/lib/health';
 import { syncReminders } from '@/lib/notifications';
 import { useStore } from '@/state/store';
@@ -46,7 +45,6 @@ async function refresh() {
       if (!known || known.kg !== w.kg) useStore.getState().addWeight(w.kg, key);
     }
   }
-  useStore.getState().settle();
 }
 
 export default function RootLayout() {
@@ -84,8 +82,7 @@ export default function RootLayout() {
           <Stack.Screen name="onboarding" />
         </Stack.Protected>
       </Stack>
-      <RewardToast />
-      <LevelUpModal />
+      <AppToast />
     </SafeAreaProvider>
   );
 }

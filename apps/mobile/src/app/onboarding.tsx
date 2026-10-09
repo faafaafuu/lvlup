@@ -2,13 +2,12 @@ import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ActivityLevel, Profile, Sex, UserPortions, dailyCalorieTarget, minHealthyWeight } from '@levelup/domain';
-import { Avatar, HAIR_COLORS, SKIN_TONES } from '@/components/Avatar';
 import { Btn, Card, Chip, Row, Stepper, T, textInputStyle } from '@/components/ui';
 import { Icon } from '@/design/Icon';
 import { IconName } from '@/design/icons';
 import { requestHealthAccess } from '@/lib/health';
 import { syncReminders } from '@/lib/notifications';
-import { AvatarLook, useStore } from '@/state/store';
+import { useStore } from '@/state/store';
 import { useTheme } from '@/theme';
 
 const ACTIVITY: Array<[ActivityLevel, string]> = [
@@ -26,10 +25,11 @@ export default function Onboarding() {
   const updateSettings = useStore((s) => s.updateSettings);
   const [step, setStep] = useState(0);
   const [sex, setSex] = useState<Sex>('male');
-  const [look, setLook] = useState<AvatarLook>({ skin: SKIN_TONES[1]!, hair: 0, hairColor: HAIR_COLORS[1]! });
   const [f, setF] = useState({ height: '', weight: '', target: '', age: '' });
   const [activity, setActivity] = useState<ActivityLevel>('light');
   const [portions, setPortions] = useState({ plate: 300, cup: 250, sandwich: 80, tbsp: 15 });
+  const [wish, setWish] = useState({ title: '', price: '' });
+  const [rate, setRate] = useState(100);
   const [health, setHealth] = useState<boolean | null>(null);
   const [notif, setNotif] = useState<boolean | null>(null);
 
@@ -41,6 +41,7 @@ export default function Onboarding() {
   const paramsValid = heightCm >= 120 && heightCm <= 230 && weightKg >= 35 && weightKg <= 300 && age >= 14 && age <= 100 && targetKg > 0;
   const minTarget = heightCm >= 120 ? minHealthyWeight(heightCm) : 0;
   const targetTooLow = targetKg > 0 && heightCm >= 120 && targetKg < minTarget;
+  const wishPrice = Number(wish.price.replace(/\s/g, ''));
 
   const profile: Profile | null = paramsValid
     ? { sex, age, heightCm, startWeightKg: weightKg, targetWeightKg: targetKg, activity, stepsGoal: 8000 }
@@ -53,7 +54,7 @@ export default function Onboarding() {
       foods: { sandwich: portions.sandwich, sandwich_sausage: portions.sandwich, sandwich_cheese: portions.sandwich },
     };
     updateSettings({ health: health === true, reminders: notif !== false });
-    complete(profile, look, userPortions);
+    complete(profile, userPortions, wish.title.trim() && wishPrice > 0 ? { title: wish.title.trim(), price: wishPrice } : null, rate);
   };
 
   const field = (key: keyof typeof f, placeholder: string) => (
@@ -63,9 +64,11 @@ export default function Onboarding() {
       placeholder={placeholder}
       placeholderTextColor={c.textMuted}
       keyboardType="decimal-pad"
-      style={[textInputStyle(c), { flex: 1 }]}
+      style={[textInputStyle(c), { flex: 1, minWidth: 0 }]}
     />
   );
+
+  const daysTo = wishPrice > 0 && rate > 0 ? Math.ceil(wishPrice / rate) : null;
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: c.bg }}>
@@ -77,54 +80,26 @@ export default function Onboarding() {
         </Row>
         <ScrollView contentContainerStyle={{ padding: 20, gap: 16, flexGrow: 1 }} keyboardShouldPersistTaps="handled">
           {step === 0 && (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', gap: 16 }}>
-              <Avatar sex={sex} look={look} stage={0} outfitId="outfit_violet" pose="wave" size={160} animated />
-              <T size="xxl" bold display style={{ textAlign: 'center' }}>
-                Level Up
+            <View style={{ flex: 1, justifyContent: 'center', gap: 20 }}>
+              <T size="xxl" bold display>
+                Хорошие дни{'\n'}= реальные награды
               </T>
-              <T size="lg" tone="muted" style={{ textAlign: 'center' }}>
-                Прокачай себя. Записывай еду голосом за 10 секунд — герой растёт вместе с тобой.
-              </T>
+              <Point icon="mic" text="Говоришь, что съел или как тренировался, — запись за 10 секунд." />
+              <Point icon="check" text="Каждый день три простых условия: записать еду, уложиться в план, подвигаться." />
+              <Point icon="coin" text="Хорошие дни наполняют копилку на то, что ты правда хочешь: кроссовки, массаж, поездку." />
+              <Point icon="workout" text="Видишь, как растут твои настоящие показатели: дисциплина, сила, выносливость, форма." />
             </View>
           )}
 
           {step === 1 && (
             <>
               <T size="xl" bold display>
-                Твой герой
+                О тебе
               </T>
-              <View style={{ alignItems: 'center' }}>
-                <Avatar sex={sex} look={look} stage={0} outfitId="outfit_violet" size={140} />
-              </View>
               <Row>
                 <Chip label="Мужчина" active={sex === 'male'} onPress={() => setSex('male')} />
                 <Chip label="Женщина" active={sex === 'female'} onPress={() => setSex('female')} />
               </Row>
-              <T bold>Тон кожи</T>
-              <Row>
-                {SKIN_TONES.map((t) => (
-                  <Swatch key={t} color={t} active={look.skin === t} onPress={() => setLook({ ...look, skin: t })} />
-                ))}
-              </Row>
-              <T bold>Причёска</T>
-              <Row>
-                {([0, 1, 2] as const).map((h) => (
-                  <Chip key={h} label={`Вариант ${h + 1}`} active={look.hair === h} onPress={() => setLook({ ...look, hair: h })} />
-                ))}
-              </Row>
-              <Row>
-                {HAIR_COLORS.map((t) => (
-                  <Swatch key={t} color={t} active={look.hairColor === t} onPress={() => setLook({ ...look, hairColor: t })} />
-                ))}
-              </Row>
-            </>
-          )}
-
-          {step === 2 && (
-            <>
-              <T size="xl" bold display>
-                Параметры
-              </T>
               <Row>
                 {field('height', 'Рост, см')}
                 {field('age', 'Возраст')}
@@ -141,15 +116,13 @@ export default function Onboarding() {
               </View>
               {targetTooLow && (
                 <Card style={{ borderColor: c.warning }}>
-                  <T>
-                    Цель ниже здорового веса для твоего роста. Минимум — {minTarget} кг: так герой будет сильным, а не истощённым.
-                  </T>
+                  <T>Цель ниже здорового веса для твоего роста. Минимум — {minTarget} кг.</T>
                 </Card>
               )}
               {profile && !targetTooLow && (
                 <Card>
-                  <T tone="muted">Твоя дневная норма</T>
-                  <T size="xl" bold>
+                  <T tone="muted">Твой дневной план</T>
+                  <T size="xl" bold display>
                     {dailyCalorieTarget(profile)} ккал
                   </T>
                 </Card>
@@ -157,16 +130,39 @@ export default function Onboarding() {
             </>
           )}
 
+          {step === 2 && (
+            <>
+              <T size="xl" bold display>
+                Твоя посуда
+              </T>
+              <T tone="muted">Один раз — и «тарелка плова» будет считаться по твоей тарелке, а не по средней.</T>
+              <PortionRow icon="plate" label="Тарелка" value={portions.plate} unit=" г" step={25} onChange={(v) => setPortions({ ...portions, plate: v })} />
+              <PortionRow icon="mug" label="Кружка" value={portions.cup} unit=" мл" step={25} onChange={(v) => setPortions({ ...portions, cup: v })} />
+              <PortionRow icon="sandwich" label="Бутерброд" value={portions.sandwich} unit=" г" step={10} onChange={(v) => setPortions({ ...portions, sandwich: v })} />
+              <PortionRow icon="spoon" label="Ложка" value={portions.tbsp} unit=" г" step={5} onChange={(v) => setPortions({ ...portions, tbsp: v })} />
+            </>
+          )}
+
           {step === 3 && (
             <>
               <T size="xl" bold display>
-                Ленивый режим
+                На что копишь?
               </T>
-              <T tone="muted">Один раз скажи, какая у тебя посуда — дальше «тарелка плова» будет считаться по твоей тарелке.</T>
-              <PortionRow icon="plate" label="Моя тарелка" value={portions.plate} unit=" г" step={25} onChange={(v) => setPortions({ ...portions, plate: v })} />
-              <PortionRow icon="mug" label="Моя кружка" value={portions.cup} unit=" мл" step={25} onChange={(v) => setPortions({ ...portions, cup: v })} />
-              <PortionRow icon="sandwich" label="Мой бутерброд" value={portions.sandwich} unit=" г" step={10} onChange={(v) => setPortions({ ...portions, sandwich: v })} />
-              <PortionRow icon="spoon" label="Моя ложка" value={portions.tbsp} unit=" г" step={5} onChange={(v) => setPortions({ ...portions, tbsp: v })} />
+              <T tone="muted">Реальная вещь, которую купишь себе, когда заработаешь хорошими днями. Можно пропустить и добавить позже.</T>
+              <TextInput value={wish.title} onChangeText={(title) => setWish({ ...wish, title })} placeholder="Например: новые кроссовки" placeholderTextColor={c.textMuted} style={textInputStyle(c)} />
+              <TextInput value={wish.price} onChangeText={(price) => setWish({ ...wish, price })} keyboardType="number-pad" placeholder="Сколько стоит, ₽" placeholderTextColor={c.textMuted} style={textInputStyle(c)} />
+              <Card style={{ gap: 10 }}>
+                <Row style={{ justifyContent: 'space-between' }}>
+                  <T bold style={{ flex: 1 }}>
+                    За идеальный день
+                  </T>
+                  <Stepper value={rate} step={50} min={50} suffix=" ₽" onChange={setRate} />
+                </Row>
+                <T size="sm" tone="muted">
+                  Столько ты разрешаешь себе потратить на награду за день, когда выполнены все три условия.
+                  {daysTo ? ` Такая награда — примерно ${daysTo} хороших дней.` : ''}
+                </T>
+              </Card>
             </>
           )}
 
@@ -176,8 +172,11 @@ export default function Onboarding() {
                 Разрешения
               </T>
               <Card style={{ gap: 8 }}>
-                <Row gap={10}><PermIcon name="health" /><T bold>Здоровье</T></Row>
-                <T tone="muted">Шаги, сон и вес подтянутся сами — за них начисляется опыт.</T>
+                <Row gap={10}>
+                  <Icon name="health" size={22} color={c.primary} />
+                  <T bold>Здоровье</T>
+                </Row>
+                <T tone="muted">Шаги, сон, вес и тренировки с часов подтянутся сами.</T>
                 <Btn
                   title={health === true ? 'Подключено' : health === false ? 'Недоступно — введу вручную' : 'Разрешить'}
                   kind={health === null ? 'primary' : 'ghost'}
@@ -186,8 +185,11 @@ export default function Onboarding() {
                 />
               </Card>
               <Card style={{ gap: 8 }}>
-                <Row gap={10}><PermIcon name="bell" /><T bold>Напоминания</T></Row>
-                <T tone="muted">Два мягких напоминания в день: про обед и про квесты.</T>
+                <Row gap={10}>
+                  <Icon name="bell" size={22} color={c.primary} />
+                  <T bold>Напоминания</T>
+                </Row>
+                <T tone="muted">Два в день: про обед и вечерний итог.</T>
                 <Btn
                   title={notif === true ? 'Включены' : notif === false ? 'Не разрешено' : 'Разрешить'}
                   kind={notif === null ? 'primary' : 'ghost'}
@@ -195,18 +197,14 @@ export default function Onboarding() {
                   onPress={async () => setNotif(await syncReminders(true))}
                 />
               </Card>
-              <Card style={{ gap: 8 }}>
-                <Row gap={10}><PermIcon name="mic" /><T bold>Микрофон</T></Row>
-                <T tone="muted">iPhone спросит при первом нажатии на микрофон.</T>
-              </Card>
             </>
           )}
         </ScrollView>
         <View style={{ padding: 20, gap: 8 }}>
           {step < STEPS - 1 ? (
-            <Btn title="Далее" disabled={step === 2 && (!paramsValid || targetTooLow)} onPress={() => setStep(step + 1)} />
+            <Btn title="Далее" disabled={step === 1 && (!paramsValid || targetTooLow)} onPress={() => setStep(step + 1)} />
           ) : (
-            <Btn title="В путь!" onPress={finish} disabled={!profile} />
+            <Btn title="Начать" onPress={finish} disabled={!profile} />
           )}
           {step > 0 && <Btn title="Назад" kind="ghost" onPress={() => setStep(step - 1)} />}
         </View>
@@ -215,28 +213,25 @@ export default function Onboarding() {
   );
 }
 
-function PermIcon({ name }: { name: IconName }) {
-  const { c } = useTheme();
-  return <Icon name={name} size={22} color={c.primary} />;
-}
-
-function Swatch({ color, active, onPress }: { color: string; active: boolean; onPress: () => void }) {
+function Point({ icon, text }: { icon: IconName; text: string }) {
   const { c } = useTheme();
   return (
-    <Chip
-      label=" "
-      onPress={onPress}
-      style={{ width: 40, height: 40, padding: 0, backgroundColor: color, borderColor: active ? c.primary : c.border, borderWidth: active ? 3 : 1 }}
-    />
+    <Row gap={14} style={{ alignItems: 'flex-start' }}>
+      <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: c.primarySoft, alignItems: 'center', justifyContent: 'center' }}>
+        <Icon name={icon} size={22} color={c.primary} />
+      </View>
+      <T style={{ flex: 1 }}>{text}</T>
+    </Row>
   );
 }
 
 function PortionRow({ icon, label, value, unit, step, onChange }: { icon: IconName; label: string; value: number; unit: string; step: number; onChange: (v: number) => void }) {
+  const { c } = useTheme();
   return (
     <Card>
       <Row style={{ justifyContent: 'space-between' }}>
         <Row gap={10}>
-          <PermIcon name={icon} />
+          <Icon name={icon} size={22} color={c.primary} />
           <T bold>{label}</T>
         </Row>
         <Stepper value={value} step={step} min={step} suffix={unit} onChange={onChange} />

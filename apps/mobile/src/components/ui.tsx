@@ -9,7 +9,7 @@ const { sizes } = tokens.font;
 
 type Tone = 'text' | 'muted' | 'primary' | 'xp' | 'coin' | 'streak' | 'danger' | 'success' | 'warning';
 
-/** display — акцентный шрифт Unbounded для заголовков и чисел (уровень, XP, ккал). */
+/** display — акцентный шрифт Unbounded для заголовков и чисел (ккал, рубли, проценты). */
 export function T({ size = 'md', tone = 'text', bold, display, style, ...rest }: TextProps & { size?: keyof typeof sizes; tone?: Tone; bold?: boolean; display?: boolean }) {
   const { c } = useTheme();
   const color = tone === 'muted' ? c.textMuted : tone === 'text' ? c.text : c[tone];

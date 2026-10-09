@@ -2,16 +2,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import {
-  DateKey, DayActivity, EMPTY_PROGRESS, MealDraft, MealLog, Profile, Progress, Reward, SHOP_ITEMS, UserPortions,
-  WeightEntry, activeDays, collectRewards, dateKey, isUnlocked, levelInfo, rescuableDay,
+  DateKey, DayActivity, MealDraft, MealLog, MotivationState, Profile, Stake, UserPortions, WeightEntry, dateKey, weekStartOf,
 } from '@levelup/domain';
 import { newId } from '@/lib/id';
-
-export interface AvatarLook {
-  skin: string;
-  hair: 0 | 1 | 2;
-  hairColor: string;
-}
 
 export interface Settings {
   /** Адрес сервера разбора; пусто — только офлайн-разбор на телефоне. */
@@ -28,60 +21,75 @@ export interface PendingPhrase {
   at: string;
 }
 
+export interface ProgressPhoto {
+  id: string;
+  date: DateKey;
+  uri: string;
+}
+
+export interface ToastMsg {
+  id: string;
+  title: string;
+  subtitle?: string;
+  kind: 'saved' | 'quest' | 'achievement' | 'offline';
+}
+
 interface Data {
   onboarded: boolean;
   profile: Profile | null;
-  look: AvatarLook;
   portions: UserPortions;
   meals: MealLog[];
   activity: Record<DateKey, DayActivity>;
   weights: WeightEntry[];
-  progress: Progress;
+  motivation: MotivationState;
+  photos: ProgressPhoto[];
   settings: Settings;
   pending: PendingPhrase[];
 }
 
-interface Ephemeral {
-  /** Награды, ещё не показанные тостом. */
-  rewardQueue: Reward[];
-  levelUp: number | null;
-}
-
 interface Actions {
-  completeOnboarding(profile: Profile, look: AvatarLook, portions: UserPortions): void;
+  completeOnboarding(profile: Profile, portions: UserPortions, wish: { title: string; price: number } | null, rate: number): void;
   /** Записывает и еду, и активность из одной фразы. Возвращает true, если что-то записано. */
   addEntry(draft: MealDraft, at?: string): boolean;
-  deleteSession(date: DateKey, id: string): void;
   deleteMeal(id: string): void;
+  deleteSession(date: DateKey, id: string): void;
   addWeight(kg: number, date?: DateKey): void;
   patchActivity(date: DateKey, patch: Partial<DayActivity>): void;
-  toggleManualQuest(questId: string): void;
   addPending(text: string): void;
   removePending(id: string): void;
-  buy(itemId: string): string | null;
-  equip(itemId: string): void;
+  addWish(title: string, price: number): void;
+  removeWish(id: string): void;
+  claimWish(id: string): void;
+  setRate(rate: number): void;
+  addTransfer(amount: number): void;
+  addStake(stake: Omit<Stake, 'id' | 'weekStart'>): string | null;
+  payStake(id: string): void;
+  cancelStake(id: string): void;
+  addPhoto(uri: string): void;
+  removePhoto(id: string): void;
   updateSettings(patch: Partial<Settings>): void;
   updatePortions(portions: UserPortions): void;
   updateProfile(patch: Partial<Profile>): void;
-  updateLook(patch: Partial<AvatarLook>): void;
-  /** Начислить всё положенное — звать после любого изменения данных. */
-  settle(now?: Date): void;
-  shiftReward(): void;
-  dismissLevelUp(): void;
+  showToast(t: Omit<ToastMsg, 'id'>): void;
+  hideToast(): void;
   resetAll(): void;
 }
 
-export type AppState = Data & Ephemeral & Actions;
+export type AppState = Data & Actions & { toast: ToastMsg | null };
+
+const today = () => dateKey(new Date());
+
+const freshMotivation = (): MotivationState => ({ startDate: today(), rates: [{ from: today(), rate: 100 }], wishes: [], transfers: [], stakes: [] });
 
 const INITIAL: Data = {
   onboarded: false,
   profile: null,
-  look: { skin: '#EDBB97', hair: 0, hairColor: '#6B3E26' },
   portions: { units: { plate: 300, cup: 250, glass: 250, tbsp: 15 }, foods: {} },
   meals: [],
   activity: {},
   weights: [],
-  progress: { ...EMPTY_PROGRESS, equipped: { outfit: 'outfit_gray' } },
+  motivation: freshMotivation(),
+  photos: [],
   settings: { apiUrl: '', apiToken: '', theme: 'system', reminders: true, health: false },
   pending: [],
 };
@@ -90,12 +98,21 @@ export const useStore = create<AppState>()(
   persist(
     (set, get) => ({
       ...INITIAL,
-      rewardQueue: [],
-      levelUp: null,
+      toast: null,
 
-      completeOnboarding(profile, look, portions) {
-        const today = dateKey(new Date());
-        set({ onboarded: true, profile, look, portions, weights: [{ date: today, kg: profile.startWeightKg }] });
+      completeOnboarding(profile, portions, wish, rate) {
+        const d = today();
+        set({
+          onboarded: true,
+          profile,
+          portions,
+          weights: [{ date: d, kg: profile.startWeightKg }],
+          motivation: {
+            ...freshMotivation(),
+            rates: [{ from: d, rate }],
+            wishes: wish ? [{ id: newId(), title: wish.title, price: wish.price, createdAt: new Date().toISOString() }] : [],
+          },
+        });
       },
 
       addEntry(draft, at = new Date().toISOString()) {
@@ -105,8 +122,7 @@ export const useStore = create<AppState>()(
         set((s) => {
           const patch: Partial<Data> = {};
           if (draft.items.length) {
-            const meal: MealLog = { id: newId(), at, text: draft.sourceText, items: draft.items, totals: draft.totals };
-            patch.meals = [...s.meals, meal];
+            patch.meals = [...s.meals, { id: newId(), at, text: draft.sourceText, items: draft.items, totals: draft.totals }];
           }
           if (activities.length) {
             const prev = s.activity[day];
@@ -115,8 +131,16 @@ export const useStore = create<AppState>()(
           }
           return patch;
         });
-        get().settle();
+        const parts = [
+          draft.items.length ? `~${Math.round(draft.totals.kcal)} ккал` : '',
+          activities.length ? `${activities.reduce((n, a) => n + a.minutes, 0)} мин спорта` : '',
+        ].filter(Boolean);
+        get().showToast({ kind: 'saved', title: 'Записано', subtitle: parts.join(' · ') });
         return true;
+      },
+
+      deleteMeal(id) {
+        set((s) => ({ meals: s.meals.filter((m) => m.id !== id) }));
       },
 
       deleteSession(date, id) {
@@ -127,26 +151,12 @@ export const useStore = create<AppState>()(
         });
       },
 
-      deleteMeal(id) {
-        // Опыт за удалённую запись не отбираем: ключ награды уже выдан, повторно не начислится.
-        set((s) => ({ meals: s.meals.filter((m) => m.id !== id) }));
-      },
-
-      addWeight(kg, date = dateKey(new Date())) {
+      addWeight(kg, date = today()) {
         set((s) => ({ weights: [...s.weights.filter((w) => w.date !== date), { date, kg }] }));
-        get().settle();
       },
 
       patchActivity(date, patch) {
         set((s) => ({ activity: { ...s.activity, [date]: { ...s.activity[date], ...patch, date } } }));
-        get().settle();
-      },
-
-      toggleManualQuest(questId) {
-        const date = dateKey(new Date());
-        const done = get().activity[date]?.manualDone ?? [];
-        const next = done.includes(questId) ? done.filter((q) => q !== questId) : [...done, questId];
-        get().patchActivity(date, { manualDone: next });
       },
 
       addPending(text) {
@@ -157,40 +167,54 @@ export const useStore = create<AppState>()(
         set((s) => ({ pending: s.pending.filter((p) => p.id !== id) }));
       },
 
-      buy(itemId) {
-        const s = get();
-        const item = SHOP_ITEMS.find((i) => i.id === itemId);
-        if (!item?.price) return 'Этот предмет не продаётся';
-        if (s.progress.coins < item.price) return 'Не хватает монет';
-        const today = dateKey(new Date());
-        const progress = { ...s.progress, coins: s.progress.coins - item.price };
-        if (item.value === 'double_xp') {
-          if (progress.doubleXpDays.includes(today)) return 'Двойной XP уже активен сегодня';
-          progress.doubleXpDays = [...progress.doubleXpDays, today];
-        } else if (item.value === 'freeze') {
-          const day = rescuableDay(activeDays({ ...s, profile: s.profile! }), today, progress.frozenDays);
-          if (!day) return 'Серия не прервана — спасать нечего';
-          progress.frozenDays = [...progress.frozenDays, day];
-        } else {
-          if (progress.inventory.includes(item.id)) return 'Уже куплено';
-          progress.inventory = [...progress.inventory, item.id];
-          progress.equipped = { ...progress.equipped, [item.slot]: item.id };
-        }
-        set({ progress });
-        get().settle();
+      addWish(title, price) {
+        set((s) => ({ motivation: { ...s.motivation, wishes: [...s.motivation.wishes, { id: newId(), title, price, createdAt: new Date().toISOString() }] } }));
+      },
+
+      removeWish(id) {
+        set((s) => ({ motivation: { ...s.motivation, wishes: s.motivation.wishes.filter((w) => w.id !== id) } }));
+      },
+
+      claimWish(id) {
+        set((s) => ({
+          motivation: { ...s.motivation, wishes: s.motivation.wishes.map((w) => (w.id === id ? { ...w, claimedAt: new Date().toISOString() } : w)) },
+        }));
+        get().showToast({ kind: 'achievement', title: 'Награда твоя!', subtitle: 'Заработал честно — забирай' });
+      },
+
+      setRate(rate) {
+        // Новая ставка действует с сегодняшнего дня, прошлые заработки не пересчитываются.
+        const d = today();
+        set((s) => ({ motivation: { ...s.motivation, rates: [...s.motivation.rates.filter((r) => r.from !== d), { from: d, rate }] } }));
+      },
+
+      addTransfer(amount) {
+        set((s) => ({ motivation: { ...s.motivation, transfers: [...s.motivation.transfers, { id: newId(), at: new Date().toISOString(), amount }] } }));
+      },
+
+      addStake(stake) {
+        const week = weekStartOf(today());
+        if (get().motivation.stakes.some((s) => s.weekStart === week)) return 'На эту неделю ставка уже есть';
+        set((s) => ({ motivation: { ...s.motivation, stakes: [...s.motivation.stakes, { ...stake, id: newId(), weekStart: week }] } }));
         return null;
       },
 
-      equip(itemId) {
-        const s = get();
-        const item = SHOP_ITEMS.find((i) => i.id === itemId);
-        if (!item || item.slot === 'booster') return;
-        if (!isUnlocked(item, levelInfo(s.progress.xp).level, s.progress.inventory)) return;
-        const current = s.progress.equipped[item.slot];
-        const equipped = { ...s.progress.equipped };
-        if (current === itemId && item.slot === 'accessory') delete equipped.accessory;
-        else equipped[item.slot] = itemId;
-        set({ progress: { ...s.progress, equipped } });
+      payStake(id) {
+        set((s) => ({
+          motivation: { ...s.motivation, stakes: s.motivation.stakes.map((k) => (k.id === id ? { ...k, paidAt: new Date().toISOString() } : k)) },
+        }));
+      },
+
+      cancelStake(id) {
+        set((s) => ({ motivation: { ...s.motivation, stakes: s.motivation.stakes.filter((k) => k.id !== id) } }));
+      },
+
+      addPhoto(uri) {
+        set((s) => ({ photos: [...s.photos, { id: newId(), date: today(), uri }] }));
+      },
+
+      removePhoto(id) {
+        set((s) => ({ photos: s.photos.filter((p) => p.id !== id) }));
       },
 
       updateSettings(patch) {
@@ -203,51 +227,42 @@ export const useStore = create<AppState>()(
 
       updateProfile(patch) {
         set((s) => (s.profile ? { profile: { ...s.profile, ...patch } } : {}));
-        get().settle();
       },
 
-      updateLook(patch) {
-        set((s) => ({ look: { ...s.look, ...patch } }));
+      showToast(t) {
+        set({ toast: { ...t, id: newId() } });
       },
 
-      settle(now = new Date()) {
-        const s = get();
-        if (!s.profile) return;
-        const r = collectRewards({ profile: s.profile, meals: s.meals, activity: s.activity, weights: s.weights, progress: s.progress }, now);
-        if (!r.rewards.length) return;
-        set({
-          progress: r.progress,
-          rewardQueue: [...s.rewardQueue, ...r.rewards],
-          levelUp: r.levelUp ?? s.levelUp,
-        });
-      },
-
-      shiftReward() {
-        set({ rewardQueue: [] });
-      },
-
-      dismissLevelUp() {
-        set({ levelUp: null });
+      hideToast() {
+        set({ toast: null });
       },
 
       resetAll() {
-        set({ ...INITIAL, rewardQueue: [], levelUp: null });
+        set({ ...INITIAL, motivation: freshMotivation(), toast: null });
       },
     }),
     {
       name: 'levelup-state',
-      version: 1,
+      version: 2,
       storage: createJSONStorage(() => AsyncStorage),
-      // Сохраняем только данные: очередь тостов и модалка уровня живут до перезапуска.
+      // v1 → v2: уровни, монеты и персонаж убраны, вместо них копилка. Записи и вес сохраняются.
+      migrate: (persisted, version) => {
+        const old = (persisted ?? {}) as Partial<Data> & Record<string, unknown>;
+        if (version < 2) {
+          const { progress: _p, look: _l, ...rest } = old as Record<string, unknown>;
+          return { ...INITIAL, ...(rest as Partial<Data>), motivation: freshMotivation(), photos: [] } as Data;
+        }
+        return old as Data;
+      },
       partialize: (s): Data => ({
         onboarded: s.onboarded,
         profile: s.profile,
-        look: s.look,
         portions: s.portions,
         meals: s.meals,
         activity: s.activity,
         weights: s.weights,
-        progress: s.progress,
+        motivation: s.motivation,
+        photos: s.photos,
         settings: s.settings,
         pending: s.pending,
       }),

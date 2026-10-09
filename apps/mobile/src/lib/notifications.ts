@@ -5,8 +5,8 @@ import * as Notifications from 'expo-notifications';
  * Напоминания планирует сам телефон — сервер для этого не нужен.
  */
 const REMINDERS: Array<{ hour: number; minute: number; title: string; body: string }> = [
-  { hour: 13, minute: 30, title: 'Что было на обед?', body: 'Скажи одной фразой — герой получит +10 XP' },
-  { hour: 20, minute: 0, title: 'Квесты дня ждут', body: 'Загляни, что осталось до сундука' },
+  { hour: 13, minute: 30, title: 'Что было на обед?', body: 'Скажи одной фразой — это шаг к хорошему дню' },
+  { hour: 20, minute: 0, title: 'Как прошёл день?', body: 'Загляни, что осталось до хорошего дня и денег в копилку' },
 ];
 
 Notifications.setNotificationHandler({

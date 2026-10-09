@@ -2,7 +2,7 @@ import { addDays } from './dates';
 import { DateKey } from './types';
 
 /**
- * Серия: подряд идущие дни хотя бы с одной записью. Сегодняшний день без записи
+ * Серия: подряд идущие засчитанные дни (хорошие дни или дни с записями — решает вызывающий). Сегодняшний день без записи
  * серию не рвёт — день ещё не закончился. Замороженные дни считаются выполненными.
  */
 export function currentStreak(activeDays: Set<DateKey>, today: DateKey, frozen: DateKey[] = []): number {
@@ -24,11 +24,3 @@ export function rescuableDay(activeDays: Set<DateKey>, today: DateKey, frozen: D
   return !has(yesterday) && has(before) ? yesterday : null;
 }
 
-export const STREAK_MILESTONES: Array<[days: number, coins: number]> = [
-  [3, 10],
-  [7, 25],
-  [14, 50],
-  [30, 100],
-  [60, 150],
-  [100, 300],
-];

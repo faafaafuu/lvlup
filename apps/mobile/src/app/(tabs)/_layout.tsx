@@ -18,10 +18,10 @@ export default function TabsLayout() {
         sceneStyle: { backgroundColor: c.bg },
       }}
     >
-      <Tabs.Screen name="index" options={{ title: 'Герой', tabBarIcon: icon('tabHero') }} />
+      <Tabs.Screen name="index" options={{ title: 'Сегодня', tabBarIcon: icon('sun') }} />
       <Tabs.Screen name="diary" options={{ title: 'Дневник', tabBarIcon: icon('tabDiary') }} />
-      <Tabs.Screen name="progress" options={{ title: 'Прогресс', tabBarIcon: icon('tabProgress') }} />
-      <Tabs.Screen name="rewards" options={{ title: 'Награды', tabBarIcon: icon('tabRewards') }} />
+      <Tabs.Screen name="progress" options={{ title: 'Ты', tabBarIcon: icon('user') }} />
+      <Tabs.Screen name="rewards" options={{ title: 'Копилка', tabBarIcon: icon('coin') }} />
     </Tabs>
   );
 }

@@ -52,13 +52,3 @@ export function currentWeight(p: Profile, weights: WeightEntry[]): number {
   const smoothed = smoothWeights(weights);
   return smoothed.length ? smoothed[smoothed.length - 1]!.trend : p.startWeightKg;
 }
-
-/** Стадия телосложения героя 0..2 по пройденной доле пути к цели. */
-export function avatarStage(p: Profile, weights: WeightEntry[]): 0 | 1 | 2 {
-  const total = p.startWeightKg - p.targetWeightKg;
-  if (total <= 0.5) return 1;
-  const done = (p.startWeightKg - currentWeight(p, weights)) / total;
-  if (done >= 0.66) return 2;
-  if (done >= 0.33) return 1;
-  return 0;
-}

@@ -45,43 +45,9 @@ export interface Profile {
   stepsGoal: number;
 }
 
-/** Всё, что заработано. Награды выдаются по уникальному ключу — повторно не начисляются. */
-export interface Progress {
-  xp: number;
-  coins: number;
-  claimed: Record<string, true>;
-  achievements: string[];
-  /** Дни, спасённые заморозкой серии. */
-  frozenDays: DateKey[];
-  /** Дни с бустером «Двойной XP». */
-  doubleXpDays: DateKey[];
-  inventory: string[];
-  equipped: Record<string, string>;
-}
-
-export interface Reward {
-  key: string;
-  title: string;
-  xp: number;
-  coins: number;
-  kind: 'meal' | 'activity' | 'quest' | 'chest' | 'achievement' | 'streak';
-}
-
 export interface GameState {
   profile: Profile;
   meals: MealLog[];
   activity: Record<DateKey, DayActivity>;
   weights: WeightEntry[];
-  progress: Progress;
 }
-
-export const EMPTY_PROGRESS: Progress = {
-  xp: 0,
-  coins: 0,
-  claimed: {},
-  achievements: [],
-  frozenDays: [],
-  doubleXpDays: [],
-  inventory: [],
-  equipped: {},
-};

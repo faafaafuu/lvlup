@@ -7,7 +7,9 @@ import { newId } from '@/lib/id';
 import { Btn, Card, Chip, Row, SectionTitle, T, textInputStyle } from '@/components/ui';
 import { fmt } from '@/lib/format';
 import { useStore } from '@/state/store';
-import { useGame } from '@/state/useGame';
+import { useToday } from '@/state/useToday';
+import { YouStats } from '@/components/YouStats';
+import { PhotoJournal } from '@/components/PhotoJournal';
 import { useTheme } from '@/theme';
 
 const PERIODS = [
@@ -18,7 +20,7 @@ const PERIODS = [
 
 export default function ProgressScreen() {
   const { c } = useTheme();
-  const game = useGame();
+  const game = useToday();
   const profile = useStore((s) => s.profile);
   const weights = useStore((s) => s.weights);
   const meals = useStore((s) => s.meals);
@@ -44,6 +46,17 @@ export default function ProgressScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: c.bg }} edges={['top']}>
       <ScrollView contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 40 }}>
+        <T size="xl" bold display>
+          Ты
+        </T>
+        <T size="sm" tone="muted">
+          Реальные показатели из твоих записей. ▲ — лучше, чем в прошлый период.
+        </T>
+        <YouStats stats={game.you} />
+
+        <SectionTitle>Фото прогресса</SectionTitle>
+        <PhotoJournal today={today} />
+
         <SectionTitle right={<T tone="success" bold>{lost > 0 ? `−${lost} кг с начала` : `${game.weight} кг`}</T>}>Вес</SectionTitle>
         <Card style={{ gap: 12 }}>
           <Row>
