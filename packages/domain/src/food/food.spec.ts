@@ -100,3 +100,29 @@ it('незнакомое блюдо от LLM попадает в unknown', () =>
   const draft = resolveMeal('чучвара', [{ text: 'чучвара', quantity: 1 }]);
   expect(draft.unknown).toEqual(['чучвара']);
 });
+
+describe('количество принадлежит своей части фразы', () => {
+  const ids = (text: string) => parse(text).items.map((i) => [i.foodId, i.quantity, i.unit]);
+
+  it('количество после блюда не уходит к соседу', () => {
+    expect(ids('Съел макароны две тарелки и выпил 3 пива')).toEqual([
+      ['pasta', 2, 'plate'],
+      ['beer', 3, 'bottle'],
+    ]);
+  });
+
+  it('запятые и глаголы делят фразу', () => {
+    expect(ids('пиво две банки, макароны тарелку')).toEqual([
+      ['beer', 2, 'can'],
+      ['pasta', 1, 'plate'],
+    ]);
+    expect(ids('выпил 3 пива потом съел макароны')).toEqual([
+      ['beer', 3, 'bottle'],
+      ['pasta', 1, 'plate'],
+    ]);
+  });
+
+  it('первое число важнее уточнений', () => {
+    expect(ids('2 бутылки пива по 0,5 и макароны')[0]).toEqual(['beer', 2, 'bottle']);
+  });
+});

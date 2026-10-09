@@ -11,39 +11,81 @@ import { Food, ParsedEntity, UnitId } from './types';
  * вариантом, если LLM недоступна или долго отвечает.
  */
 export function parseHeuristic(text: string, catalog: readonly Food[] = CATALOG): ParsedEntity[] {
-  const tokens = splitHalfPrefix(tokenize(text));
+  const tokens = splitHalfPrefix(tokenize(markBoundaries(text)));
   // «гантели 10 кг, потом гречка»: слова про спорт закрываем, чтобы «10 кг» не ушли в гречку.
   for (const a of findActivities(tokens)) for (let i = a.start; i < a.end; i++) tokens[i] = '·';
   const matches = findFoods(tokens, catalog);
 
-  // Токены, которые уже забрало предыдущее блюдо («гречки граммов 150 | и котлету»).
+  // Фраза режется на части по «и», запятым и глаголам («выпил», «съел»): количество
+  // берётся только из своей части, в каком бы порядке его ни сказали —
+  // «макароны две тарелки и выпил 3 пива» → макароны ×2 тарелки, пиво ×3.
+  const segmentOf = segmentIds(tokens);
+  const out: ParsedEntity[] = [];
   let consumedUntil = 0;
 
-  return matches.map((match, i) => {
-    const prevEnd = Math.max(consumedUntil, i === 0 ? 0 : matches[i - 1]!.end);
-    const nextStart = i + 1 < matches.length ? matches[i + 1]!.start : tokens.length;
+  matches.forEach((match, i) => {
+    const seg = segmentOf[match.start]!;
+    const segStart = segmentOf.indexOf(seg);
+    const segEnd = segmentOf.lastIndexOf(seg) + 1;
+    const prev = matches[i - 1];
+    const next = matches[i + 1];
+    const prevEnd = Math.max(consumedUntil, segStart, prev && segmentOf[prev.start] === seg ? prev.end : segStart);
+    const nextStart = next && segmentOf[next.start] === seg ? next.start : segEnd;
+    const alone = !(prev && segmentOf[prev.start] === seg) && !(next && segmentOf[next.start] === seg);
+
     const before = readAmount(tokens.slice(prevEnd, match.start));
-    // «плов граммов 300», «голубцы две штуки» — количество после блюда берём, только если
-    // там явно вес или число с единицей. Голое «два» скорее относится к следующему блюду.
     const after = readAmount(tokens.slice(match.end, nextStart));
-    // «кофе с одной ложкой сахара»: «с …» относится к следующему блюду, не к кофе.
-    const first = tokens[match.end];
-    const startsWithAmount = first != null && (wordToNumber(first) != null || readAmount([first]).unit != null);
-    const afterIsAmount = startsWithAmount && (after.grams != null || (after.quantity != null && after.unit != null));
     let amount = before;
     consumedUntil = match.end;
-    if (before.quantity == null && before.unit == null && afterIsAmount) {
-      amount = after;
-      consumedUntil = match.end + after.lastIndex + 1;
+    const beforeEmpty = before.quantity == null && before.unit == null && before.grams == null;
+    if (beforeEmpty) {
+      if (alone) {
+        // Единственное блюдо в части — всё количество в ней его.
+        amount = after;
+        consumedUntil = segEnd;
+      } else {
+        // Несколько блюд в одной части («плов 300 грамм макароны»): после блюда берём
+        // только явное «число + единица», голое «два» скорее про следующее блюдо.
+        const first = tokens[match.end];
+        const startsWithAmount = first != null && (wordToNumber(first) != null || readAmount([first]).unit != null);
+        if (startsWithAmount && (after.grams != null || (after.quantity != null && after.unit != null))) {
+          amount = after;
+          consumedUntil = match.end + after.lastIndex + 1;
+        }
+      }
     }
 
-    return {
+    out.push({
       text: tokens.slice(match.start, match.end).join(' '),
       foodId: match.food.id,
       quantity: amount.quantity,
       unit: amount.unit,
       grams: amount.grams,
-    };
+    });
+  });
+  return out;
+}
+
+const BOUNDARY = '|';
+const CONJUNCTIONS = new Set(['и', 'а', 'потом', 'затем', 'еще', 'плюс', 'также', 'тоже', 'после', 'ну', 'короче', 'типа']);
+/** Глаголы еды и питья начинают новую часть фразы. */
+const VERB = /^(съел|съела|съели|выпил|выпила|выпили|поел|поела|попил|попила|скушал|скушала|перекусил|перекусила|закусил|закусила|запил|запила|навернул|сожрал|слопал|хлебнул|употребил|съем|выпью|пил|ел|ела|пила)$/;
+
+function markBoundaries(text: string): string {
+  return text
+    .replace(/(\d)[,.](\d)/g, '$1d$2')
+    .replace(/[,;!?]|\.(?!\d)/g, ` ${BOUNDARY} `)
+    .replace(/(\d)d(\d)/g, '$1.$2');
+}
+
+function segmentIds(tokens: string[]): number[] {
+  let seg = 0;
+  return tokens.map((t) => {
+    if (t === BOUNDARY || t === 'xx' || CONJUNCTIONS.has(t) || VERB.test(t)) {
+      seg++;
+      return -1;
+    }
+    return seg;
   });
 }
 
@@ -66,7 +108,8 @@ export function readAmount(window: string[]): Amount {
     if (n != null) {
       lastIndex = index;
       // «двести пятьдесят» → 250, «пол» перед числом не бывает, просто складываем разряды.
-      quantity = quantity != null && quantity >= 20 && n < quantity ? quantity + n : n;
+      if (quantity == null) quantity = n;
+      else if (quantity >= 20 && n < quantity) quantity += n;
       return;
     }
     const tokenStem = stem(token);

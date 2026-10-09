@@ -6,7 +6,7 @@ export function normalize(text: string): string {
     .replace(/ё/g, 'е')
     .replace(/(\d),(\d)/g, '$1.$2')
     .replace(/(\d)\s*(г|гр|мл|кг|л)\b/g, '$1 $2')
-    .replace(/[^a-zа-я0-9.\s-]/g, ' ')
+    .replace(/[^a-zа-я0-9.|\s-]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 }
