@@ -20,6 +20,8 @@ export interface DayActivity {
   /** Вода, отмеченная отдельно от еды. */
   waterMl?: number;
   workouts?: number;
+  /** Активные калории из Здоровья (часы/телефон). */
+  activeKcal?: number;
   /** Тренировки, записанные голосом или вручную. */
   sessions?: ActivitySession[];
   /** id квестов, отмеченных вручную («Сделай 10 отжиманий»). */

@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { Alert } from 'react-native';
-import { MealDraft, currentWeight } from '@levelup/domain';
+import { MealDraft, currentWeight, dateKey } from '@levelup/domain';
 import { parsePhrase } from '@/lib/parse';
 import { useStore } from './store';
 
@@ -17,7 +17,7 @@ export function useMealCapture() {
     const empty = result.draft.items.length === 0 && result.draft.activities.length === 0;
     if (empty && result.serverFailed && !fromPendingId) {
       addPending(text);
-      Alert.alert('Сохранил фразу', 'Сервер не ответил, а офлайн не понял. Разберу, когда появится связь — фраза в Дневнике.');
+      Alert.alert('Сохранил фразу', 'Сервер не ответил, а офлайн не понял. Разберу, когда появится связь — фраза внизу экрана «День».');
       return null;
     }
     setSource(result.source);
@@ -28,8 +28,8 @@ export function useMealCapture() {
 
   const confirm = useCallback(() => {
     if (!draft) return;
-    const { addEntry, removePending } = useStore.getState();
-    addEntry(draft);
+    const { addEntry, removePending, viewDate } = useStore.getState();
+    addEntry(draft, atFor(viewDate));
     if (pendingId) removePending(pendingId);
     setDraft(null);
     setPendingId(null);
@@ -41,4 +41,12 @@ export function useMealCapture() {
   }, []);
 
   return { draft, source, setDraft, parse, confirm, cancel };
+}
+
+/** Время записи: сейчас — для сегодня; для прошлого дня — тот же час, но в выбранную дату. */
+export function atFor(day: string): string {
+  const now = new Date();
+  if (day === dateKey(now)) return now.toISOString();
+  const [y, m, d] = day.split('-').map(Number) as [number, number, number];
+  return new Date(y, m - 1, d, now.getHours(), now.getMinutes()).toISOString();
 }

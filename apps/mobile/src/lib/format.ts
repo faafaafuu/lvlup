@@ -20,6 +20,10 @@ const MONTHS = ['января', 'февраля', 'марта', 'апреля', 
 
 export function humanDate(key: string, today: string): string {
   if (key === today) return 'Сегодня';
+  const [ty, tm, td] = today.split('-').map(Number) as [number, number, number];
+  const yesterday = new Date(ty, tm - 1, td - 1);
+  const yKey = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
+  if (key === yKey) return 'Вчера';
   const [, m, d] = key.split('-').map(Number) as [number, number, number];
   return `${d} ${MONTHS[m - 1]}`;
 }

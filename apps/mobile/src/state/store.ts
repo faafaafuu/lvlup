@@ -13,6 +13,8 @@ export interface Settings {
   theme: 'system' | 'dark' | 'light';
   reminders: boolean;
   health: boolean;
+  /** Когда последний раз синхронизировались со Здоровьем. */
+  healthSyncedAt?: string | null;
 }
 
 export interface PendingPhrase {
@@ -75,7 +77,12 @@ interface Actions {
   resetAll(): void;
 }
 
-export type AppState = Data & Actions & { toast: ToastMsg | null };
+export type AppState = Data & Actions & {
+  toast: ToastMsg | null;
+  /** День, открытый в календаре; запись голосом идёт в него. Не сохраняется. */
+  viewDate: DateKey;
+  setViewDate(d: DateKey): void;
+};
 
 const today = () => dateKey(new Date());
 
@@ -99,6 +106,10 @@ export const useStore = create<AppState>()(
     (set, get) => ({
       ...INITIAL,
       toast: null,
+      viewDate: today(),
+      setViewDate(d) {
+        set({ viewDate: d > today() ? today() : d });
+      },
 
       completeOnboarding(profile, portions, wish, rate) {
         const d = today();
@@ -238,7 +249,7 @@ export const useStore = create<AppState>()(
       },
 
       resetAll() {
-        set({ ...INITIAL, motivation: freshMotivation(), toast: null });
+        set({ ...INITIAL, motivation: freshMotivation(), toast: null, viewDate: today() });
       },
     }),
     {

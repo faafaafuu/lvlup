@@ -23,6 +23,7 @@ const READ = [
   'HKQuantityTypeIdentifierBodyMass',
   'HKCategoryTypeIdentifierSleepAnalysis',
   'HKWorkoutTypeIdentifier',
+  'HKQuantityTypeIdentifierActiveEnergyBurned',
 ] as const;
 
 export async function healthAvailable(): Promise<boolean> {
@@ -57,6 +58,8 @@ export async function requestHealthAccess(): Promise<HealthAccess> {
 export interface HealthDay {
   steps: number | null;
   sleepHours: number | null;
+  /** Активные калории за день (часы/телефон), ккал. */
+  activeKcal: number | null;
 }
 
 function dayBounds(date: DateKey) {
@@ -68,10 +71,21 @@ function dayBounds(date: DateKey) {
 const ASLEEP_VALUES = new Set([1, 3, 4, 5]);
 
 export async function readHealthDay(date: DateKey): Promise<HealthDay> {
-  if (!hk) return { steps: null, sleepHours: null };
+  if (!hk) return { steps: null, sleepHours: null, activeKcal: null };
   const { start, end } = dayBounds(date);
   let steps: number | null = null;
   let sleepHours: number | null = null;
+  let activeKcal: number | null = null;
+  try {
+    const energy = await hk.queryStatisticsForQuantity('HKQuantityTypeIdentifierActiveEnergyBurned', ['cumulativeSum'], {
+      filter: { date: { startDate: start, endDate: end } },
+      unit: 'kcal',
+    });
+    const v = energy.sumQuantity?.quantity;
+    activeKcal = v != null && v > 0 ? Math.round(v) : null;
+  } catch {
+    activeKcal = null;
+  }
   try {
     const stats = await hk.queryStatisticsForQuantity('HKQuantityTypeIdentifierStepCount', ['cumulativeSum'], {
       filter: { date: { startDate: start, endDate: end } },
@@ -96,7 +110,7 @@ export async function readHealthDay(date: DateKey): Promise<HealthDay> {
   } catch {
     sleepHours = null;
   }
-  return { steps, sleepHours };
+  return { steps, sleepHours, activeKcal };
 }
 
 export async function readLatestWeight(): Promise<{ kg: number; date: Date } | null> {
@@ -141,6 +155,29 @@ export async function readHealthWorkouts(date: DateKey): Promise<HealthWorkout[]
         kcal: kcal != null ? Math.round(kcal) : null,
       };
     });
+  } catch {
+    return [];
+  }
+}
+
+/** Все взвешивания за период — с умных весов (Xiaomi, Withings…) они попадают в Здоровье. */
+export async function readWeights(days: number): Promise<Array<{ date: DateKey; kg: number }>> {
+  if (!hk) return [];
+  try {
+    const samples = await hk.queryQuantitySamples('HKQuantityTypeIdentifierBodyMass', {
+      limit: -1,
+      unit: 'kg',
+      ascending: true,
+      filter: { date: { startDate: new Date(Date.now() - days * 86_400_000), endDate: new Date() } },
+    });
+    // Несколько взвешиваний за день — берём последнее.
+    const byDay = new Map<DateKey, number>();
+    for (const s of samples) {
+      const d = new Date(s.startDate);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      byDay.set(key, Math.round(s.quantity * 10) / 10);
+    }
+    return [...byDay.entries()].map(([date, kg]) => ({ date, kg }));
   } catch {
     return [];
   }

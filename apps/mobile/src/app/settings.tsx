@@ -3,6 +3,7 @@ import { Alert, ScrollView, Switch, TextInput, View } from 'react-native';
 import { ActivityLevel, dateKey, minHealthyWeight, rateOn } from '@levelup/domain';
 import { Btn, Card, Chip, Row, SectionTitle, Stepper, T, textInputStyle } from '@/components/ui';
 import { requestHealthAccess } from '@/lib/health';
+import { syncHealth } from '@/lib/healthSync';
 import { checkServer } from '@/lib/parse';
 import { useStore } from '@/state/store';
 import { useTheme } from '@/theme';
@@ -20,6 +21,17 @@ export default function SettingsScreen() {
   const [serverStatus, setServerStatus] = useState<string | null>(null);
   const [checking, setChecking] = useState(false);
   const [confirmWord, setConfirmWord] = useState('');
+  const [syncing, setSyncing] = useState(false);
+  const [syncNote, setSyncNote] = useState<string | null>(null);
+  const runSync = async (days: number) => {
+    setSyncing(true);
+    try {
+      const r = await syncHealth(days);
+      setSyncNote(`Готово: шаги за ${r.steps} дн., тренировок ${r.workouts}, взвешиваний ${r.weights}. Если везде ноль — разреши Хруму доступ: Здоровье → Профиль → Приложения → Хрум.`);
+    } finally {
+      setSyncing(false);
+    }
+  };
   if (!s.profile) return null;
   const p = s.profile;
   const units = s.portions.units ?? {};
@@ -130,10 +142,19 @@ export default function SettingsScreen() {
               if (!on) return s.updateSettings({ health: false });
               const r = await requestHealthAccess();
               s.updateSettings({ health: r.ok });
-              if (!r.ok) Alert.alert('Здоровье недоступно', `Причина: ${r.reason}\n\nПока что шаги и сон можно вводить на экране «Прогресс».`);
+              if (!r.ok) return Alert.alert('Здоровье недоступно', `Причина: ${r.reason}\n\nПока что шаги и вес можно вводить на экране «Ты».`);
+              await runSync(30);
             }}
           />
         </Row>
+        {s.settings.health && (
+          <View style={{ gap: 8 }}>
+            <T size="sm" tone="muted">
+              {syncing ? 'Синхронизирую…' : syncNote ?? (s.settings.healthSyncedAt ? `Обновлено ${new Date(s.settings.healthSyncedAt).toLocaleString('ru-RU', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}` : 'Ещё не синхронизировалось')}
+            </T>
+            <Btn title="Подтянуть за 30 дней" kind="ghost" loading={syncing} onPress={() => void runSync(30)} />
+          </View>
+        )}
         <Row style={{ justifyContent: 'space-between' }}>
           <T>Напоминания</T>
           <Switch value={s.settings.reminders} onValueChange={(reminders) => s.updateSettings({ reminders })} />

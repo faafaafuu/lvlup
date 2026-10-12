@@ -8,6 +8,8 @@ interface CaptureApi {
   /** Микрофон: старт/стоп записи (или текстовый ввод, если голоса нет в сборке). */
   toggleVoice(): void;
   openText(): void;
+  /** Разобрать отложенную фразу (из очереди «ждут интернета»). */
+  parsePending(text: string, id: string): Promise<void>;
   recording: boolean;
 }
 
@@ -46,8 +48,15 @@ export function CaptureHost({ children }: { children: ReactNode }) {
   }, [voice]);
 
   const api = useMemo<CaptureApi>(
-    () => ({ toggleVoice, openText: () => setOverlay('text'), recording: voice.state === 'listening' }),
-    [toggleVoice, voice.state],
+    () => ({
+      toggleVoice,
+      openText: () => setOverlay('text'),
+      parsePending: async (text: string, id: string) => {
+        await capture.parse(text, id);
+      },
+      recording: voice.state === 'listening',
+    }),
+    [toggleVoice, voice.state, capture],
   );
 
   const mode: OverlayMode | null = voice.state === 'listening' ? 'listening' : voice.state === 'error' ? 'error' : overlay;

@@ -1,11 +1,11 @@
 import { Modal, Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { MealDraft, answerQuestion, currentWeight, describePortion, removeItem, setActivityMinutes, setItemGrams } from '@levelup/domain';
+import { MealDraft, dateKey, massUnit, answerQuestion, currentWeight, describePortion, removeItem, setActivityMinutes, setItemGrams } from '@levelup/domain';
 import { useStore } from '@/state/store';
 import { ConfirmItem } from '@/design/components';
 import { Icon } from '@/design/Icon';
 import { useTheme } from '@/theme';
-import { fmt } from '@/lib/format';
+import { fmt, humanDate } from '@/lib/format';
 import { Btn, Chip, Row, T } from './ui';
 
 interface Props {
@@ -23,6 +23,7 @@ export function ConfirmSheet({ draft, source, onChange, onConfirm, onCancel }: P
   const insets = useSafeAreaInsets();
   const profile = useStore((s) => s.profile);
   const weights = useStore((s) => s.weights);
+  const viewDate = useStore((s) => s.viewDate);
   if (!draft) return null;
   const kg = profile ? currentWeight(profile, weights) : 75;
   const activities = draft.activities ?? [];
@@ -40,7 +41,7 @@ export function ConfirmSheet({ draft, source, onChange, onConfirm, onCancel }: P
         <ScrollView contentContainerStyle={{ padding: 20, gap: 14 }}>
           <View>
             <T size="xl" bold display>
-              Записываю
+              {viewDate === dateKey(new Date()) ? 'Записываю' : `Записываю на ${humanDate(viewDate, dateKey(new Date())).toLowerCase()}`}
             </T>
             <T tone="muted" numberOfLines={2}>
               «{draft.sourceText}»{source === 'offline' ? ' · офлайн-разбор' : ''}
@@ -67,7 +68,7 @@ export function ConfirmSheet({ draft, source, onChange, onConfirm, onCancel }: P
                     t={t}
                     name={item.name}
                     portion={describePortion(item)}
-                    amount={`${item.grams} ${item.unit === 'ml' ? 'мл' : 'г'}`}
+                    amount={`${item.grams} ${massUnit(item)}`}
                     kcal={item.nutrients.kcal}
                     approx={item.assumed}
                     onMinus={() => onChange(setItemGrams(draft, i, Math.max(5, item.grams - step)))}

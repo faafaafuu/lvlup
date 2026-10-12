@@ -35,7 +35,8 @@ export function dayStats(date: DateKey, meals: MealLog[], activity?: DayActivity
     sleepHours: activity?.sleepHours ?? 0,
     workouts: (activity?.workouts ?? 0) + (activity?.sessions?.length ?? 0),
     activeMinutes: (activity?.sessions ?? []).reduce((m, s) => m + s.minutes, 0),
-    burnedKcal: (activity?.sessions ?? []).reduce((k, s) => k + s.kcal, 0),
+    // Если есть активные калории из Здоровья — они точнее нашей оценки по тренировкам.
+    burnedKcal: Math.max(activity?.activeKcal ?? 0, (activity?.sessions ?? []).reduce((k, s) => k + s.kcal, 0)),
     fruitVegServings: 0,
     sweetsAfter18: false,
     breakfastBy10: false,

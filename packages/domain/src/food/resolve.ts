@@ -140,9 +140,15 @@ export function sumNutrients(items: Array<{ nutrients: Nutrients }>): Nutrients 
 
 /** «1 тарелка · 300 г», «200 г». */
 export function describePortion(item: ResolvedItem): string {
-  if (item.unit === 'g' || item.unit === 'ml') return `${item.grams} ${UNIT_LABELS[item.unit]}`;
+  const mass = massUnit(item);
+  if (item.unit === 'g' || item.unit === 'ml') return `${item.grams} ${mass}`;
   const qty = Number.isInteger(item.quantity) ? item.quantity : item.quantity.toFixed(1).replace('.', ',');
-  return `${qty} ${UNIT_LABELS[item.unit]} · ${item.grams} г`;
+  return `${qty} ${UNIT_LABELS[item.unit]} · ${item.grams} ${mass}`;
+}
+
+/** Напитки — в миллилитрах, еда — в граммах. */
+export function massUnit(item: Pick<ResolvedItem, 'foodId' | 'unit'>): 'г' | 'мл' {
+  return item.unit === 'ml' || CATALOG_BY_ID.get(item.foodId)?.tags?.includes('drink') ? 'мл' : 'г';
 }
 
 function closestIndex(values: number[], target: number): number {

@@ -13,10 +13,9 @@ import { IconName } from './icons';
 import { MicButton } from './components';
 import { Theme } from './theme';
 
-export type TabId = 'today' | 'diary' | 'progress' | 'rewards';
+export type TabId = 'today' | 'progress' | 'rewards';
 const TABS: { id: TabId; label: string; icon: IconName }[] = [
-  { id: 'today', label: 'Сегодня', icon: 'tabToday' },
-  { id: 'diary', label: 'Дневник', icon: 'tabDiary' },
+  { id: 'today', label: 'День', icon: 'tabToday' },
   { id: 'progress', label: 'Ты', icon: 'tabProgress' },
   { id: 'rewards', label: 'Копилка', icon: 'tabRewards' },
 ];

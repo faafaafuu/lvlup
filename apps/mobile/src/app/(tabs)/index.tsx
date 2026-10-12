@@ -1,49 +1,76 @@
-import { Pressable, ScrollView, View } from 'react-native';
+import { useEffect } from 'react';
+import { Alert, Pressable, ScrollView, View } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { MealTemplate, sumNutrients } from '@levelup/domain';
+import { dateKey, dayStats, evaluateDay, mealDateKey, normOn, rateOn } from '@levelup/domain';
 import { useCapture } from '@/components/CaptureHost';
-import { DayCard } from '@/components/DayCard';
-import { Bar, Card, Row, T } from '@/components/ui';
-import { WishProgress } from '@/components/WishProgress';
-import { Companion } from '@/design/companion/Companion';
-import { TemplateChip } from '@/design/components';
+import { Row, T } from '@/components/ui';
+import { WeekStrip } from '@/components/WeekStrip';
+import { Ring } from '@/design/components';
 import { Icon } from '@/design/Icon';
-import { IconName } from '@/design/icons';
-import { companionState } from '@/lib/companion';
-import { fmt, plural } from '@/lib/format';
+import { fmt, humanDate, timeOf } from '@/lib/format';
+import { syncHealth } from '@/lib/healthSync';
 import { useStore } from '@/state/store';
-import { useToday } from '@/state/useToday';
 import { useTheme } from '@/theme';
 
 /** Над плавающим таб-баром остаётся место, чтобы последний блок не прятался под стекло. */
 export const TAB_BAR_SPACE = 120;
 
-export default function TodayScreen() {
+const CHECK_LABEL = { logged: 'Еда', plan: 'План', moved: 'Движение' } as const;
+
+/**
+ * Один экран на день: календарь недели → одно кольцо калорий → три отметки → записи.
+ * Выбранный день — общий для микрофона: можно дописать вчерашний ужин.
+ */
+export default function DayScreen() {
   const t = useTheme();
   const { c } = t;
-  const game = useToday();
   const profile = useStore((s) => s.profile);
-  const pending = useStore((s) => s.pending.length);
+  const meals = useStore((s) => s.meals);
+  const activity = useStore((s) => s.activity);
+  const weights = useStore((s) => s.weights);
+  const motivation = useStore((s) => s.motivation);
+  const pending = useStore((s) => s.pending);
+  const health = useStore((s) => s.settings.health);
+  const day = useStore((s) => s.viewDate);
+  const setDay = useStore((s) => s.setViewDate);
   const capture = useCapture();
-  if (!game || !profile) return null;
+  const today = dateKey(new Date());
 
-  const { stats, bank } = game;
-  const left = game.norm - stats.kcal;
-  const lime = companionState(bank, new Date().getHours());
+  // Открыли прошлый день — подтянем его из Здоровья (шаги, сон, тренировки).
+  useEffect(() => {
+    if (health && day !== today) void syncHealth(1, day);
+  }, [day, health, today]);
 
-  const logTemplate = (tpl: MealTemplate) => {
-    useStore.getState().addEntry({ sourceText: tpl.label, items: tpl.items, activities: [], unknown: [], questions: [], totals: sumNutrients(tpl.items) });
-  };
+  if (!profile) return null;
+  const state = { profile, meals, activity, weights };
+  const stats = dayStats(day, meals, activity[day]);
+  const norm = normOn(state, day);
+  const result = evaluateDay(state, day, motivation.rates, day < today);
+  const rate = rateOn(motivation.rates, day);
+  const reward = result.score === 3 ? rate : result.good ? Math.round(rate / 2) : 0;
+  const over = stats.kcal > norm;
+  const dayMeals = meals.filter((m) => mealDateKey(m.at) === day).sort((a, b) => a.at.localeCompare(b.at));
+  const sessions = activity[day]?.sessions ?? [];
+  const deleteMeal = useStore.getState().deleteMeal;
+  const deleteSession = useStore.getState().deleteSession;
+
+  const askDelete = (title: string, run: () => void) =>
+    Alert.alert('Удалить запись?', title, [
+      { text: 'Отмена', style: 'cancel' },
+      { text: 'Удалить', style: 'destructive', onPress: run },
+    ]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: c.bg }} edges={['top']}>
-      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: TAB_BAR_SPACE, gap: 14 }}>
+      <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 8, paddingBottom: TAB_BAR_SPACE, gap: 20 }}>
         <Row style={{ justifyContent: 'space-between' }}>
-          <T size="xl" bold display>
-            Сегодня
-          </T>
-          <Row gap={18}>
+          <Pressable onPress={() => setDay(today)} accessibilityLabel="Вернуться к сегодня">
+            <T size="xl" bold display>
+              {humanDate(day, today)}
+            </T>
+          </Pressable>
+          <Row gap={20}>
             <Pressable accessibilityLabel="Записать текстом" hitSlop={12} onPress={capture.openText}>
               <Icon name="keyboard" size={24} color={c.textMuted} />
             </Pressable>
@@ -53,87 +80,93 @@ export default function TodayScreen() {
           </Row>
         </Row>
 
-        <Card style={{ alignItems: 'center', gap: 6, paddingTop: 4 }}>
-          {/* У рисунка Лайма много воздуха сверху (место под листик и корону) — подрезаем, чтобы карточка не пустовала. */}
-          <View style={{ height: 120, overflow: 'hidden', alignItems: 'center' }}>
-            <View style={{ marginTop: -24 }}>
-              <Companion stage={lime.stage} mood={lime.mood} accessory={lime.accessory} size={150} animated />
-            </View>
-          </View>
-          <T bold display size="lg" style={{ textAlign: 'center' }}>
-            Лайм · {lime.stageName}
+        <WeekStrip
+          selected={day}
+          today={today}
+          onSelect={setDay}
+          scoreOf={(d) => evaluateDay(state, d, motivation.rates, d < today).score}
+        />
+
+        <View style={{ alignItems: 'center', gap: 16, paddingVertical: 4 }}>
+          <Ring t={t} value={stats.kcal / norm} size={236} stroke={16} color={over ? c.over : c.ring}>
+            <T size="xxl" bold display>
+              {fmt(stats.kcal)}
+            </T>
+            <T tone="muted">из {fmt(norm)} ккал</T>
+            <T size="sm" tone="muted" style={{ marginTop: 4 }}>
+              {stats.kcal === 0 ? 'нажми на микрофон' : over ? 'чуть выше плана' : `осталось ${fmt(norm - stats.kcal)}`}
+            </T>
+          </Ring>
+
+          <Row gap={8} style={{ justifyContent: 'center' }}>
+            {result.checks.map((ch) => (
+              <View
+                key={ch.id}
+                style={{
+                  flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, height: 34, borderRadius: 17,
+                  backgroundColor: ch.done ? c.doneFill : c.fill,
+                }}
+              >
+                <Icon name={ch.done ? 'check' : 'minus'} size={14} strokeWidth={2.4} color={ch.done ? c.accentText : c.textMuted} />
+                <T size="sm" bold={ch.done} tone={ch.done ? 'text' : 'muted'}>
+                  {CHECK_LABEL[ch.id]}
+                </T>
+              </View>
+            ))}
+          </Row>
+
+          <T size="sm" tone="muted" style={{ textAlign: 'center' }}>
+            {reward ? `+${fmt(reward)} ₽ в копилку` : `до +${fmt(rate)} ₽ за день`}
+            {'  ·  '}
+            {fmt(stats.steps)} шагов
+            {stats.activeMinutes ? `  ·  ${stats.activeMinutes} мин спорта` : ''}
           </T>
-          <T style={{ textAlign: 'center' }}>{lime.line}</T>
-          {lime.toNext != null && (
-            <T size="xs" tone="muted" style={{ textAlign: 'center' }}>
-              До следующей стадии — {lime.toNext} {plural(lime.toNext, 'хороший день', 'хороших дня', 'хороших дней')}
+        </View>
+
+        <View style={{ gap: 2 }}>
+          {dayMeals.length === 0 && sessions.length === 0 && (
+            <T tone="muted" style={{ textAlign: 'center', paddingVertical: 12 }}>
+              {day === today ? 'Пока пусто. Скажи, что ел или как тренировался.' : 'В этот день записей нет. Можно дописать — микрофон запишет сюда.'}
             </T>
           )}
-        </Card>
+          {dayMeals.map((m) => (
+            <EntryRow
+              key={m.id}
+              time={timeOf(m.at)}
+              title={m.items.map((i) => i.name).join(', ')}
+              value={`${fmt(m.totals.kcal)} ккал`}
+              onDelete={() => askDelete(m.text, () => deleteMeal(m.id))}
+            />
+          ))}
+          {sessions.map((a) => (
+            <EntryRow
+              key={a.id}
+              time={timeOf(a.at)}
+              title={`${a.name} · ${a.minutes} мин`}
+              value={`−${fmt(a.kcal)} ккал`}
+              accent
+              onDelete={() => askDelete(a.name, () => deleteSession(day, a.id))}
+            />
+          ))}
+        </View>
 
-        <WishProgress bank={bank} />
-        <DayCard day={bank.today} />
-
-        <Card style={{ gap: 8 }}>
-          <Row style={{ justifyContent: 'space-between', alignItems: 'flex-end' }}>
-            <View>
-              <T size="xs" tone="muted">
-                Съедено
-              </T>
-              <T bold display size="xl">
-                {fmt(stats.kcal)}{' '}
-                <T size="sm" tone="muted">
-                  из {fmt(game.norm)} ккал
-                </T>
-              </T>
-            </View>
-            <T size="xs" tone="muted">
-              {stats.kcal === 0 ? 'скажи, что ел' : left >= 0 ? `осталось ${fmt(left)}` : 'чуть выше плана'}
+        {day === today && pending.length > 0 && (
+          <View style={{ gap: 6 }}>
+            <T size="sm" tone="muted">
+              Ждут интернета
             </T>
-          </Row>
-          {/* Превышение — нейтральный цвет, без «красной ошибки». */}
-          <Bar value={stats.kcal} max={game.norm} color={left >= 0 ? c.bar : c.over} height={8} />
-          <Row gap={12} style={{ flexWrap: 'wrap' }}>
-            <Macro label="Б" value={stats.protein} color={c.protein} />
-            <Macro label="Ж" value={stats.fat} color={c.fat} />
-            <Macro label="У" value={stats.carbs} color={c.carbs} />
-          </Row>
-        </Card>
-
-        <Pressable onPress={() => router.push('/progress')} accessibilityLabel="Активность за сегодня">
-          <Card style={{ flexDirection: 'row', paddingVertical: 12 }}>
-            <Stat icon="steps" value={fmt(stats.steps)} label={`из ${fmt(profile.stepsGoal)} шагов`} />
-            <Stat icon="workout" value={`${stats.activeMinutes}`} label="мин спорта" />
-            <Stat icon="streak" value={fmt(stats.burnedKcal)} label="ккал сожжено" />
-          </Card>
-        </Pressable>
-
-        {pending > 0 && (
-          <Pressable onPress={() => router.push('/diary')}>
-            <Card style={{ borderColor: c.warning, paddingVertical: 12 }}>
-              <Row gap={10}>
-                <Icon name="cloudOff" size={20} color={c.warning} />
-                <T style={{ flex: 1 }}>
-                  {pending} {pending === 1 ? 'запись ждёт' : 'записи ждут'} интернета
+            {pending.map((p) => (
+              <Row key={p.id} style={{ justifyContent: 'space-between' }}>
+                <T style={{ flex: 1 }} numberOfLines={1}>
+                  «{p.text}»
                 </T>
-                <Icon name="chevronRight" size={18} color={c.textMuted} />
+                <Pressable hitSlop={8} onPress={() => void capture.parsePending(p.text, p.id)}>
+                  <T bold style={{ color: c.accentText }}>
+                    Разобрать
+                  </T>
+                </Pressable>
               </Row>
-            </Card>
-          </Pressable>
-        )}
-
-        {game.templates.length > 0 && (
-          <View style={{ gap: 8 }}>
-            <T bold display>
-              Быстро записать
-            </T>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }} style={{ marginHorizontal: -16 }}>
-              <View style={{ width: 8 }} />
-              {game.templates.map((tpl) => (
-                <TemplateChip key={tpl.key} t={t} name={tpl.label} kcal={tpl.totals.kcal} onPress={() => logTemplate(tpl)} />
-              ))}
-              <View style={{ width: 8 }} />
-            </ScrollView>
+            ))}
           </View>
         )}
       </ScrollView>
@@ -141,28 +174,24 @@ export default function TodayScreen() {
   );
 }
 
-function Stat({ icon, value, label }: { icon: IconName; value: string; label: string }) {
+function EntryRow({ time, title, value, accent, onDelete }: { time: string; title: string; value: string; accent?: boolean; onDelete: () => void }) {
   const { c } = useTheme();
   return (
-    <View style={{ flex: 1, alignItems: 'center', gap: 4 }}>
-      <Icon name={icon} size={20} color={c.accentText} />
-      <T bold display size="md">
-        {value}
-      </T>
-      <T size="xs" tone="muted" style={{ textAlign: 'center' }}>
-        {label}
-      </T>
-    </View>
-  );
-}
-
-function Macro({ label, value, color }: { label: string; value: number; color: string }) {
-  return (
-    <Row gap={4}>
-      <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: color }} />
-      <T size="xs" tone="muted">
-        {label} {Math.round(value)}
-      </T>
-    </Row>
+    <Pressable onLongPress={onDelete}>
+      <Row gap={12} style={{ paddingVertical: 12, borderBottomWidth: 0.5, borderBottomColor: c.sep }}>
+        <T size="sm" tone="muted" style={{ width: 44 }}>
+          {time}
+        </T>
+        <T style={{ flex: 1 }} numberOfLines={2}>
+          {title}
+        </T>
+        <T bold style={accent ? { color: c.accentText } : undefined}>
+          {value}
+        </T>
+        <Pressable accessibilityLabel="Удалить" hitSlop={10} onPress={onDelete}>
+          <Icon name="close" size={16} color={c.textMuted} />
+        </Pressable>
+      </Row>
+    </Pressable>
   );
 }
