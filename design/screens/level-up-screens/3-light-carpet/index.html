@@ -1,0 +1,796 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Level Up · Светлая 2 · Ковёр</title>
+<style>body{margin:0}</style>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@200;300;400&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+@keyframes luFadeA{0%,100%{opacity:1}50%{opacity:0.15}}
+@keyframes luFadeB{0%,100%{opacity:0.15}50%{opacity:1}}
+@keyframes luSpin{to{transform:rotate(360deg)}}
+@keyframes luPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+.lu-ph{width:390px;height:844px;border-radius:55px;overflow:hidden;position:relative;background:var(--bg);color:var(--tx);box-shadow:0 0 0 1px rgba(255,255,255,0.08),0 30px 80px rgba(0,0,0,0.6);flex-shrink:0;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',system-ui,sans-serif}
+.lu-haze{position:absolute;left:-90px;right:-90px;top:40px;height:560px;border-radius:50%;background:var(--haze);pointer-events:none}
+.lu-mono{font-family:'JetBrains Mono',ui-monospace,'SF Mono',monospace}
+.lu-num{font-family:'Unbounded',-apple-system,system-ui,sans-serif;font-weight:300}
+.lu-lbl{font-family:'JetBrains Mono',ui-monospace,'SF Mono',monospace;font-size:11px;letter-spacing:1.6px;color:var(--mu)}
+.lu-top{position:absolute;top:59px;left:24px;right:24px;height:44px;display:flex;align-items:center;justify-content:space-between}
+.lu-pill{height:32px;padding:0 12px;border-radius:16px;border:0.5px solid var(--ln);display:flex;align-items:center;gap:8px;color:var(--tx);text-decoration:none;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11px;letter-spacing:1.6px;background:transparent}
+.lu-circ{width:44px;height:44px;border-radius:22px;border:0.5px solid var(--ln);display:flex;align-items:center;justify-content:center;background:transparent;padding:0;text-decoration:none;flex-shrink:0}
+.lu-card{background:var(--sf);border-radius:22px;border:0.5px solid var(--ln);box-sizing:border-box}
+.lu-cta{height:56px;border-radius:28px;border:0;background:var(--cta);color:var(--oncta);font-size:17px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 0 36px var(--ctaGlow);text-decoration:none;flex:1}
+.lu-ghost{height:56px;border-radius:28px;border:0.5px solid var(--ln);background:transparent;color:var(--tx);font-size:17px;font-weight:500;display:flex;align-items:center;justify-content:center;text-decoration:none;flex:1}
+.lu-nav{position:absolute;left:0;right:0;bottom:40px;height:110px;display:flex;align-items:center;justify-content:center;gap:44px}
+.lu-mic{width:76px;height:76px;border-radius:38px;border:0;padding:0;background:var(--cta);box-shadow:0 0 40px var(--ctaGlow);display:flex;align-items:center;justify-content:center}
+.lu-row{display:flex;align-items:center;justify-content:space-between;min-height:52px;gap:12px}
+.lu-sep{height:0.5px;background:var(--ln)}
+.lu-tg{width:51px;height:31px;border-radius:16px;background:var(--sf2);position:relative;flex-shrink:0}
+.lu-tg.on{background:var(--tgl)}
+.lu-tg span{position:absolute;top:2px;left:2px;width:27px;height:27px;border-radius:14px;background:#FFFFFF;box-shadow:0 2px 6px rgba(0,0,0,0.25)}
+.lu-tg.on span{left:22px}
+.lu-bar{height:4px;border-radius:2px;background:var(--track);overflow:hidden}
+</style>
+<style>
+body{margin:0}
+</style>
+<style>
+body{margin:0}
+</style>
+<style>body{margin:0;background:#030304;padding:48px}</style>
+</head>
+<body>
+<section style="display: flex; flex-direction: column; gap: 18px; --bg:#A3B6EE;--sf:rgba(255,255,255,0.32);--sf2:rgba(255,255,255,0.62);--tx:#0A0A0C;--mu:#34477F;--ln:rgba(10,10,40,0.16);--track:rgba(10,20,90,0.13);--x:#0A0A0C;--tgl:#1E6FE0;--cta:#0A0A0C;--oncta:#FFFFFF;--ctaGlow:rgba(10,20,80,0.30);--haze:radial-gradient(closest-side, rgba(255,255,255,0.40), rgba(255,255,255,0))">
+  <div style="display: flex; align-items: center; gap: 16px; height: 40px">
+    <div style="font-family: 'Unbounded', -apple-system, system-ui, sans-serif; font-size: 28px; font-weight: 300; color: #F2F2F2">Светлая 2 · Ковёр</div>
+    <div style="width: 120px; height: 14px; border-radius: 7px; background: linear-gradient(90deg, #A3B6EE 0 25%, #1E6FE0 25% 50%, #E8202A 50% 75%, #0A0A0C 75%)"></div>
+    <div class="lu-mono" style="font-size: 12px; color: #7A7A7A; letter-spacing: 0.5px">ПЕРВИНКЛЬ · ЕДА КОБАЛЬТ · ШАГИ КРАСНЫЙ · ОПЫТ ЧЁРНЫЙ</div>
+  </div>
+  <div style="display: flex; gap: 40px; align-items: flex-start">
+
+    
+    <div style="display: flex; flex-direction: column; gap: 12px">
+      <div class="lu-mono" style="font-size: 11px; letter-spacing: 1.4px; color: #7A7A7A">01 · ОНБОРДИНГ</div>
+      <div class="lu-ph">
+        <div class="lu-haze"></div>
+        <div style="position: absolute; top: 150px; left: 65px">
+          <div style="display: contents;"><div style="display: contents;">
+
+<div role="img" aria-label="Еда, шаги, опыт" style="width: 260px; height: 260px; position: relative; flex-shrink: 0">
+  
+    <div style="position: absolute; left: 0.0px; top: 0.0px; width: 260.0px; height: 260.0px; border-radius: 50%; background: rgba(10,20,90,0.13); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 13.0px), #000 calc(100% - 12.4px)); mask: radial-gradient(farthest-side, transparent calc(100% - 13.0px), #000 calc(100% - 12.4px))"></div>
+    <div style="position: absolute; left: 0.0px; top: 0.0px; width: 260.0px; height: 260.0px; border-radius: 50%; background: conic-gradient(from 0deg, #1E6FE0 0.0deg, #1E6FE0 259.2deg, transparent 259.2deg); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 13.0px), #000 calc(100% - 12.4px)); mask: radial-gradient(farthest-side, transparent calc(100% - 13.0px), #000 calc(100% - 12.4px)); filter: blur(8.1px); opacity: 0.2"></div>
+    <div style="position: absolute; left: 0.0px; top: 0.0px; width: 260.0px; height: 260.0px; border-radius: 50%; background: conic-gradient(from 0deg, #1E6FE0 0.0deg, #1E6FE0 259.2deg, transparent 259.2deg); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 13.0px), #000 calc(100% - 12.4px)); mask: radial-gradient(farthest-side, transparent calc(100% - 13.0px), #000 calc(100% - 12.4px))"></div>
+    <div style="position: absolute; left: 123.5px; top: 0.0px; width: 13.0px; height: 13.0px; border-radius: 50%; background: #1E6FE0"></div>
+    <div style="position: absolute; left: 2.2px; top: 146.6px; width: 13.0px; height: 13.0px; border-radius: 50%; background: #1E6FE0"></div>
+  
+    <div style="position: absolute; left: 19.5px; top: 19.5px; width: 221.0px; height: 221.0px; border-radius: 50%; background: rgba(10,20,90,0.13); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 5.7px), #000 calc(100% - 5.1px)); mask: radial-gradient(farthest-side, transparent calc(100% - 5.7px), #000 calc(100% - 5.1px))"></div>
+    <div style="position: absolute; left: 19.5px; top: 19.5px; width: 221.0px; height: 221.0px; border-radius: 50%; background: conic-gradient(from 0deg, #E8202A 0.0deg, #E8202A 180.0deg, transparent 180.0deg); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 5.7px), #000 calc(100% - 5.1px)); mask: radial-gradient(farthest-side, transparent calc(100% - 5.7px), #000 calc(100% - 5.1px)); filter: blur(8.1px); opacity: 0.2"></div>
+    <div style="position: absolute; left: 19.5px; top: 19.5px; width: 221.0px; height: 221.0px; border-radius: 50%; background: conic-gradient(from 0deg, #E8202A 0.0deg, #E8202A 180.0deg, transparent 180.0deg); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 5.7px), #000 calc(100% - 5.1px)); mask: radial-gradient(farthest-side, transparent calc(100% - 5.7px), #000 calc(100% - 5.1px))"></div>
+    <div style="position: absolute; left: 127.2px; top: 19.5px; width: 5.7px; height: 5.7px; border-radius: 50%; background: #E8202A"></div>
+    <div style="position: absolute; left: 127.2px; top: 234.8px; width: 5.7px; height: 5.7px; border-radius: 50%; background: #E8202A"></div>
+  
+    <div style="position: absolute; left: 30.9px; top: 30.9px; width: 198.3px; height: 198.3px; border-radius: 50%; background: rgba(10,20,90,0.13); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2.4px), #000 calc(100% - 1.8px)); mask: radial-gradient(farthest-side, transparent calc(100% - 2.4px), #000 calc(100% - 1.8px))"></div>
+    <div style="position: absolute; left: 30.9px; top: 30.9px; width: 198.3px; height: 198.3px; border-radius: 50%; background: conic-gradient(from 0deg, #0A0A0C 0.0deg, #0A0A0C 108.0deg, transparent 108.0deg); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2.4px), #000 calc(100% - 1.8px)); mask: radial-gradient(farthest-side, transparent calc(100% - 2.4px), #000 calc(100% - 1.8px)); filter: blur(8.1px); opacity: 0.2"></div>
+    <div style="position: absolute; left: 30.9px; top: 30.9px; width: 198.3px; height: 198.3px; border-radius: 50%; background: conic-gradient(from 0deg, #0A0A0C 0.0deg, #0A0A0C 108.0deg, transparent 108.0deg); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2.4px), #000 calc(100% - 1.8px)); mask: radial-gradient(farthest-side, transparent calc(100% - 2.4px), #000 calc(100% - 1.8px))"></div>
+    <div style="position: absolute; left: 128.8px; top: 30.9px; width: 2.4px; height: 2.4px; border-radius: 50%; background: #0A0A0C"></div>
+    <div style="position: absolute; left: 221.9px; top: 159.0px; width: 2.4px; height: 2.4px; border-radius: 50%; background: #0A0A0C"></div>
+  
+</div>
+</div></div>
+          <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center"><div style="display: contents;"><div style="display: contents;">
+
+<svg width="44" height="44" viewBox="0 0 24 24" fill="none" fill-opacity="1" stroke="#0A0A0C" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="display: block; flex-shrink: 0" aria-hidden="true"><path d="M12 3.5a3 3 0 0 0-3 3V12a3 3 0 0 0 6 0V6.5a3 3 0 0 0-3-3ZM6 11a6 6 0 0 0 12 0M12 17v3.5"></path></svg>
+</div></div></div>
+        </div>
+        <div style="position: absolute; top: 470px; left: 32px; right: 32px; display: flex; flex-direction: column; gap: 14px">
+          <div class="lu-num" style="font-size: 32px; line-height: 38px; letter-spacing: -1px">Просто скажи,<br>что съел</div>
+          <div style="font-size: 16px; line-height: 22px; color: var(--mu)">Я посчитаю калории и начислю опыт. Без запретов и ручного подсчёта.</div>
+          <div style="display: flex; gap: 6px; margin-top: 8px"><span style="width: 22px; height: 6px; border-radius: 3px; background: var(--tx)"></span><span style="width: 6px; height: 6px; border-radius: 3px; background: var(--ln)"></span><span style="width: 6px; height: 6px; border-radius: 3px; background: var(--ln)"></span></div>
+        </div>
+        <div style="position: absolute; left: 24px; right: 24px; bottom: 50px; display: flex; flex-direction: column; gap: 14px; align-items: center">
+          <a href="#" class="lu-cta" style="width: 100%; flex: none">Начать</a>
+          <a href="#" style="font-size: 15px; color: var(--mu); text-decoration: none; height: 32px; display: flex; align-items: center">Уже есть аккаунт</a>
+        </div>
+      </div>
+    </div>
+
+    
+    <div style="display: flex; flex-direction: column; gap: 12px">
+      <div class="lu-mono" style="font-size: 11px; letter-spacing: 1.4px; color: #7A7A7A">02 · ГЛАВНЫЙ</div>
+      <div class="lu-ph">
+        <div class="lu-haze"></div>
+        <header class="lu-top"><span class="lu-lbl">ВТ · 13 ОКТ</span><a href="#" class="lu-pill" aria-label="Уровень 4"><span style="width: 6px; height: 6px; border-radius: 3px; background: var(--x)"></span>LV 04</a></header>
+        <div style="position: absolute; top: 128px; left: 35px">
+          <div style="display: contents;"><div style="display: contents;">
+
+<div role="img" aria-label="Еда, шаги, опыт" style="width: 320px; height: 320px; position: relative; flex-shrink: 0">
+  
+    <div style="position: absolute; left: 0.0px; top: 0.0px; width: 320.0px; height: 320.0px; border-radius: 50%; background: rgba(10,20,90,0.13); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 16.0px), #000 calc(100% - 15.4px)); mask: radial-gradient(farthest-side, transparent calc(100% - 16.0px), #000 calc(100% - 15.4px))"></div>
+    <div style="position: absolute; left: 0.0px; top: 0.0px; width: 320.0px; height: 320.0px; border-radius: 50%; background: conic-gradient(from 0deg, #1E6FE0 0.0deg, #1E6FE0 234.0deg, transparent 234.0deg); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 16.0px), #000 calc(100% - 15.4px)); mask: radial-gradient(farthest-side, transparent calc(100% - 16.0px), #000 calc(100% - 15.4px)); filter: blur(10.0px); opacity: 0.2"></div>
+    <div style="position: absolute; left: 0.0px; top: 0.0px; width: 320.0px; height: 320.0px; border-radius: 50%; background: conic-gradient(from 0deg, #1E6FE0 0.0deg, #1E6FE0 234.0deg, transparent 234.0deg); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 16.0px), #000 calc(100% - 15.4px)); mask: radial-gradient(farthest-side, transparent calc(100% - 16.0px), #000 calc(100% - 15.4px))"></div>
+    <div style="position: absolute; left: 152.0px; top: 0.0px; width: 16.0px; height: 16.0px; border-radius: 50%; background: #1E6FE0"></div>
+    <div style="position: absolute; left: 29.0px; top: 241.3px; width: 16.0px; height: 16.0px; border-radius: 50%; background: #1E6FE0"></div>
+  
+    <div style="position: absolute; left: 24.0px; top: 24.0px; width: 272.0px; height: 272.0px; border-radius: 50%; background: rgba(10,20,90,0.13); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 7.0px), #000 calc(100% - 6.4px)); mask: radial-gradient(farthest-side, transparent calc(100% - 7.0px), #000 calc(100% - 6.4px))"></div>
+    <div style="position: absolute; left: 24.0px; top: 24.0px; width: 272.0px; height: 272.0px; border-radius: 50%; background: conic-gradient(from 0deg, #E8202A 0.0deg, #E8202A 244.8deg, transparent 244.8deg); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 7.0px), #000 calc(100% - 6.4px)); mask: radial-gradient(farthest-side, transparent calc(100% - 7.0px), #000 calc(100% - 6.4px)); filter: blur(10.0px); opacity: 0.2"></div>
+    <div style="position: absolute; left: 24.0px; top: 24.0px; width: 272.0px; height: 272.0px; border-radius: 50%; background: conic-gradient(from 0deg, #E8202A 0.0deg, #E8202A 244.8deg, transparent 244.8deg); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 7.0px), #000 calc(100% - 6.4px)); mask: radial-gradient(farthest-side, transparent calc(100% - 7.0px), #000 calc(100% - 6.4px))"></div>
+    <div style="position: absolute; left: 156.5px; top: 24.0px; width: 7.0px; height: 7.0px; border-radius: 50%; background: #E8202A"></div>
+    <div style="position: absolute; left: 36.6px; top: 212.9px; width: 7.0px; height: 7.0px; border-radius: 50%; background: #E8202A"></div>
+  
+    <div style="position: absolute; left: 38.0px; top: 38.0px; width: 244.0px; height: 244.0px; border-radius: 50%; background: rgba(10,20,90,0.13); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3.0px), #000 calc(100% - 2.4px)); mask: radial-gradient(farthest-side, transparent calc(100% - 3.0px), #000 calc(100% - 2.4px))"></div>
+    <div style="position: absolute; left: 38.0px; top: 38.0px; width: 244.0px; height: 244.0px; border-radius: 50%; background: conic-gradient(from 0deg, #0A0A0C 0.0deg, #0A0A0C 122.4deg, transparent 122.4deg); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3.0px), #000 calc(100% - 2.4px)); mask: radial-gradient(farthest-side, transparent calc(100% - 3.0px), #000 calc(100% - 2.4px)); filter: blur(10.0px); opacity: 0.2"></div>
+    <div style="position: absolute; left: 38.0px; top: 38.0px; width: 244.0px; height: 244.0px; border-radius: 50%; background: conic-gradient(from 0deg, #0A0A0C 0.0deg, #0A0A0C 122.4deg, transparent 122.4deg); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3.0px), #000 calc(100% - 2.4px)); mask: radial-gradient(farthest-side, transparent calc(100% - 3.0px), #000 calc(100% - 2.4px))"></div>
+    <div style="position: absolute; left: 158.5px; top: 38.0px; width: 3.0px; height: 3.0px; border-radius: 50%; background: #0A0A0C"></div>
+    <div style="position: absolute; left: 260.2px; top: 223.1px; width: 3.0px; height: 3.0px; border-radius: 50%; background: #0A0A0C"></div>
+  
+</div>
+</div></div>
+          <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px">
+            <div class="lu-num" style="font-size: 68px; line-height: 72px; font-weight: 200; letter-spacing: -3px">660</div>
+            <div class="lu-lbl" style="letter-spacing: 2px">ККАЛ ОСТАЛОСЬ</div>
+          </div>
+        </div>
+        <div style="position: absolute; top: 482px; left: 28px; right: 28px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px">
+          
+            <div style="display: flex; flex-direction: column; gap: 6px; align-items: flex-start">
+              <span class="lu-lbl" style="display: flex; align-items: center; gap: 6px; font-size: 10px"><span style="width: 12px; height: 4px; border-radius: 2px; background: #1E6FE0"></span>ЕДА</span>
+              <span class="lu-num" style="font-size: 17px">1 240<span style="font-size: 11px; color: var(--mu)">/1900</span></span>
+            </div>
+          
+            <div style="display: flex; flex-direction: column; gap: 6px; align-items: center">
+              <span class="lu-lbl" style="display: flex; align-items: center; gap: 6px; font-size: 10px"><span style="width: 12px; height: 3px; border-radius: 2px; background: #E8202A"></span>ШАГИ</span>
+              <span class="lu-num" style="font-size: 17px">5 400<span style="font-size: 11px; color: var(--mu)"></span></span>
+            </div>
+          
+            <div style="display: flex; flex-direction: column; gap: 6px; align-items: flex-end">
+              <span class="lu-lbl" style="display: flex; align-items: center; gap: 6px; font-size: 10px"><span style="width: 12px; height: 2px; border-radius: 2px; background: #0A0A0C"></span>ОПЫТ</span>
+              <span class="lu-num" style="font-size: 17px">340<span style="font-size: 11px; color: var(--mu)">/1000</span></span>
+            </div>
+          
+        </div>
+        <a href="#" class="lu-card" style="position: absolute; top: 560px; left: 20px; right: 20px; height: 64px; padding: 0 16px; display: flex; align-items: center; gap: 12px; color: var(--tx); text-decoration: none">
+          <span class="lu-lbl" style="font-size: 10px">13:40</span>
+          <span style="flex: 1; font-size: 15px">Плов с курицей</span>
+          <span class="lu-num" style="font-size: 14px">520<span style="font-size: 10px; color: var(--mu)"> ККАЛ</span></span>
+          <div style="display: contents;"><div style="display: contents;">
+
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" fill-opacity="1" stroke="#34477F" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="display: block; flex-shrink: 0" aria-hidden="true"><path d="M9.5 5.5 16 12l-6.5 6.5"></path></svg>
+</div></div>
+        </a>
+        <nav aria-label="Навигация" class="lu-nav">
+          <a href="#" aria-label="Дневник" class="lu-circ" style="width: 48px; height: 48px; border-radius: 24px"><div style="display: contents;"><div style="display: contents;">
+
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" fill-opacity="1" stroke="#34477F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display: block; flex-shrink: 0" aria-hidden="true"><path d="M6.5 3.5H18a1 1 0 0 1 1 1V20H6.5A1.5 1.5 0 0 1 5 18.5V5a1.5 1.5 0 0 1 1.5-1.5Z"></path></svg>
+</div></div></a>
+          <button aria-label="Записать голосом" class="lu-mic"><div style="display: contents;"><div style="display: contents;">
+
+<svg width="28" height="28" viewBox="0 0 24 24" fill="none" fill-opacity="1" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: block; flex-shrink: 0" aria-hidden="true"><path d="M12 3.5a3 3 0 0 0-3 3V12a3 3 0 0 0 6 0V6.5a3 3 0 0 0-3-3ZM6 11a6 6 0 0 0 12 0M12 17v3.5"></path></svg>
+</div></div></button>
+          <a href="#" aria-label="Прогресс" class="lu-circ" style="width: 48px; height: 48px; border-radius: 24px"><div style="display: contents;"><div style="display: contents;">
+
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" fill-opacity="1" stroke="#34477F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display: block; flex-shrink: 0" aria-hidden="true"><path d="M5 20v-5M10 20V10M15 20v-7M20 20V4.5"></path></svg>
+</div></div></a>
+        </nav>
+      </div>
+    </div>
+
+    
+    <div style="display: flex; flex-direction: column; gap: 12px">
+      <div class="lu-mono" style="font-size: 11px; letter-spacing: 1.4px; color: #7A7A7A">03 · СЛУШАЮ (ВОЛНА ДВИЖЕТСЯ)</div>
+      <div class="lu-ph">
+        <div class="lu-haze"></div>
+        <header class="lu-top" style="opacity: 0.3"><span class="lu-lbl">ВТ · 13 ОКТ</span><span class="lu-pill">LV 04</span></header>
+        <div style="position: absolute; top: 128px; left: 35px; opacity: 0.28">
+          <div style="display: contents;"><div style="display: contents;">
+
+<div role="img" aria-label="Еда, шаги, опыт" style="width: 320px; height: 320px; position: relative; flex-shrink: 0">
+  
+    <div style="position: absolute; left: 0.0px; top: 0.0px; width: 320.0px; height: 320.0px; border-radius: 50%; background: rgba(10,20,90,0.13); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 16.0px), #000 calc(100% - 15.4px)); mask: radial-gradient(farthest-side, transparent calc(100% - 16.0px), #000 calc(100% - 15.4px))"></div>
+    <div style="position: absolute; left: 0.0px; top: 0.0px; width: 320.0px; height: 320.0px; border-radius: 50%; background: conic-gradient(from 0deg, #1E6FE0 0.0deg, #1E6FE0 234.0deg, transparent 234.0deg); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 16.0px), #000 calc(100% - 15.4px)); mask: radial-gradient(farthest-side, transparent calc(100% - 16.0px), #000 calc(100% - 15.4px)); filter: blur(10.0px); opacity: 0.2"></div>
+    <div style="position: absolute; left: 0.0px; top: 0.0px; width: 320.0px; height: 320.0px; border-radius: 50%; background: conic-gradient(from 0deg, #1E6FE0 0.0deg, #1E6FE0 234.0deg, transparent 234.0deg); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 16.0px), #000 calc(100% - 15.4px)); mask: radial-gradient(farthest-side, transparent calc(100% - 16.0px), #000 calc(100% - 15.4px))"></div>
+    <div style="position: absolute; left: 152.0px; top: 0.0px; width: 16.0px; height: 16.0px; border-radius: 50%; background: #1E6FE0"></div>
+    <div style="position: absolute; left: 29.0px; top: 241.3px; width: 16.0px; height: 16.0px; border-radius: 50%; background: #1E6FE0"></div>
+  
+    <div style="position: absolute; left: 24.0px; top: 24.0px; width: 272.0px; height: 272.0px; border-radius: 50%; background: rgba(10,20,90,0.13); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 7.0px), #000 calc(100% - 6.4px)); mask: radial-gradient(farthest-side, transparent calc(100% - 7.0px), #000 calc(100% - 6.4px))"></div>
+    <div style="position: absolute; left: 24.0px; top: 24.0px; width: 272.0px; height: 272.0px; border-radius: 50%; background: conic-gradient(from 0deg, #E8202A 0.0deg, #E8202A 244.8deg, transparent 244.8deg); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 7.0px), #000 calc(100% - 6.4px)); mask: radial-gradient(farthest-side, transparent calc(100% - 7.0px), #000 calc(100% - 6.4px)); filter: blur(10.0px); opacity: 0.2"></div>
+    <div style="position: absolute; left: 24.0px; top: 24.0px; width: 272.0px; height: 272.0px; border-radius: 50%; background: conic-gradient(from 0deg, #E8202A 0.0deg, #E8202A 244.8deg, transparent 244.8deg); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 7.0px), #000 calc(100% - 6.4px)); mask: radial-gradient(farthest-side, transparent calc(100% - 7.0px), #000 calc(100% - 6.4px))"></div>
+    <div style="position: absolute; left: 156.5px; top: 24.0px; width: 7.0px; height: 7.0px; border-radius: 50%; background: #E8202A"></div>
+    <div style="position: absolute; left: 36.6px; top: 212.9px; width: 7.0px; height: 7.0px; border-radius: 50%; background: #E8202A"></div>
+  
+    <div style="position: absolute; left: 38.0px; top: 38.0px; width: 244.0px; height: 244.0px; border-radius: 50%; background: rgba(10,20,90,0.13); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3.0px), #000 calc(100% - 2.4px)); mask: radial-gradient(farthest-side, transparent calc(100% - 3.0px), #000 calc(100% - 2.4px))"></div>
+    <div style="position: absolute; left: 38.0px; top: 38.0px; width: 244.0px; height: 244.0px; border-radius: 50%; background: conic-gradient(from 0deg, #0A0A0C 0.0deg, #0A0A0C 122.4deg, transparent 122.4deg); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3.0px), #000 calc(100% - 2.4px)); mask: radial-gradient(farthest-side, transparent calc(100% - 3.0px), #000 calc(100% - 2.4px)); filter: blur(10.0px); opacity: 0.2"></div>
+    <div style="position: absolute; left: 38.0px; top: 38.0px; width: 244.0px; height: 244.0px; border-radius: 50%; background: conic-gradient(from 0deg, #0A0A0C 0.0deg, #0A0A0C 122.4deg, transparent 122.4deg); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3.0px), #000 calc(100% - 2.4px)); mask: radial-gradient(farthest-side, transparent calc(100% - 3.0px), #000 calc(100% - 2.4px))"></div>
+    <div style="position: absolute; left: 158.5px; top: 38.0px; width: 3.0px; height: 3.0px; border-radius: 50%; background: #0A0A0C"></div>
+    <div style="position: absolute; left: 260.2px; top: 223.1px; width: 3.0px; height: 3.0px; border-radius: 50%; background: #0A0A0C"></div>
+  
+</div>
+</div></div>
+          <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px">
+            <div class="lu-num" style="font-size: 68px; line-height: 72px; font-weight: 200; letter-spacing: -3px">660</div>
+            <div class="lu-lbl" style="letter-spacing: 2px">ККАЛ ОСТАЛОСЬ</div>
+          </div>
+        </div>
+        <nav aria-label="Запись" style="position: absolute; left: 0; right: 0; bottom: 20px; height: 150px; display: flex; align-items: center; justify-content: center; gap: 30px">
+          <button aria-label="Отмена" class="lu-circ" style="width: 48px; height: 48px; border-radius: 24px"><div style="display: contents;"><div style="display: contents;">
+
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" fill-opacity="1" stroke="#34477F" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="display: block; flex-shrink: 0" aria-hidden="true"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"></path></svg>
+</div></div></button>
+          <button aria-label="Слушаю — нажми, чтобы закончить" style="width: 150px; height: 150px; border: 0; padding: 0; background: transparent; position: relative; display: flex; align-items: center; justify-content: center">
+            <svg width="150" height="150" viewBox="0 0 300 300" style="position: absolute; inset: 0; filter: blur(8px); opacity: 0.2; animation: luSpin 14s linear infinite" aria-hidden="true">
+              <defs><linearGradient id="sg-carpet" x1="20" y1="20" x2="280" y2="280" gradientUnits="userSpaceOnUse"><stop offset="0.00" stop-color="#1E6FE0"></stop><stop offset="0.50" stop-color="#8E5BF0"></stop><stop offset="1.00" stop-color="#E8202A"></stop></linearGradient></defs>
+              <path d="M232.0 150.0L240.0 150.0M231.6 158.0L249.0 159.7M230.4 166.0L263.2 172.5M228.5 173.8L267.5 185.7M225.8 181.4L258.9 195.1M222.3 188.7L258.7 208.1M218.2 195.6L239.4 209.7M213.4 202.0L231.9 217.2M208.0 208.0L215.4 215.4M202.0 213.4L212.1 225.7M195.6 218.2L210.4 240.5M188.7 222.3L208.4 259.4M181.4 225.8L199.3 269.0M173.8 228.5L183.8 261.3M166.0 230.4L174.2 271.7M158.0 231.6L161.0 261.6M150.0 232.0L150.0 246.7M142.0 231.6L140.5 246.7M134.0 230.4L128.1 259.9M126.2 228.5L115.6 263.5M118.6 225.8L106.9 254.0M111.3 222.3L93.6 255.5M104.4 218.2L78.7 256.6M98.0 213.4L83.6 230.9M92.0 208.0L78.1 221.9M86.6 202.0L77.9 209.2M81.8 195.6L65.5 206.5M77.7 188.7L51.0 202.9M74.2 181.4L48.1 192.2M71.5 173.8L22.7 188.6M69.6 166.0L27.4 174.4M68.4 158.0L35.2 161.3M68.0 150.0L46.3 150.0M68.4 142.0L59.8 141.1M69.6 134.0L53.7 130.8M71.5 126.2L41.0 116.9M74.2 118.6L47.1 107.4M77.7 111.3L32.3 87.1M81.8 104.4L49.8 83.0M86.6 98.0L67.5 82.3M92.0 92.0L74.9 74.9M98.0 86.6L90.2 77.1M104.4 81.8L96.1 69.3M111.3 77.7L100.0 56.5M118.6 74.2L107.0 46.2M126.2 71.5L115.6 36.5M134.0 69.6L125.8 28.3M142.0 68.4L139.5 43.4M150.0 68.0L150.0 40.1M158.0 68.4L159.8 50.8M166.0 69.6L168.3 57.9M173.8 71.5L180.7 48.8M181.4 74.2L195.3 40.6M188.7 77.7L205.4 46.4M195.6 81.8L215.4 52.1M202.0 86.6L221.4 63.0M208.0 92.0L231.5 68.5M213.4 98.0L228.5 85.6M218.2 104.4L225.7 99.4M222.3 111.3L244.7 99.4M225.8 118.6L259.6 104.6M228.5 126.2L264.9 115.1M230.4 134.0L262.0 127.7M231.6 142.0L263.8 138.8" stroke="url(#sg-carpet)" stroke-width="5" stroke-linecap="round"></path>
+            </svg>
+            <svg width="150" height="150" viewBox="0 0 300 300" style="position: absolute; inset: 0; animation: luSpin 14s linear infinite" aria-hidden="true">
+              <defs><linearGradient id="sh-carpet" x1="20" y1="20" x2="280" y2="280" gradientUnits="userSpaceOnUse"><stop offset="0.00" stop-color="#1E6FE0"></stop><stop offset="0.50" stop-color="#8E5BF0"></stop><stop offset="1.00" stop-color="#E8202A"></stop></linearGradient></defs>
+              <g style="transform-origin: 150px 150px; animation: luPulse 0.9s ease-in-out infinite">
+                <path d="M232.0 150.0L240.0 150.0M231.6 158.0L249.0 159.7M230.4 166.0L263.2 172.5M228.5 173.8L267.5 185.7M225.8 181.4L258.9 195.1M222.3 188.7L258.7 208.1M218.2 195.6L239.4 209.7M213.4 202.0L231.9 217.2M208.0 208.0L215.4 215.4M202.0 213.4L212.1 225.7M195.6 218.2L210.4 240.5M188.7 222.3L208.4 259.4M181.4 225.8L199.3 269.0M173.8 228.5L183.8 261.3M166.0 230.4L174.2 271.7M158.0 231.6L161.0 261.6M150.0 232.0L150.0 246.7M142.0 231.6L140.5 246.7M134.0 230.4L128.1 259.9M126.2 228.5L115.6 263.5M118.6 225.8L106.9 254.0M111.3 222.3L93.6 255.5M104.4 218.2L78.7 256.6M98.0 213.4L83.6 230.9M92.0 208.0L78.1 221.9M86.6 202.0L77.9 209.2M81.8 195.6L65.5 206.5M77.7 188.7L51.0 202.9M74.2 181.4L48.1 192.2M71.5 173.8L22.7 188.6M69.6 166.0L27.4 174.4M68.4 158.0L35.2 161.3M68.0 150.0L46.3 150.0M68.4 142.0L59.8 141.1M69.6 134.0L53.7 130.8M71.5 126.2L41.0 116.9M74.2 118.6L47.1 107.4M77.7 111.3L32.3 87.1M81.8 104.4L49.8 83.0M86.6 98.0L67.5 82.3M92.0 92.0L74.9 74.9M98.0 86.6L90.2 77.1M104.4 81.8L96.1 69.3M111.3 77.7L100.0 56.5M118.6 74.2L107.0 46.2M126.2 71.5L115.6 36.5M134.0 69.6L125.8 28.3M142.0 68.4L139.5 43.4M150.0 68.0L150.0 40.1M158.0 68.4L159.8 50.8M166.0 69.6L168.3 57.9M173.8 71.5L180.7 48.8M181.4 74.2L195.3 40.6M188.7 77.7L205.4 46.4M195.6 81.8L215.4 52.1M202.0 86.6L221.4 63.0M208.0 92.0L231.5 68.5M213.4 98.0L228.5 85.6M218.2 104.4L225.7 99.4M222.3 111.3L244.7 99.4M225.8 118.6L259.6 104.6M228.5 126.2L264.9 115.1M230.4 134.0L262.0 127.7M231.6 142.0L263.8 138.8" stroke="url(#sh-carpet)" stroke-width="5" stroke-linecap="round" style="animation: luFadeA 0.7s ease-in-out infinite"></path>
+                <path d="M232.0 150.0L260.2 150.0M231.6 158.0L265.5 161.4M230.4 166.0L260.7 172.0M228.5 173.8L252.2 181.0M225.8 181.4L243.8 188.9M222.3 188.7L230.9 193.2M218.2 195.6L236.0 207.4M213.4 202.0L243.7 226.9M208.0 208.0L240.0 240.0M202.0 213.4L222.1 237.8M195.6 218.2L215.8 248.5M188.7 222.3L207.3 257.3M181.4 225.8L190.2 247.0M173.8 228.5L176.6 237.6M166.0 230.4L169.3 247.0M158.0 231.6L160.9 260.4M150.0 232.0L150.0 276.5M142.0 231.6L138.9 262.8M134.0 230.4L124.2 279.6M126.2 228.5L115.9 262.4M118.6 225.8L107.3 253.2M111.3 222.3L105.2 233.8M104.4 218.2L96.5 230.0M98.0 213.4L84.1 230.3M92.0 208.0L64.0 236.0M86.6 202.0L60.2 223.7M81.8 195.6L55.2 213.4M77.7 188.7L41.1 208.2M74.2 181.4L55.8 189.0M71.5 173.8L56.9 178.3M69.6 166.0L58.3 168.2M68.4 158.0L39.7 160.9M68.0 150.0L39.1 150.0M68.4 142.0L31.0 138.3M69.6 134.0L32.5 126.6M71.5 126.2L42.5 117.4M74.2 118.6L41.8 105.2M77.7 111.3L58.1 100.9M81.8 104.4L74.2 99.4M86.6 98.0L67.7 82.5M92.0 92.0L66.6 66.6M98.0 86.6L68.8 51.1M104.4 81.8L76.7 40.3M111.3 77.7L93.2 43.6M118.6 74.2L106.8 45.7M126.2 71.5L120.2 51.7M134.0 69.6L132.0 59.5M142.0 68.4L140.0 48.8M150.0 68.0L150.0 36.2M158.0 68.4L160.8 39.9M166.0 69.6L172.4 37.6M173.8 71.5L184.0 37.9M181.4 74.2L197.0 36.4M188.7 77.7L198.5 59.3M195.6 81.8L203.4 70.1M202.0 86.6L210.0 76.9M208.0 92.0L222.9 77.1M213.4 98.0L233.1 81.8M218.2 104.4L245.5 86.2M222.3 111.3L257.3 92.7M225.8 118.6L248.9 109.0M228.5 126.2L257.5 117.4M230.4 134.0L247.7 130.6M231.6 142.0L244.0 140.7" stroke="url(#sh-carpet)" stroke-width="5" stroke-linecap="round" style="animation: luFadeB 0.7s ease-in-out infinite"></path>
+              </g>
+            </svg>
+            <span style="position: relative; width: 58px; height: 58px; border-radius: 29px; background: #0A0A0C; border: 0.5px solid var(--ln); display: flex; align-items: center; justify-content: center"><span style="width: 16px; height: 16px; border-radius: 4px; background: #FFFFFF"></span></span>
+          </button>
+          <button aria-label="Ввести текстом" class="lu-circ" style="width: 48px; height: 48px; border-radius: 24px"><div style="display: contents;"><div style="display: contents;">
+
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" fill-opacity="1" stroke="#34477F" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="display: block; flex-shrink: 0" aria-hidden="true"><path d="M3 7.5A2.5 2.5 0 0 1 5.5 5h13A2.5 2.5 0 0 1 21 7.5v9a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 16.5ZM7 9.5h.01M10.3 9.5h.01M13.7 9.5h.01M17 9.5h.01M7 12.5h.01M17 12.5h.01M9 15.5h6"></path></svg>
+</div></div></button>
+        </nav>
+      </div>
+    </div>
+
+    
+    <div style="display: flex; flex-direction: column; gap: 12px">
+      <div class="lu-mono" style="font-size: 11px; letter-spacing: 1.4px; color: #7A7A7A">04 · ПРОВЕРКА ЗАПИСИ</div>
+      <div class="lu-ph">
+        <header class="lu-top"><a href="#" aria-label="Назад" class="lu-circ"><div style="display: contents;"><div style="display: contents;">
+
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" fill-opacity="1" stroke="#0A0A0C" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="display: block; flex-shrink: 0" aria-hidden="true"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"></path></svg>
+</div></div></a><span class="lu-lbl">ОБЕД · 13:40</span><span style="width: 44px"></span></header>
+        <div style="position: absolute; top: 124px; left: 24px; right: 24px; display: flex; flex-direction: column; gap: 20px">
+          <div style="display: flex; flex-direction: column; gap: 4px">
+            <div class="lu-num" style="font-size: 26px; letter-spacing: -0.6px">Плов с курицей</div>
+            <div style="font-size: 15px; color: var(--mu)">1 тарелка · около 350 г</div>
+          </div>
+          <div style="display: flex; align-items: baseline; gap: 10px"><span class="lu-num" style="font-size: 80px; line-height: 84px; font-weight: 200; letter-spacing: -4px">520</span><span class="lu-lbl">ККАЛ</span></div>
+          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px">
+            
+              <div style="display: flex; flex-direction: column; gap: 8px">
+                <span class="lu-lbl" style="font-size: 10px">БЕЛКИ</span>
+                <span class="lu-num" style="font-size: 18px">24<span style="font-size: 11px; color: var(--mu)"> г</span></span>
+                <div class="lu-bar"><div style="width: 40%; height: 4px; border-radius: 2px; background: #1E6FE0"></div></div>
+              </div>
+            
+              <div style="display: flex; flex-direction: column; gap: 8px">
+                <span class="lu-lbl" style="font-size: 10px">ЖИРЫ</span>
+                <span class="lu-num" style="font-size: 18px">18<span style="font-size: 11px; color: var(--mu)"> г</span></span>
+                <div class="lu-bar"><div style="width: 30%; height: 4px; border-radius: 2px; background: #E8202A"></div></div>
+              </div>
+            
+              <div style="display: flex; flex-direction: column; gap: 8px">
+                <span class="lu-lbl" style="font-size: 10px">УГЛЕВОДЫ</span>
+                <span class="lu-num" style="font-size: 18px">62<span style="font-size: 11px; color: var(--mu)"> г</span></span>
+                <div class="lu-bar"><div style="width: 70%; height: 4px; border-radius: 2px; background: #0A0A0C"></div></div>
+              </div>
+            
+          </div>
+          <div class="lu-card" style="height: 64px; padding: 0 8px 0 16px; display: flex; align-items: center; justify-content: space-between">
+            <span style="font-size: 15px">Порция</span>
+            <div style="display: flex; align-items: center; gap: 4px">
+              <button aria-label="Меньше" class="lu-circ"><div style="display: contents;"><div style="display: contents;">
+
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" fill-opacity="1" stroke="#0A0A0C" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="display: block; flex-shrink: 0" aria-hidden="true"><path d="M5 12h14"></path></svg>
+</div></div></button>
+              <span class="lu-num" style="font-size: 15px; width: 70px; text-align: center">1</span>
+              <button aria-label="Больше" class="lu-circ"><div style="display: contents;"><div style="display: contents;">
+
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" fill-opacity="1" stroke="#0A0A0C" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="display: block; flex-shrink: 0" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+</div></div></button>
+            </div>
+          </div>
+          <div class="lu-card" style="height: 64px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between">
+            <div style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px">Чай без сахара</span><span style="font-size: 13px; color: var(--mu)">1 кружка</span></div>
+            <span class="lu-num" style="font-size: 14px">0<span style="font-size: 10px; color: var(--mu)"> ККАЛ</span></span>
+          </div>
+        </div>
+        <div style="position: absolute; left: 24px; right: 24px; bottom: 50px; display: flex; gap: 12px">
+          <a href="#" class="lu-ghost" style="flex: 0 0 120px">Изменить</a>
+          <a href="#" class="lu-cta">Добавить<span class="lu-mono" style="font-size: 12px; font-weight: 500; opacity: 0.8">+25 XP</span></a>
+        </div>
+      </div>
+    </div>
+
+    
+    <div style="display: flex; flex-direction: column; gap: 12px">
+      <div class="lu-mono" style="font-size: 11px; letter-spacing: 1.4px; color: #7A7A7A">05 · ЗАПИСАНО · НАГРАДА</div>
+      <div class="lu-ph">
+        <div class="lu-haze"></div>
+        <div style="position: absolute; top: 170px; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; gap: 10px">
+          <div style="width: 200px; height: 200px; border-radius: 100px; border: 0.5px solid var(--ln); display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 0 80px rgba(30,111,224,0.30), inset 0 0 40px rgba(30,111,224,0.30)">
+            <span class="lu-num" style="font-size: 72px; line-height: 76px; font-weight: 200; letter-spacing: -3px">+25</span>
+            <span class="lu-lbl" style="letter-spacing: 2px">ОПЫТ</span>
+          </div>
+        </div>
+        <div style="position: absolute; top: 420px; left: 32px; right: 32px; display: flex; flex-direction: column; gap: 12px">
+          <div style="display: flex; justify-content: space-between"><span class="lu-lbl">LV 04</span><span class="lu-lbl">365 / 1000</span></div>
+          <div class="lu-bar" style="height: 6px; border-radius: 3px"><div style="width: 36.5%; height: 6px; border-radius: 3px; background: var(--x)"></div></div>
+        </div>
+        <div style="position: absolute; top: 500px; left: 32px; right: 32px; display: flex; gap: 10px">
+          <div class="lu-card" style="flex: 1; height: 72px; padding: 0 14px; display: flex; align-items: center; gap: 10px"><div style="display: contents;"><div style="display: contents;">
+
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" fill-opacity="1" stroke="#1E6FE0" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="display: block; flex-shrink: 0" aria-hidden="true"><path d="M12 21.5c3.9 0 6.5-2.6 6.5-6.3 0-3.2-1.9-5.4-3.5-7.2-.3 1.6-1.1 2.7-2.3 3.2.2-3.3-1.3-6.3-3.7-8.2.1 3.3-3.5 5.6-3.5 11.6 0 4.1 2.6 6.9 6.5 6.9Z"></path></svg>
+</div></div><div style="display: flex; flex-direction: column"><span class="lu-num" style="font-size: 16px">6 дней</span><span style="font-size: 12px; color: var(--mu)">подряд</span></div></div>
+          <div class="lu-card" style="flex: 1; height: 72px; padding: 0 14px; display: flex; align-items: center; gap: 10px"><div style="display: contents;"><div style="display: contents;">
+
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" fill-opacity="1" stroke="#9A6B00" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="display: block; flex-shrink: 0" aria-hidden="true"><path d="M3.5 12a8.5 8.5 0 1 0 17 0a8.5 8.5 0 1 0-17 0ZM12 8.5 15.5 12 12 15.5 8.5 12Z"></path></svg>
+</div></div><div style="display: flex; flex-direction: column"><span class="lu-num" style="font-size: 16px">+5</span><span style="font-size: 12px; color: var(--mu)">монет</span></div></div>
+        </div>
+        <div style="position: absolute; top: 604px; left: 32px; right: 32px; font-size: 16px; line-height: 22px; color: var(--mu); text-align: center">Обед записан. На сегодня ещё 660 ккал.</div>
+        <div style="position: absolute; left: 24px; right: 24px; bottom: 50px; display: flex"><a href="#" class="lu-cta">Готово</a></div>
+      </div>
+    </div>
+
+    
+    <div style="display: flex; flex-direction: column; gap: 12px">
+      <div class="lu-mono" style="font-size: 11px; letter-spacing: 1.4px; color: #7A7A7A">06 · ДНЕВНИК</div>
+      <div class="lu-ph">
+        <header class="lu-top"><span class="lu-num" style="font-size: 22px">Дневник</span><span class="lu-lbl">ОКТЯБРЬ</span></header>
+        <div style="position: absolute; top: 116px; left: 16px; right: 16px; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px">
+          
+            <a href="#" style="height: 76px; border-radius: 18px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; text-decoration: none; color: var(--tx); background: transparent; border: 0.5px solid transparent">
+              <span class="lu-mono" style="font-size: 9px; letter-spacing: 1px; color: var(--mu)">ПН</span>
+              <span class="lu-num" style="font-size: 15px; opacity: 1">12</span>
+              <span style="width: 5px; height: 5px; border-radius: 3px; background: #1E6FE0"></span>
+            </a>
+          
+            <a href="#" style="height: 76px; border-radius: 18px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; text-decoration: none; color: var(--tx); background: rgba(255,255,255,0.62); border: 0.5px solid rgba(10,10,40,0.16)">
+              <span class="lu-mono" style="font-size: 9px; letter-spacing: 1px; color: var(--mu)">ВТ</span>
+              <span class="lu-num" style="font-size: 15px; opacity: 1">13</span>
+              <span style="width: 5px; height: 5px; border-radius: 3px; background: #1E6FE0"></span>
+            </a>
+          
+            <a href="#" style="height: 76px; border-radius: 18px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; text-decoration: none; color: var(--tx); background: transparent; border: 0.5px solid transparent">
+              <span class="lu-mono" style="font-size: 9px; letter-spacing: 1px; color: var(--mu)">СР</span>
+              <span class="lu-num" style="font-size: 15px; opacity: 0.4">14</span>
+              <span style="width: 5px; height: 5px; border-radius: 3px; background: transparent"></span>
+            </a>
+          
+            <a href="#" style="height: 76px; border-radius: 18px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; text-decoration: none; color: var(--tx); background: transparent; border: 0.5px solid transparent">
+              <span class="lu-mono" style="font-size: 9px; letter-spacing: 1px; color: var(--mu)">ЧТ</span>
+              <span class="lu-num" style="font-size: 15px; opacity: 0.4">15</span>
+              <span style="width: 5px; height: 5px; border-radius: 3px; background: transparent"></span>
+            </a>
+          
+            <a href="#" style="height: 76px; border-radius: 18px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; text-decoration: none; color: var(--tx); background: transparent; border: 0.5px solid transparent">
+              <span class="lu-mono" style="font-size: 9px; letter-spacing: 1px; color: var(--mu)">ПТ</span>
+              <span class="lu-num" style="font-size: 15px; opacity: 0.4">16</span>
+              <span style="width: 5px; height: 5px; border-radius: 3px; background: transparent"></span>
+            </a>
+          
+            <a href="#" style="height: 76px; border-radius: 18px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; text-decoration: none; color: var(--tx); background: transparent; border: 0.5px solid transparent">
+              <span class="lu-mono" style="font-size: 9px; letter-spacing: 1px; color: var(--mu)">СБ</span>
+              <span class="lu-num" style="font-size: 15px; opacity: 0.4">17</span>
+              <span style="width: 5px; height: 5px; border-radius: 3px; background: transparent"></span>
+            </a>
+          
+            <a href="#" style="height: 76px; border-radius: 18px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; text-decoration: none; color: var(--tx); background: transparent; border: 0.5px solid transparent">
+              <span class="lu-mono" style="font-size: 9px; letter-spacing: 1px; color: var(--mu)">ВС</span>
+              <span class="lu-num" style="font-size: 15px; opacity: 0.4">18</span>
+              <span style="width: 5px; height: 5px; border-radius: 3px; background: transparent"></span>
+            </a>
+          
+        </div>
+        <div style="position: absolute; top: 212px; left: 20px; right: 20px; display: flex; flex-direction: column; gap: 18px">
+          <div style="display: flex; justify-content: space-between; align-items: baseline"><span class="lu-lbl">ИТОГО</span><span class="lu-num" style="font-size: 15px">1 240<span style="font-size: 11px; color: var(--mu)"> / 1 900 ККАЛ</span></span></div>
+          
+            <div style="display: flex; flex-direction: column; gap: 8px">
+              <div style="display: flex; justify-content: space-between"><span class="lu-lbl" style="font-size: 10px">ЗАВТРАК</span><span class="lu-lbl" style="font-size: 10px">08:40</span></div>
+              <div class="lu-card" style="padding: 0 16px">
+                
+                  <div class="lu-row" style="border-bottom: 0.5px solid var(--ln)">
+                    <div style="display: flex; flex-direction: column; gap: 2px; padding: 10px 0"><span style="font-size: 15px">Овсянка с бананом</span><span style="font-size: 12px; color: var(--mu)">1 миска</span></div>
+                    <span class="lu-num" style="font-size: 14px">340</span>
+                  </div>
+                
+                  <div class="lu-row" style="border-bottom: 0">
+                    <div style="display: flex; flex-direction: column; gap: 2px; padding: 10px 0"><span style="font-size: 15px">Кофе с молоком</span><span style="font-size: 12px; color: var(--mu)">1 чашка</span></div>
+                    <span class="lu-num" style="font-size: 14px">60</span>
+                  </div>
+                
+              </div>
+            </div>
+          
+            <div style="display: flex; flex-direction: column; gap: 8px">
+              <div style="display: flex; justify-content: space-between"><span class="lu-lbl" style="font-size: 10px">ОБЕД</span><span class="lu-lbl" style="font-size: 10px">13:40</span></div>
+              <div class="lu-card" style="padding: 0 16px">
+                
+                  <div class="lu-row" style="border-bottom: 0.5px solid var(--ln)">
+                    <div style="display: flex; flex-direction: column; gap: 2px; padding: 10px 0"><span style="font-size: 15px">Плов с курицей</span><span style="font-size: 12px; color: var(--mu)">1 тарелка</span></div>
+                    <span class="lu-num" style="font-size: 14px">520</span>
+                  </div>
+                
+                  <div class="lu-row" style="border-bottom: 0">
+                    <div style="display: flex; flex-direction: column; gap: 2px; padding: 10px 0"><span style="font-size: 15px">Чай без сахара</span><span style="font-size: 12px; color: var(--mu)">1 кружка</span></div>
+                    <span class="lu-num" style="font-size: 14px">0</span>
+                  </div>
+                
+              </div>
+            </div>
+          
+            <div style="display: flex; flex-direction: column; gap: 8px">
+              <div style="display: flex; justify-content: space-between"><span class="lu-lbl" style="font-size: 10px">ПЕРЕКУС</span><span class="lu-lbl" style="font-size: 10px">16:20</span></div>
+              <div class="lu-card" style="padding: 0 16px">
+                
+                  <div class="lu-row" style="border-bottom: 0">
+                    <div style="display: flex; flex-direction: column; gap: 2px; padding: 10px 0"><span style="font-size: 15px">Йогурт с гранолой</span><span style="font-size: 12px; color: var(--mu)">1 стакан</span></div>
+                    <span class="lu-num" style="font-size: 14px">320</span>
+                  </div>
+                
+              </div>
+            </div>
+          
+        </div>
+        <nav aria-label="Навигация" class="lu-nav" style="bottom: 24px; height: 90px; gap: 44px">
+          <a href="#" aria-label="Дневник" class="lu-circ" style="width: 48px; height: 48px; border-radius: 24px; background: var(--sf2)"><div style="display: contents;"><div style="display: contents;">
+
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" fill-opacity="1" stroke="#0A0A0C" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display: block; flex-shrink: 0" aria-hidden="true"><path d="M6.5 3.5H18a1 1 0 0 1 1 1V20H6.5A1.5 1.5 0 0 1 5 18.5V5a1.5 1.5 0 0 1 1.5-1.5Z"></path></svg>
+</div></div></a>
+          <button aria-label="Записать голосом" class="lu-mic"><div style="display: contents;"><div style="display: contents;">
+
+<svg width="28" height="28" viewBox="0 0 24 24" fill="none" fill-opacity="1" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: block; flex-shrink: 0" aria-hidden="true"><path d="M12 3.5a3 3 0 0 0-3 3V12a3 3 0 0 0 6 0V6.5a3 3 0 0 0-3-3ZM6 11a6 6 0 0 0 12 0M12 17v3.5"></path></svg>
+</div></div></button>
+          <a href="#" aria-label="Прогресс" class="lu-circ" style="width: 48px; height: 48px; border-radius: 24px"><div style="display: contents;"><div style="display: contents;">
+
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" fill-opacity="1" stroke="#34477F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display: block; flex-shrink: 0" aria-hidden="true"><path d="M5 20v-5M10 20V10M15 20v-7M20 20V4.5"></path></svg>
+</div></div></a>
+        </nav>
+      </div>
+    </div>
+
+    
+    <div style="display: flex; flex-direction: column; gap: 12px">
+      <div class="lu-mono" style="font-size: 11px; letter-spacing: 1.4px; color: #7A7A7A">07 · ПРОГРЕСС</div>
+      <div class="lu-ph">
+        <header class="lu-top"><span class="lu-num" style="font-size: 22px">Прогресс</span>
+          <div style="height: 32px; padding: 2px; border-radius: 16px; background: var(--sf); display: flex; box-sizing: border-box"><span class="lu-mono" style="height: 28px; padding: 0 12px; border-radius: 14px; background: var(--sf2); display: flex; align-items: center; font-size: 10px; letter-spacing: 1.2px">НЕДЕЛЯ</span><span class="lu-mono" style="height: 28px; padding: 0 12px; display: flex; align-items: center; font-size: 10px; letter-spacing: 1.2px; color: var(--mu)">МЕСЯЦ</span></div>
+        </header>
+        <div style="position: absolute; top: 124px; left: 24px; right: 24px; display: flex; flex-direction: column; gap: 4px">
+          <span class="lu-lbl">В СРЕДНЕМ ЗА ДЕНЬ</span>
+          <div style="display: flex; align-items: baseline; gap: 8px"><span class="lu-num" style="font-size: 52px; font-weight: 200; letter-spacing: -2px">1 760</span><span class="lu-lbl">ККАЛ</span></div>
+        </div>
+        <div style="position: absolute; top: 226px; left: 24px; right: 24px; height: 200px">
+          <div style="position: absolute; left: 0; right: 0; top: 35px; border-top: 1px dashed var(--ln)"></div>
+          <span class="lu-mono" style="position: absolute; right: 0; top: 19px; font-size: 9px; letter-spacing: 1px; color: var(--mu)">ЦЕЛЬ 1 900</span>
+          <div style="position: absolute; inset: 0; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 12px; align-items: end">
+            
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; height: 100%; justify-content: flex-end">
+                <div style="width: 100%; height: 158px; border-radius: 8px; background: rgba(30,111,224,0.35)"></div>
+              </div>
+            
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; height: 100%; justify-content: flex-end">
+                <div style="width: 100%; height: 170px; border-radius: 8px; background: rgba(30,111,224,0.35)"></div>
+              </div>
+            
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; height: 100%; justify-content: flex-end">
+                <div style="width: 100%; height: 148px; border-radius: 8px; background: rgba(30,111,224,0.35)"></div>
+              </div>
+            
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; height: 100%; justify-content: flex-end">
+                <div style="width: 100%; height: 183px; border-radius: 8px; background: rgba(30,111,224,0.35)"></div>
+              </div>
+            
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; height: 100%; justify-content: flex-end">
+                <div style="width: 100%; height: 143px; border-radius: 8px; background: rgba(30,111,224,0.35)"></div>
+              </div>
+            
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; height: 100%; justify-content: flex-end">
+                <div style="width: 100%; height: 163px; border-radius: 8px; background: rgba(30,111,224,0.35)"></div>
+              </div>
+            
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; height: 100%; justify-content: flex-end">
+                <div style="width: 100%; height: 108px; border-radius: 8px; background: #1E6FE0"></div>
+              </div>
+            
+          </div>
+        </div>
+        <div style="position: absolute; top: 434px; left: 24px; right: 24px; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 12px">
+          <span class="lu-mono" style="font-size: 9px; letter-spacing: 1px; color: var(--mu); text-align: center">ПН</span><span class="lu-mono" style="font-size: 9px; letter-spacing: 1px; color: var(--mu); text-align: center">ВТ</span><span class="lu-mono" style="font-size: 9px; letter-spacing: 1px; color: var(--mu); text-align: center">СР</span><span class="lu-mono" style="font-size: 9px; letter-spacing: 1px; color: var(--mu); text-align: center">ЧТ</span><span class="lu-mono" style="font-size: 9px; letter-spacing: 1px; color: var(--mu); text-align: center">ПТ</span><span class="lu-mono" style="font-size: 9px; letter-spacing: 1px; color: var(--mu); text-align: center">СБ</span><span class="lu-mono" style="font-size: 9px; letter-spacing: 1px; color: var(--mu); text-align: center">ВС</span>
+        </div>
+        <div style="position: absolute; top: 476px; left: 20px; right: 20px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+          
+            <div class="lu-card" style="height: 92px; padding: 14px; display: flex; flex-direction: column; justify-content: space-between">
+              <span class="lu-lbl" style="font-size: 10px; display: flex; align-items: center; gap: 6px"><span style="width: 8px; height: 8px; border-radius: 4px; background: #E8202A"></span>ШАГИ</span>
+              <span class="lu-num" style="font-size: 22px">6 820<span style="font-size: 11px; color: var(--mu)">в день</span></span>
+            </div>
+          
+            <div class="lu-card" style="height: 92px; padding: 14px; display: flex; flex-direction: column; justify-content: space-between">
+              <span class="lu-lbl" style="font-size: 10px; display: flex; align-items: center; gap: 6px"><span style="width: 8px; height: 8px; border-radius: 4px; background: #1E6FE0"></span>СЕРИЯ</span>
+              <span class="lu-num" style="font-size: 22px">6<span style="font-size: 11px; color: var(--mu)">дней</span></span>
+            </div>
+          
+            <div class="lu-card" style="height: 92px; padding: 14px; display: flex; flex-direction: column; justify-content: space-between">
+              <span class="lu-lbl" style="font-size: 10px; display: flex; align-items: center; gap: 6px"><span style="width: 8px; height: 8px; border-radius: 4px; background: #0A0A0C"></span>ВЕС</span>
+              <span class="lu-num" style="font-size: 22px">82,4<span style="font-size: 11px; color: var(--mu)">кг</span></span>
+            </div>
+          
+            <div class="lu-card" style="height: 92px; padding: 14px; display: flex; flex-direction: column; justify-content: space-between">
+              <span class="lu-lbl" style="font-size: 10px; display: flex; align-items: center; gap: 6px"><span style="width: 8px; height: 8px; border-radius: 4px; background: #0A0A0C"></span>ОПЫТ</span>
+              <span class="lu-num" style="font-size: 22px">+410<span style="font-size: 11px; color: var(--mu)">XP</span></span>
+            </div>
+          
+        </div>
+        <nav aria-label="Навигация" class="lu-nav" style="bottom: 24px; height: 90px">
+          <a href="#" aria-label="Дневник" class="lu-circ" style="width: 48px; height: 48px; border-radius: 24px"><div style="display: contents;"><div style="display: contents;">
+
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" fill-opacity="1" stroke="#34477F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display: block; flex-shrink: 0" aria-hidden="true"><path d="M6.5 3.5H18a1 1 0 0 1 1 1V20H6.5A1.5 1.5 0 0 1 5 18.5V5a1.5 1.5 0 0 1 1.5-1.5Z"></path></svg>
+</div></div></a>
+          <button aria-label="Записать голосом" class="lu-mic"><div style="display: contents;"><div style="display: contents;">
+
+<svg width="28" height="28" viewBox="0 0 24 24" fill="none" fill-opacity="1" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: block; flex-shrink: 0" aria-hidden="true"><path d="M12 3.5a3 3 0 0 0-3 3V12a3 3 0 0 0 6 0V6.5a3 3 0 0 0-3-3ZM6 11a6 6 0 0 0 12 0M12 17v3.5"></path></svg>
+</div></div></button>
+          <a href="#" aria-label="Прогресс" class="lu-circ" style="width: 48px; height: 48px; border-radius: 24px; background: var(--sf2)"><div style="display: contents;"><div style="display: contents;">
+
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" fill-opacity="1" stroke="#0A0A0C" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display: block; flex-shrink: 0" aria-hidden="true"><path d="M5 20v-5M10 20V10M15 20v-7M20 20V4.5"></path></svg>
+</div></div></a>
+        </nav>
+      </div>
+    </div>
+
+    
+    <div style="display: flex; flex-direction: column; gap: 12px">
+      <div class="lu-mono" style="font-size: 11px; letter-spacing: 1.4px; color: #7A7A7A">08 · УРОВЕНЬ И НАГРАДЫ</div>
+      <div class="lu-ph">
+        <div class="lu-haze"></div>
+        <header class="lu-top"><a href="#" aria-label="Назад" class="lu-circ"><div style="display: contents;"><div style="display: contents;">
+
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" fill-opacity="1" stroke="#0A0A0C" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="display: block; flex-shrink: 0" aria-hidden="true"><path d="M14.5 5.5 8 12l6.5 6.5"></path></svg>
+</div></div></a><span class="lu-pill"><div style="display: contents;"><div style="display: contents;">
+
+<svg width="14" height="14" viewBox="0 0 24 24" fill="none" fill-opacity="1" stroke="#9A6B00" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display: block; flex-shrink: 0" aria-hidden="true"><path d="M3.5 12a8.5 8.5 0 1 0 17 0a8.5 8.5 0 1 0-17 0ZM12 8.5 15.5 12 12 15.5 8.5 12Z"></path></svg>
+</div></div>240</span></header>
+        <div style="position: absolute; top: 124px; left: 24px; right: 24px; display: flex; flex-direction: column; gap: 14px">
+          <span class="lu-lbl">УРОВЕНЬ</span>
+          <div style="display: flex; align-items: baseline; justify-content: space-between"><span class="lu-num" style="font-size: 64px; font-weight: 200; letter-spacing: -3px">04</span><span style="font-size: 14px; color: var(--mu)">до 5-го — 635 XP</span></div>
+          <div class="lu-bar" style="height: 6px; border-radius: 3px"><div style="width: 36.5%; height: 6px; border-radius: 3px; background: var(--x)"></div></div>
+        </div>
+        <div style="position: absolute; top: 300px; left: 20px; right: 20px; display: flex; flex-direction: column; gap: 10px">
+          <span class="lu-lbl" style="padding-left: 4px">ДОСТИЖЕНИЯ · 3 ИЗ 6</span>
+          <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+            
+              <div class="lu-card" style="height: 112px; padding: 14px; display: flex; flex-direction: column; justify-content: space-between; opacity: 1">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start">
+                  <span style="width: 40px; height: 40px; border-radius: 20px; background: #1E6FE0; display: flex; align-items: center; justify-content: center"><div style="display: contents;"><div style="display: contents;">
+
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" fill-opacity="1" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="display: block; flex-shrink: 0" aria-hidden="true"><path d="M5 12.5 9.5 17 19 7.5"></path></svg>
+</div></div></span>
+                  <span class="lu-mono" style="font-size: 10px; color: var(--mu)">ЕСТЬ</span>
+                </div>
+                <span style="font-size: 14px; line-height: 18px">Первая запись</span>
+              </div>
+            
+              <div class="lu-card" style="height: 112px; padding: 14px; display: flex; flex-direction: column; justify-content: space-between; opacity: 1">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start">
+                  <span style="width: 40px; height: 40px; border-radius: 20px; background: rgba(255,255,255,0.62); display: flex; align-items: center; justify-content: center"><div style="display: contents;"><div style="display: contents;">
+
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" fill-opacity="1" stroke="#0A0A0C" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="display: block; flex-shrink: 0" aria-hidden="true"><path d="M12 21.5c3.9 0 6.5-2.6 6.5-6.3 0-3.2-1.9-5.4-3.5-7.2-.3 1.6-1.1 2.7-2.3 3.2.2-3.3-1.3-6.3-3.7-8.2.1 3.3-3.5 5.6-3.5 11.6 0 4.1 2.6 6.9 6.5 6.9Z"></path></svg>
+</div></div></span>
+                  <span class="lu-mono" style="font-size: 10px; color: var(--mu)">6/7</span>
+                </div>
+                <span style="font-size: 14px; line-height: 18px">7 дней подряд</span>
+              </div>
+            
+              <div class="lu-card" style="height: 112px; padding: 14px; display: flex; flex-direction: column; justify-content: space-between; opacity: 1">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start">
+                  <span style="width: 40px; height: 40px; border-radius: 20px; background: #E8202A; display: flex; align-items: center; justify-content: center"><div style="display: contents;"><div style="display: contents;">
+
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" fill-opacity="1" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="display: block; flex-shrink: 0" aria-hidden="true"><path d="M8.5 3c1.9 0 3 2 3 4.3 0 2-1.1 3.7-3 3.7s-3-1.7-3-3.7C5.5 5 6.6 3 8.5 3ZM6.3 13.5h4.4v1.3a2.2 2.2 0 0 1-4.4 0ZM15.5 7.5c1.9 0 3 2 3 4.3 0 2-1.1 3.7-3 3.7s-3-1.7-3-3.7c0-2.3 1.1-4.3 3-4.3ZM13.3 18h4.4v1.3a2.2 2.2 0 0 1-4.4 0Z"></path></svg>
+</div></div></span>
+                  <span class="lu-mono" style="font-size: 10px; color: var(--mu)">ЕСТЬ</span>
+                </div>
+                <span style="font-size: 14px; line-height: 18px">10 000 шагов</span>
+              </div>
+            
+              <div class="lu-card" style="height: 112px; padding: 14px; display: flex; flex-direction: column; justify-content: space-between; opacity: 1">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start">
+                  <span style="width: 40px; height: 40px; border-radius: 20px; background: #0A0A0C; display: flex; align-items: center; justify-content: center"><div style="display: contents;"><div style="display: contents;">
+
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" fill-opacity="1" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="display: block; flex-shrink: 0" aria-hidden="true"><path d="M8 12a4 4 0 1 0 8 0a4 4 0 1 0-8 0ZM12 2.5v2M12 19.5v2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M2.5 12h2M19.5 12h2M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"></path></svg>
+</div></div></span>
+                  <span class="lu-mono" style="font-size: 10px; color: var(--mu)">ЕСТЬ</span>
+                </div>
+                <span style="font-size: 14px; line-height: 18px">Ранняя пташка</span>
+              </div>
+            
+              <div class="lu-card" style="height: 112px; padding: 14px; display: flex; flex-direction: column; justify-content: space-between; opacity: 0.55">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start">
+                  <span style="width: 40px; height: 40px; border-radius: 20px; background: rgba(255,255,255,0.62); display: flex; align-items: center; justify-content: center"><div style="display: contents;"><div style="display: contents;">
+
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" fill-opacity="1" stroke="#34477F" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="display: block; flex-shrink: 0" aria-hidden="true"><path d="M12 3.5s6 6.3 6 10.8a6 6 0 0 1-12 0C6 9.8 12 3.5 12 3.5Z"></path></svg>
+</div></div></span>
+                  <span class="lu-mono" style="font-size: 10px; color: var(--mu)">3/8</span>
+                </div>
+                <span style="font-size: 14px; line-height: 18px">8 стаканов воды</span>
+              </div>
+            
+              <div class="lu-card" style="height: 112px; padding: 14px; display: flex; flex-direction: column; justify-content: space-between; opacity: 0.55">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start">
+                  <span style="width: 40px; height: 40px; border-radius: 20px; background: rgba(255,255,255,0.62); display: flex; align-items: center; justify-content: center"><div style="display: contents;"><div style="display: contents;">
+
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" fill-opacity="1" stroke="#34477F" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="display: block; flex-shrink: 0" aria-hidden="true"><path d="M4 8l3.5 3L12 5l4.5 6L20 8l-1.5 10h-13Z"></path></svg>
+</div></div></span>
+                  <span class="lu-mono" style="font-size: 10px; color: var(--mu)">13/30</span>
+                </div>
+                <span style="font-size: 14px; line-height: 18px">Месяц с Level Up</span>
+              </div>
+            
+          </div>
+        </div>
+      </div>
+    </div>
+
+    
+    <div style="display: flex; flex-direction: column; gap: 12px">
+      <div class="lu-mono" style="font-size: 11px; letter-spacing: 1.4px; color: #7A7A7A">09 · НАСТРОЙКИ</div>
+      <div class="lu-ph">
+        <header class="lu-top"><a href="#" aria-label="Назад" class="lu-circ"><div style="display: contents;"><div style="display: contents;">
+
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" fill-opacity="1" stroke="#0A0A0C" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="display: block; flex-shrink: 0" aria-hidden="true"><path d="M14.5 5.5 8 12l6.5 6.5"></path></svg>
+</div></div></a><span class="lu-lbl">НАСТРОЙКИ</span><span style="width: 44px"></span></header>
+        <div style="position: absolute; top: 120px; left: 20px; right: 20px; display: flex; flex-direction: column; gap: 14px">
+          <div class="lu-card" style="height: 76px; padding: 0 16px; display: flex; align-items: center; gap: 14px">
+            <span style="width: 44px; height: 44px; border-radius: 22px; background: var(--sf2); display: flex; align-items: center; justify-content: center"><div style="display: contents;"><div style="display: contents;">
+
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" fill-opacity="1" stroke="#0A0A0C" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="display: block; flex-shrink: 0" aria-hidden="true"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM5 20a7 7 0 0 1 14 0"></path></svg>
+</div></div></span>
+            <div style="display: flex; flex-direction: column; gap: 2px; flex: 1"><span style="font-size: 17px; font-weight: 500">Фарид</span><span style="font-size: 13px; color: var(--mu)">Цель 1 900 ккал · LV 04</span></div>
+            <div style="display: contents;"><div style="display: contents;">
+
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" fill-opacity="1" stroke="#34477F" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="display: block; flex-shrink: 0" aria-hidden="true"><path d="M9.5 5.5 16 12l-6.5 6.5"></path></svg>
+</div></div>
+          </div>
+          <div class="lu-card" style="padding: 0 16px">
+            <div class="lu-row"><span style="font-size: 15px">Тема</span>
+              <div style="height: 32px; padding: 2px; border-radius: 16px; background: var(--sf2); display: flex; box-sizing: border-box">
+                <span style="height: 28px; padding: 0 10px; border-radius: 14px; background: transparent; color: #34477F; display: flex; align-items: center; font-size: 13px; font-weight: 500">Тёмная</span><span style="height: 28px; padding: 0 10px; border-radius: 14px; background: #0A0A0C; color: #FFFFFF; display: flex; align-items: center; font-size: 13px; font-weight: 500">Светлая</span><span style="height: 28px; padding: 0 10px; border-radius: 14px; background: transparent; color: #34477F; display: flex; align-items: center; font-size: 13px; font-weight: 500">Авто</span>
+              </div>
+            </div>
+            <div class="lu-sep"></div>
+            <div class="lu-row"><span style="font-size: 15px">Цель калорий</span><span style="font-size: 15px; color: var(--mu)">1 900</span></div>
+            <div class="lu-sep"></div>
+            <div class="lu-row"><span style="font-size: 15px">Язык голоса</span><span style="font-size: 15px; color: var(--mu)">Русский</span></div>
+          </div>
+          <div class="lu-card" style="padding: 0 16px">
+            <div class="lu-row"><span style="font-size: 15px">Напоминания</span><span class="lu-tg on"><span></span></span></div>
+            <div class="lu-sep"></div>
+            <div class="lu-row"><span style="font-size: 15px">Запись в Dynamic Island</span><span class="lu-tg on"><span></span></span></div>
+            <div class="lu-sep"></div>
+            <div class="lu-row"><span style="font-size: 15px">Apple Здоровье</span><span class="lu-tg on"><span></span></span></div>
+            <div class="lu-sep"></div>
+            <div class="lu-row"><span style="font-size: 15px">Звуки наград</span><span class="lu-tg"><span></span></span></div>
+          </div>
+          <span style="font-size: 13px; line-height: 18px; color: var(--mu); padding: 0 4px">Шаги берутся из Apple Здоровье. Записи о еде хранятся только у тебя.</span>
+        </div>
+      </div>
+    </div>
+
+    
+    <div style="display: flex; flex-direction: column; gap: 12px">
+      <div class="lu-mono" style="font-size: 11px; letter-spacing: 1.4px; color: #7A7A7A">10 · ОСТРОВ, ВИДЖЕТЫ, ИКОНКА · 1:1</div>
+      <div style="width: 360px; height: 844px; border-radius: 32px; background: #141416; padding: 26px 18px; box-sizing: border-box; display: flex; flex-direction: column; gap: 24px; color: #FFFFFF">
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <span class="lu-mono" style="font-size: 10px; letter-spacing: 1.4px; color: #8A8A8A">DYNAMIC ISLAND · ДЕНЬ</span>
+          <div style="align-self: center; width: 250px; height: 37px; border-radius: 19px; background: #000; display: flex; align-items: center; justify-content: space-between; padding: 0 12px 0 7px; box-sizing: border-box">
+            <div style="display: contents;"><div style="display: contents;">
+
+<div role="img" aria-label="Еда, шаги, опыт" style="width: 24px; height: 24px; position: relative; flex-shrink: 0">
+  
+    <div style="position: absolute; left: 0.0px; top: 0.0px; width: 24.0px; height: 24.0px; border-radius: 50%; background: rgba(255,255,255,0.14); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2.3px), #000 calc(100% - 1.6px)); mask: radial-gradient(farthest-side, transparent calc(100% - 2.3px), #000 calc(100% - 1.6px))"></div>
+    <div style="position: absolute; left: 0.0px; top: 0.0px; width: 24.0px; height: 24.0px; border-radius: 50%; background: conic-gradient(from 0deg, #1E6FE0 0.0deg, #1E6FE0 234.0deg, transparent 234.0deg); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2.3px), #000 calc(100% - 1.6px)); mask: radial-gradient(farthest-side, transparent calc(100% - 2.3px), #000 calc(100% - 1.6px)); filter: blur(2.0px); opacity: 0"></div>
+    <div style="position: absolute; left: 0.0px; top: 0.0px; width: 24.0px; height: 24.0px; border-radius: 50%; background: conic-gradient(from 0deg, #1E6FE0 0.0deg, #1E6FE0 234.0deg, transparent 234.0deg); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2.3px), #000 calc(100% - 1.6px)); mask: radial-gradient(farthest-side, transparent calc(100% - 2.3px), #000 calc(100% - 1.6px))"></div>
+    <div style="position: absolute; left: 10.9px; top: 0.0px; width: 2.3px; height: 2.3px; border-radius: 50%; background: #1E6FE0"></div>
+    <div style="position: absolute; left: 2.1px; top: 17.3px; width: 2.3px; height: 2.3px; border-radius: 50%; background: #1E6FE0"></div>
+  
+    <div style="position: absolute; left: 2.5px; top: 2.5px; width: 18.9px; height: 18.9px; border-radius: 50%; background: rgba(255,255,255,0.14); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 1.6px), #000 calc(100% - 1.0px)); mask: radial-gradient(farthest-side, transparent calc(100% - 1.6px), #000 calc(100% - 1.0px))"></div>
+    <div style="position: absolute; left: 2.5px; top: 2.5px; width: 18.9px; height: 18.9px; border-radius: 50%; background: conic-gradient(from 0deg, #E8202A 0.0deg, #E8202A 244.8deg, transparent 244.8deg); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 1.6px), #000 calc(100% - 1.0px)); mask: radial-gradient(farthest-side, transparent calc(100% - 1.6px), #000 calc(100% - 1.0px)); filter: blur(2.0px); opacity: 0"></div>
+    <div style="position: absolute; left: 2.5px; top: 2.5px; width: 18.9px; height: 18.9px; border-radius: 50%; background: conic-gradient(from 0deg, #E8202A 0.0deg, #E8202A 244.8deg, transparent 244.8deg); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 1.6px), #000 calc(100% - 1.0px)); mask: radial-gradient(farthest-side, transparent calc(100% - 1.6px), #000 calc(100% - 1.0px))"></div>
+    <div style="position: absolute; left: 11.2px; top: 2.5px; width: 1.6px; height: 1.6px; border-radius: 50%; background: #E8202A"></div>
+    <div style="position: absolute; left: 3.4px; top: 14.8px; width: 1.6px; height: 1.6px; border-radius: 50%; background: #E8202A"></div>
+  
+    <div style="position: absolute; left: 4.5px; top: 4.5px; width: 15.0px; height: 15.0px; border-radius: 50%; background: rgba(255,255,255,0.14); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 1.5px), #000 calc(100% - 0.9px)); mask: radial-gradient(farthest-side, transparent calc(100% - 1.5px), #000 calc(100% - 0.9px))"></div>
+    <div style="position: absolute; left: 4.5px; top: 4.5px; width: 15.0px; height: 15.0px; border-radius: 50%; background: conic-gradient(from 0deg, #FFFFFF 0.0deg, #FFFFFF 122.4deg, transparent 122.4deg); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 1.5px), #000 calc(100% - 0.9px)); mask: radial-gradient(farthest-side, transparent calc(100% - 1.5px), #000 calc(100% - 0.9px)); filter: blur(2.0px); opacity: 0"></div>
+    <div style="position: absolute; left: 4.5px; top: 4.5px; width: 15.0px; height: 15.0px; border-radius: 50%; background: conic-gradient(from 0deg, #FFFFFF 0.0deg, #FFFFFF 122.4deg, transparent 122.4deg); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 1.5px), #000 calc(100% - 0.9px)); mask: radial-gradient(farthest-side, transparent calc(100% - 1.5px), #000 calc(100% - 0.9px))"></div>
+    <div style="position: absolute; left: 11.3px; top: 4.5px; width: 1.5px; height: 1.5px; border-radius: 50%; background: #FFFFFF"></div>
+    <div style="position: absolute; left: 16.9px; top: 14.9px; width: 1.5px; height: 1.5px; border-radius: 50%; background: #FFFFFF"></div>
+  
+</div>
+</div></div>
+            <span style="font-family: 'Unbounded', -apple-system, system-ui, sans-serif; font-size: 14px; color: #7FA0FF">660</span>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <span class="lu-mono" style="font-size: 10px; letter-spacing: 1.4px; color: #8A8A8A">DYNAMIC ISLAND · СЛУШАЮ</span>
+          <div style="align-self: center; width: 250px; height: 37px; border-radius: 19px; background: #000; display: flex; align-items: center; justify-content: space-between; padding: 0 14px 0 6px; box-sizing: border-box">
+            <svg width="28" height="28" viewBox="0 0 300 300" style="animation: luSpin 14s linear infinite" aria-hidden="true">
+              <defs><linearGradient id="si-carpet" x1="20" y1="20" x2="280" y2="280" gradientUnits="userSpaceOnUse"><stop offset="0.00" stop-color="#1E6FE0"></stop><stop offset="0.50" stop-color="#8E5BF0"></stop><stop offset="1.00" stop-color="#E8202A"></stop></linearGradient></defs>
+              <path d="M232.0 150.0L240.0 150.0M231.6 158.0L249.0 159.7M230.4 166.0L263.2 172.5M228.5 173.8L267.5 185.7M225.8 181.4L258.9 195.1M222.3 188.7L258.7 208.1M218.2 195.6L239.4 209.7M213.4 202.0L231.9 217.2M208.0 208.0L215.4 215.4M202.0 213.4L212.1 225.7M195.6 218.2L210.4 240.5M188.7 222.3L208.4 259.4M181.4 225.8L199.3 269.0M173.8 228.5L183.8 261.3M166.0 230.4L174.2 271.7M158.0 231.6L161.0 261.6M150.0 232.0L150.0 246.7M142.0 231.6L140.5 246.7M134.0 230.4L128.1 259.9M126.2 228.5L115.6 263.5M118.6 225.8L106.9 254.0M111.3 222.3L93.6 255.5M104.4 218.2L78.7 256.6M98.0 213.4L83.6 230.9M92.0 208.0L78.1 221.9M86.6 202.0L77.9 209.2M81.8 195.6L65.5 206.5M77.7 188.7L51.0 202.9M74.2 181.4L48.1 192.2M71.5 173.8L22.7 188.6M69.6 166.0L27.4 174.4M68.4 158.0L35.2 161.3M68.0 150.0L46.3 150.0M68.4 142.0L59.8 141.1M69.6 134.0L53.7 130.8M71.5 126.2L41.0 116.9M74.2 118.6L47.1 107.4M77.7 111.3L32.3 87.1M81.8 104.4L49.8 83.0M86.6 98.0L67.5 82.3M92.0 92.0L74.9 74.9M98.0 86.6L90.2 77.1M104.4 81.8L96.1 69.3M111.3 77.7L100.0 56.5M118.6 74.2L107.0 46.2M126.2 71.5L115.6 36.5M134.0 69.6L125.8 28.3M142.0 68.4L139.5 43.4M150.0 68.0L150.0 40.1M158.0 68.4L159.8 50.8M166.0 69.6L168.3 57.9M173.8 71.5L180.7 48.8M181.4 74.2L195.3 40.6M188.7 77.7L205.4 46.4M195.6 81.8L215.4 52.1M202.0 86.6L221.4 63.0M208.0 92.0L231.5 68.5M213.4 98.0L228.5 85.6M218.2 104.4L225.7 99.4M222.3 111.3L244.7 99.4M225.8 118.6L259.6 104.6M228.5 126.2L264.9 115.1M230.4 134.0L262.0 127.7M231.6 142.0L263.8 138.8" stroke="url(#si-carpet)" stroke-width="12" stroke-linecap="round" style="animation: luFadeA 0.7s ease-in-out infinite"></path>
+              <path d="M232.0 150.0L260.2 150.0M231.6 158.0L265.5 161.4M230.4 166.0L260.7 172.0M228.5 173.8L252.2 181.0M225.8 181.4L243.8 188.9M222.3 188.7L230.9 193.2M218.2 195.6L236.0 207.4M213.4 202.0L243.7 226.9M208.0 208.0L240.0 240.0M202.0 213.4L222.1 237.8M195.6 218.2L215.8 248.5M188.7 222.3L207.3 257.3M181.4 225.8L190.2 247.0M173.8 228.5L176.6 237.6M166.0 230.4L169.3 247.0M158.0 231.6L160.9 260.4M150.0 232.0L150.0 276.5M142.0 231.6L138.9 262.8M134.0 230.4L124.2 279.6M126.2 228.5L115.9 262.4M118.6 225.8L107.3 253.2M111.3 222.3L105.2 233.8M104.4 218.2L96.5 230.0M98.0 213.4L84.1 230.3M92.0 208.0L64.0 236.0M86.6 202.0L60.2 223.7M81.8 195.6L55.2 213.4M77.7 188.7L41.1 208.2M74.2 181.4L55.8 189.0M71.5 173.8L56.9 178.3M69.6 166.0L58.3 168.2M68.4 158.0L39.7 160.9M68.0 150.0L39.1 150.0M68.4 142.0L31.0 138.3M69.6 134.0L32.5 126.6M71.5 126.2L42.5 117.4M74.2 118.6L41.8 105.2M77.7 111.3L58.1 100.9M81.8 104.4L74.2 99.4M86.6 98.0L67.7 82.5M92.0 92.0L66.6 66.6M98.0 86.6L68.8 51.1M104.4 81.8L76.7 40.3M111.3 77.7L93.2 43.6M118.6 74.2L106.8 45.7M126.2 71.5L120.2 51.7M134.0 69.6L132.0 59.5M142.0 68.4L140.0 48.8M150.0 68.0L150.0 36.2M158.0 68.4L160.8 39.9M166.0 69.6L172.4 37.6M173.8 71.5L184.0 37.9M181.4 74.2L197.0 36.4M188.7 77.7L198.5 59.3M195.6 81.8L203.4 70.1M202.0 86.6L210.0 76.9M208.0 92.0L222.9 77.1M213.4 98.0L233.1 81.8M218.2 104.4L245.5 86.2M222.3 111.3L257.3 92.7M225.8 118.6L248.9 109.0M228.5 126.2L257.5 117.4M230.4 134.0L247.7 130.6M231.6 142.0L244.0 140.7" stroke="url(#si-carpet)" stroke-width="12" stroke-linecap="round" style="animation: luFadeB 0.7s ease-in-out infinite"></path>
+            </svg>
+            <span class="lu-mono" style="font-size: 12px">00:04</span>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <span class="lu-mono" style="font-size: 10px; letter-spacing: 1.4px; color: #8A8A8A">ВИДЖЕТЫ</span>
+          <div style="display: flex; gap: 12px; justify-content: center">
+            <div style="width: 150px; height: 150px; border-radius: 22px; background: var(--bg); box-shadow: 0 0 0 0.5px rgba(255,255,255,0.1); position: relative; display: flex; align-items: center; justify-content: center; color: var(--tx)">
+              <div style="display: contents;"><div style="display: contents;">
+
+<div role="img" aria-label="Еда, шаги, опыт" style="width: 124px; height: 124px; position: relative; flex-shrink: 0">
+  
+    <div style="position: absolute; left: 0.0px; top: 0.0px; width: 124.0px; height: 124.0px; border-radius: 50%; background: rgba(10,20,90,0.13); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 11.6px), #000 calc(100% - 11.0px)); mask: radial-gradient(farthest-side, transparent calc(100% - 11.6px), #000 calc(100% - 11.0px))"></div>
+    <div style="position: absolute; left: 0.0px; top: 0.0px; width: 124.0px; height: 124.0px; border-radius: 50%; background: conic-gradient(from 0deg, #1E6FE0 0.0deg, #1E6FE0 234.0deg, transparent 234.0deg); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 11.6px), #000 calc(100% - 11.0px)); mask: radial-gradient(farthest-side, transparent calc(100% - 11.6px), #000 calc(100% - 11.0px)); filter: blur(3.9px); opacity: 0.12"></div>
+    <div style="position: absolute; left: 0.0px; top: 0.0px; width: 124.0px; height: 124.0px; border-radius: 50%; background: conic-gradient(from 0deg, #1E6FE0 0.0deg, #1E6FE0 234.0deg, transparent 234.0deg); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 11.6px), #000 calc(100% - 11.0px)); mask: radial-gradient(farthest-side, transparent calc(100% - 11.6px), #000 calc(100% - 11.0px))"></div>
+    <div style="position: absolute; left: 56.2px; top: 0.0px; width: 11.6px; height: 11.6px; border-radius: 50%; background: #1E6FE0"></div>
+    <div style="position: absolute; left: 10.7px; top: 89.2px; width: 11.6px; height: 11.6px; border-radius: 50%; background: #1E6FE0"></div>
+  
+    <div style="position: absolute; left: 13.2px; top: 13.2px; width: 97.7px; height: 97.7px; border-radius: 50%; background: rgba(10,20,90,0.13); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 8.5px), #000 calc(100% - 7.9px)); mask: radial-gradient(farthest-side, transparent calc(100% - 8.5px), #000 calc(100% - 7.9px))"></div>
+    <div style="position: absolute; left: 13.2px; top: 13.2px; width: 97.7px; height: 97.7px; border-radius: 50%; background: conic-gradient(from 0deg, #E8202A 0.0deg, #E8202A 244.8deg, transparent 244.8deg); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 8.5px), #000 calc(100% - 7.9px)); mask: radial-gradient(farthest-side, transparent calc(100% - 8.5px), #000 calc(100% - 7.9px)); filter: blur(3.9px); opacity: 0.12"></div>
+    <div style="position: absolute; left: 13.2px; top: 13.2px; width: 97.7px; height: 97.7px; border-radius: 50%; background: conic-gradient(from 0deg, #E8202A 0.0deg, #E8202A 244.8deg, transparent 244.8deg); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 8.5px), #000 calc(100% - 7.9px)); mask: radial-gradient(farthest-side, transparent calc(100% - 8.5px), #000 calc(100% - 7.9px))"></div>
+    <div style="position: absolute; left: 57.7px; top: 13.2px; width: 8.5px; height: 8.5px; border-radius: 50%; background: #E8202A"></div>
+    <div style="position: absolute; left: 17.4px; top: 76.7px; width: 8.5px; height: 8.5px; border-radius: 50%; background: #E8202A"></div>
+  
+    <div style="position: absolute; left: 23.3px; top: 23.3px; width: 77.5px; height: 77.5px; border-radius: 50%; background: rgba(10,20,90,0.13); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 5.4px), #000 calc(100% - 4.8px)); mask: radial-gradient(farthest-side, transparent calc(100% - 5.4px), #000 calc(100% - 4.8px))"></div>
+    <div style="position: absolute; left: 23.3px; top: 23.3px; width: 77.5px; height: 77.5px; border-radius: 50%; background: conic-gradient(from 0deg, #0A0A0C 0.0deg, #0A0A0C 122.4deg, transparent 122.4deg); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 5.4px), #000 calc(100% - 4.8px)); mask: radial-gradient(farthest-side, transparent calc(100% - 5.4px), #000 calc(100% - 4.8px)); filter: blur(3.9px); opacity: 0.12"></div>
+    <div style="position: absolute; left: 23.3px; top: 23.3px; width: 77.5px; height: 77.5px; border-radius: 50%; background: conic-gradient(from 0deg, #0A0A0C 0.0deg, #0A0A0C 122.4deg, transparent 122.4deg); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 5.4px), #000 calc(100% - 4.8px)); mask: radial-gradient(farthest-side, transparent calc(100% - 5.4px), #000 calc(100% - 4.8px))"></div>
+    <div style="position: absolute; left: 59.3px; top: 23.3px; width: 5.4px; height: 5.4px; border-radius: 50%; background: #0A0A0C"></div>
+    <div style="position: absolute; left: 89.7px; top: 78.6px; width: 5.4px; height: 5.4px; border-radius: 50%; background: #0A0A0C"></div>
+  
+</div>
+</div></div>
+              <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center"><span class="lu-num" style="font-size: 20px">660</span><span class="lu-mono" style="font-size: 8px; letter-spacing: 1.2px; color: var(--mu)">ККАЛ</span></div>
+            </div>
+            <div style="width: 150px; height: 150px; border-radius: 22px; background: var(--bg); box-shadow: 0 0 0 0.5px rgba(255,255,255,0.1); padding: 14px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; color: var(--tx)">
+              <div style="display: flex; flex-direction: column"><span class="lu-num" style="font-size: 26px; letter-spacing: -0.8px">660</span><span class="lu-mono" style="font-size: 8px; letter-spacing: 1.2px; color: var(--mu)">ККАЛ ОСТАЛОСЬ</span></div>
+              <a href="#" aria-label="Записать голосом" style="height: 44px; border-radius: 22px; background: var(--cta); display: flex; align-items: center; justify-content: center"><div style="display: contents;"><div style="display: contents;">
+
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" fill-opacity="1" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: block; flex-shrink: 0" aria-hidden="true"><path d="M12 3.5a3 3 0 0 0-3 3V12a3 3 0 0 0 6 0V6.5a3 3 0 0 0-3-3ZM6 11a6 6 0 0 0 12 0M12 17v3.5"></path></svg>
+</div></div></a>
+            </div>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <span class="lu-mono" style="font-size: 10px; letter-spacing: 1.4px; color: #8A8A8A">ИКОНКА</span>
+          <div style="align-self: center; width: 110px; height: 110px; border-radius: 25px; background: var(--bg); box-shadow: 0 0 0 0.5px rgba(255,255,255,0.12); display: flex; align-items: center; justify-content: center">
+            <div style="display: contents;"><div style="display: contents;">
+
+<div role="img" aria-label="Еда, шаги, опыт" style="width: 84px; height: 84px; position: relative; flex-shrink: 0">
+  
+    <div style="position: absolute; left: 0.0px; top: 0.0px; width: 84.0px; height: 84.0px; border-radius: 50%; background: rgba(10,20,90,0.13); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 7.9px), #000 calc(100% - 7.3px)); mask: radial-gradient(farthest-side, transparent calc(100% - 7.9px), #000 calc(100% - 7.3px))"></div>
+    <div style="position: absolute; left: 0.0px; top: 0.0px; width: 84.0px; height: 84.0px; border-radius: 50%; background: conic-gradient(from 0deg, #1E6FE0 0.0deg, #1E6FE0 234.0deg, transparent 234.0deg); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 7.9px), #000 calc(100% - 7.3px)); mask: radial-gradient(farthest-side, transparent calc(100% - 7.9px), #000 calc(100% - 7.3px)); filter: blur(2.6px); opacity: 0.12"></div>
+    <div style="position: absolute; left: 0.0px; top: 0.0px; width: 84.0px; height: 84.0px; border-radius: 50%; background: conic-gradient(from 0deg, #1E6FE0 0.0deg, #1E6FE0 234.0deg, transparent 234.0deg); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 7.9px), #000 calc(100% - 7.3px)); mask: radial-gradient(farthest-side, transparent calc(100% - 7.9px), #000 calc(100% - 7.3px))"></div>
+    <div style="position: absolute; left: 38.1px; top: 0.0px; width: 7.9px; height: 7.9px; border-radius: 50%; background: #1E6FE0"></div>
+    <div style="position: absolute; left: 7.3px; top: 60.4px; width: 7.9px; height: 7.9px; border-radius: 50%; background: #1E6FE0"></div>
+  
+    <div style="position: absolute; left: 8.9px; top: 8.9px; width: 66.2px; height: 66.2px; border-radius: 50%; background: rgba(10,20,90,0.13); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 5.8px), #000 calc(100% - 5.2px)); mask: radial-gradient(farthest-side, transparent calc(100% - 5.8px), #000 calc(100% - 5.2px))"></div>
+    <div style="position: absolute; left: 8.9px; top: 8.9px; width: 66.2px; height: 66.2px; border-radius: 50%; background: conic-gradient(from 0deg, #E8202A 0.0deg, #E8202A 244.8deg, transparent 244.8deg); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 5.8px), #000 calc(100% - 5.2px)); mask: radial-gradient(farthest-side, transparent calc(100% - 5.8px), #000 calc(100% - 5.2px)); filter: blur(2.6px); opacity: 0.12"></div>
+    <div style="position: absolute; left: 8.9px; top: 8.9px; width: 66.2px; height: 66.2px; border-radius: 50%; background: conic-gradient(from 0deg, #E8202A 0.0deg, #E8202A 244.8deg, transparent 244.8deg); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 5.8px), #000 calc(100% - 5.2px)); mask: radial-gradient(farthest-side, transparent calc(100% - 5.8px), #000 calc(100% - 5.2px))"></div>
+    <div style="position: absolute; left: 39.1px; top: 8.9px; width: 5.8px; height: 5.8px; border-radius: 50%; background: #E8202A"></div>
+    <div style="position: absolute; left: 11.8px; top: 52.0px; width: 5.8px; height: 5.8px; border-radius: 50%; background: #E8202A"></div>
+  
+    <div style="position: absolute; left: 15.8px; top: 15.8px; width: 52.5px; height: 52.5px; border-radius: 50%; background: rgba(10,20,90,0.13); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3.7px), #000 calc(100% - 3.1px)); mask: radial-gradient(farthest-side, transparent calc(100% - 3.7px), #000 calc(100% - 3.1px))"></div>
+    <div style="position: absolute; left: 15.8px; top: 15.8px; width: 52.5px; height: 52.5px; border-radius: 50%; background: conic-gradient(from 0deg, #0A0A0C 0.0deg, #0A0A0C 122.4deg, transparent 122.4deg); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3.7px), #000 calc(100% - 3.1px)); mask: radial-gradient(farthest-side, transparent calc(100% - 3.7px), #000 calc(100% - 3.1px)); filter: blur(2.6px); opacity: 0.12"></div>
+    <div style="position: absolute; left: 15.8px; top: 15.8px; width: 52.5px; height: 52.5px; border-radius: 50%; background: conic-gradient(from 0deg, #0A0A0C 0.0deg, #0A0A0C 122.4deg, transparent 122.4deg); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3.7px), #000 calc(100% - 3.1px)); mask: radial-gradient(farthest-side, transparent calc(100% - 3.7px), #000 calc(100% - 3.1px))"></div>
+    <div style="position: absolute; left: 40.2px; top: 15.7px; width: 3.7px; height: 3.7px; border-radius: 50%; background: #0A0A0C"></div>
+    <div style="position: absolute; left: 60.8px; top: 53.2px; width: 3.7px; height: 3.7px; border-radius: 50%; background: #0A0A0C"></div>
+  
+</div>
+</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+</body>
+</html>

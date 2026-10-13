@@ -4,3 +4,4 @@ export * from './nutrition';
 export * from './stats';
 export * from './streak';
 export * from './templates';
+export * from './xp';

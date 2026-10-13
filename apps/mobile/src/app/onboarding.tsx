@@ -1,241 +1,181 @@
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, TextInput, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { ActivityLevel, Profile, Sex, UserPortions, dailyCalorieTarget, minHealthyWeight } from '@levelup/domain';
-import { Btn, Card, Chip, Row, Stepper, T, textInputStyle } from '@/components/ui';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, TextInput, View, useWindowDimensions } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ActivityLevel, Profile, Sex, dailyCalorieTarget, minHealthyWeight } from '@levelup/domain';
 import { Icon } from '@/design/Icon';
-import { IconName } from '@/design/icons';
+import { fmt } from '@/lib/format';
 import { requestHealthAccess } from '@/lib/health';
+import { syncHealth } from '@/lib/healthSync';
 import { syncReminders } from '@/lib/notifications';
 import { useStore } from '@/state/store';
-import { useTheme } from '@/theme';
+import { Card, Cta, Lbl, Rings, Row, Screen, Sep, Toggle, Txt } from '@/ui/kit';
+import { useTheme } from '@/ui/theme';
 
 const ACTIVITY: Array<[ActivityLevel, string]> = [
-  ['sedentary', 'Сидячая работа'],
+  ['sedentary', 'Сидячая'],
   ['light', 'Немного хожу'],
   ['moderate', 'Тренировки 3–4 раза'],
   ['high', 'Много спорта'],
 ];
 
-const STEPS = 5;
-
+/** Онбординг из макета: «Просто скажи, что съел» → о себе → Здоровье и напоминания. */
 export default function Onboarding() {
-  const { c } = useTheme();
+  const t = useTheme();
+  const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
   const complete = useStore((s) => s.completeOnboarding);
   const updateSettings = useStore((s) => s.updateSettings);
   const [step, setStep] = useState(0);
   const [sex, setSex] = useState<Sex>('male');
-  const [f, setF] = useState({ height: '', weight: '', target: '', age: '' });
+  const [f, setF] = useState({ name: '', height: '', weight: '', target: '', age: '' });
   const [activity, setActivity] = useState<ActivityLevel>('light');
-  const [portions, setPortions] = useState({ plate: 300, cup: 250, sandwich: 80, tbsp: 15 });
-  const [wish, setWish] = useState({ title: '', price: '' });
-  const [rate, setRate] = useState(100);
-  const [health, setHealth] = useState<boolean | null>(null);
-  const [notif, setNotif] = useState<boolean | null>(null);
+  const [health, setHealth] = useState(false);
+  const [notif, setNotif] = useState(false);
 
   const num = (v: string) => Number(v.replace(',', '.'));
   const heightCm = num(f.height);
   const weightKg = num(f.weight);
   const targetKg = num(f.target);
   const age = num(f.age);
-  const paramsValid = heightCm >= 120 && heightCm <= 230 && weightKg >= 35 && weightKg <= 300 && age >= 14 && age <= 100 && targetKg > 0;
+  const valid = heightCm >= 120 && heightCm <= 230 && weightKg >= 35 && weightKg <= 300 && age >= 14 && age <= 100 && targetKg > 0;
   const minTarget = heightCm >= 120 ? minHealthyWeight(heightCm) : 0;
-  const targetTooLow = targetKg > 0 && heightCm >= 120 && targetKg < minTarget;
-  const wishPrice = Number(wish.price.replace(/\s/g, ''));
-
-  const profile: Profile | null = paramsValid
-    ? { sex, age, heightCm, startWeightKg: weightKg, targetWeightKg: targetKg, activity, stepsGoal: 8000 }
-    : null;
+  const tooLow = targetKg > 0 && heightCm >= 120 && targetKg < minTarget;
+  const profile: Profile | null = valid ? { name: f.name.trim() || undefined, sex, age, heightCm, startWeightKg: weightKg, targetWeightKg: targetKg, activity, stepsGoal: 8000 } : null;
 
   const finish = () => {
     if (!profile) return;
-    const userPortions: UserPortions = {
-      units: { plate: portions.plate, cup: portions.cup, glass: portions.cup, tbsp: portions.tbsp },
-      foods: { sandwich: portions.sandwich, sandwich_sausage: portions.sandwich, sandwich_cheese: portions.sandwich },
-    };
-    updateSettings({ health: health === true, reminders: notif !== false });
-    complete(profile, userPortions, wish.title.trim() && wishPrice > 0 ? { title: wish.title.trim(), price: wishPrice } : null, rate);
+    updateSettings({ health, reminders: notif });
+    complete(profile, { units: { plate: 300, cup: 250, glass: 250, tbsp: 15 }, foods: {} });
+    if (health) void syncHealth(30);
   };
 
-  const field = (key: keyof typeof f, placeholder: string) => (
+  const field = (key: keyof typeof f, placeholder: string, numeric = true) => (
     <TextInput
       value={f[key]}
       onChangeText={(v) => setF({ ...f, [key]: v })}
       placeholder={placeholder}
-      placeholderTextColor={c.textMuted}
-      keyboardType="decimal-pad"
-      style={[textInputStyle(c), { flex: 1, minWidth: 0 }]}
+      placeholderTextColor={t.mu}
+      keyboardType={numeric ? 'decimal-pad' : 'default'}
+      style={{ flex: 1, color: t.tx, fontSize: 17, minHeight: 56, paddingHorizontal: 18 }}
     />
   );
-
-  const daysTo = wishPrice > 0 && rate > 0 ? Math.ceil(wishPrice / rate) : null;
+  const dots = (
+    <Row gap={6}>
+      {[0, 1, 2].map((i) => (
+        <View key={i} style={{ width: i === step ? 22 : 6, height: 6, borderRadius: 3, backgroundColor: i === step ? t.tx : t.track }} />
+      ))}
+    </Row>
+  );
+  const bottom = Math.max(insets.bottom, 16) + 8;
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: c.bg }}>
+    <Screen>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <Row style={{ justifyContent: 'center', paddingTop: 8 }} gap={6}>
-          {Array.from({ length: STEPS }, (_, i) => (
-            <View key={i} style={{ width: i === step ? 22 : 8, height: 8, borderRadius: 4, backgroundColor: i <= step ? c.primary : c.border }} />
-          ))}
-        </Row>
-        <ScrollView contentContainerStyle={{ padding: 20, gap: 16, flexGrow: 1 }} keyboardShouldPersistTaps="handled">
-          {step === 0 && (
-            <View style={{ flex: 1, justifyContent: 'center', gap: 20 }}>
-              <T size="xxl" bold display>
-                Хорошие дни{'\n'}= реальные награды
-              </T>
-              <Point icon="mic" text="Говоришь, что съел или как тренировался, — запись за 10 секунд." />
-              <Point icon="check" text="Каждый день три простых условия: записать еду, уложиться в план, подвигаться." />
-              <Point icon="coin" text="Хорошие дни наполняют копилку на то, что ты правда хочешь: кроссовки, массаж, поездку." />
-              <Point icon="workout" text="Видишь, как растут твои настоящие показатели: дисциплина, сила, выносливость, форма." />
+        {step === 0 && (
+          <View style={{ flex: 1, paddingHorizontal: 32 }}>
+            <View style={{ alignItems: 'center', marginTop: 80 }}>
+              <Rings size={Math.min(260, width - 110)} food={0.72} steps={0.6} xp={0.34}>
+                <Icon name="mic" size={40} strokeWidth={1.6} color={t.tx} />
+              </Rings>
             </View>
-          )}
+            <View style={{ flex: 1 }} />
+            <Txt size={34} weight="300" style={{ lineHeight: 40 }}>
+              Просто скажи,{'\n'}что съел
+            </Txt>
+            <Txt size={17} muted style={{ marginTop: 14, lineHeight: 23 }}>
+              Я посчитаю калории и начислю опыт. Без запретов и ручного подсчёта.
+            </Txt>
+            <View style={{ marginTop: 24, marginBottom: 32 }}>{dots}</View>
+            <Cta title="Начать" onPress={() => setStep(1)} style={{ marginBottom: bottom }} />
+          </View>
+        )}
 
-          {step === 1 && (
-            <>
-              <T size="xl" bold display>
-                О тебе
-              </T>
-              <Row>
-                <Chip label="Мужчина" active={sex === 'male'} onPress={() => setSex('male')} />
-                <Chip label="Женщина" active={sex === 'female'} onPress={() => setSex('female')} />
-              </Row>
-              <Row>
+        {step === 1 && (
+          <ScrollView contentContainerStyle={{ padding: 24, paddingBottom: bottom + 80, gap: 14 }} keyboardShouldPersistTaps="handled">
+            <Txt size={30} weight="300" style={{ marginTop: 24 }}>
+              О тебе
+            </Txt>
+            <Txt muted>Чтобы посчитать твою норму калорий.</Txt>
+            <Row gap={8}>
+              {(['male', 'female'] as const).map((x) => (
+                <Pressable key={x} onPress={() => setSex(x)} style={{ height: 40, paddingHorizontal: 18, borderRadius: 20, justifyContent: 'center', backgroundColor: sex === x ? t.cta : t.sf2 }}>
+                  <Txt size={15} color={sex === x ? t.onCta : t.tx}>
+                    {x === 'male' ? 'Мужчина' : 'Женщина'}
+                  </Txt>
+                </Pressable>
+              ))}
+            </Row>
+            <Card>
+              {field('name', 'Имя (необязательно)', false)}
+              <Sep />
+              <Row gap={0}>
                 {field('height', 'Рост, см')}
                 {field('age', 'Возраст')}
               </Row>
-              <Row>
+              <Sep />
+              <Row gap={0}>
                 {field('weight', 'Вес, кг')}
                 {field('target', 'Цель, кг')}
               </Row>
-              <T bold>Активность</T>
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-                {ACTIVITY.map(([id, label]) => (
-                  <Chip key={id} label={label} active={activity === id} onPress={() => setActivity(id)} />
-                ))}
-              </View>
-              {targetTooLow && (
-                <Card style={{ borderColor: c.warning }}>
-                  <T>Цель ниже здорового веса для твоего роста. Минимум — {minTarget} кг.</T>
-                </Card>
+            </Card>
+            <Lbl style={{ marginTop: 6 }}>Активность</Lbl>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+              {ACTIVITY.map(([id, label]) => (
+                <Pressable key={id} onPress={() => setActivity(id)} style={{ height: 38, paddingHorizontal: 14, borderRadius: 19, justifyContent: 'center', backgroundColor: activity === id ? t.cta : t.sf2 }}>
+                  <Txt size={14} color={activity === id ? t.onCta : t.tx}>
+                    {label}
+                  </Txt>
+                </Pressable>
+              ))}
+            </View>
+            {tooLow && <Txt color={t.xp}>Цель ниже здорового веса для твоего роста. Минимум — {minTarget} кг.</Txt>}
+            {profile && !tooLow && (
+              <Txt muted>
+                Твоя норма — <Txt>{fmt(dailyCalorieTarget(profile))} ккал</Txt> в день.
+              </Txt>
+            )}
+          </ScrollView>
+        )}
+
+        {step === 2 && (
+          <View style={{ flex: 1, padding: 24, gap: 14 }}>
+            <Txt size={30} weight="300" style={{ marginTop: 24 }}>
+              Почти готово
+            </Txt>
+            <Txt muted>Шаги, сон, вес и тренировки с часов подтянутся сами.</Txt>
+            <Card>
+              <Row style={{ minHeight: 56, paddingHorizontal: 18, justifyContent: 'space-between' }}>
+                <Txt>Apple Здоровье</Txt>
+                <Toggle label="Apple Здоровье" value={health} onChange={async (v) => setHealth(v ? (await requestHealthAccess()).ok : false)} />
+              </Row>
+              <Sep />
+              <Row style={{ minHeight: 56, paddingHorizontal: 18, justifyContent: 'space-between' }}>
+                <Txt>Напоминания</Txt>
+                <Toggle label="Напоминания" value={notif} onChange={async (v) => setNotif(v ? await syncReminders(true) : false)} />
+              </Row>
+            </Card>
+            <Txt size={14} muted>
+              Микрофон iPhone спросит при первом нажатии на красную кнопку.
+            </Txt>
+          </View>
+        )}
+
+        {step > 0 && (
+          <View style={{ paddingHorizontal: 24, paddingBottom: bottom, gap: 16 }}>
+            {dots}
+            <Row>
+              <Pressable onPress={() => setStep(step - 1)} style={{ height: 56, paddingHorizontal: 22, justifyContent: 'center' }}>
+                <Txt muted>Назад</Txt>
+              </Pressable>
+              {step === 1 ? (
+                <Cta title="Далее" style={{ flex: 1 }} disabled={!valid || tooLow} onPress={() => setStep(2)} />
+              ) : (
+                <Cta title="Готово" style={{ flex: 1 }} onPress={finish} />
               )}
-              {profile && !targetTooLow && (
-                <Card>
-                  <T tone="muted">Твой дневной план</T>
-                  <T size="xl" bold display>
-                    {dailyCalorieTarget(profile)} ккал
-                  </T>
-                </Card>
-              )}
-            </>
-          )}
-
-          {step === 2 && (
-            <>
-              <T size="xl" bold display>
-                Твоя посуда
-              </T>
-              <T tone="muted">Один раз — и «тарелка плова» будет считаться по твоей тарелке, а не по средней.</T>
-              <PortionRow icon="plate" label="Тарелка" value={portions.plate} unit=" г" step={25} onChange={(v) => setPortions({ ...portions, plate: v })} />
-              <PortionRow icon="mug" label="Кружка" value={portions.cup} unit=" мл" step={25} onChange={(v) => setPortions({ ...portions, cup: v })} />
-              <PortionRow icon="sandwich" label="Бутерброд" value={portions.sandwich} unit=" г" step={10} onChange={(v) => setPortions({ ...portions, sandwich: v })} />
-              <PortionRow icon="spoon" label="Ложка" value={portions.tbsp} unit=" г" step={5} onChange={(v) => setPortions({ ...portions, tbsp: v })} />
-            </>
-          )}
-
-          {step === 3 && (
-            <>
-              <T size="xl" bold display>
-                На что копишь?
-              </T>
-              <T tone="muted">Реальная вещь, которую купишь себе, когда заработаешь хорошими днями. Можно пропустить и добавить позже.</T>
-              <TextInput value={wish.title} onChangeText={(title) => setWish({ ...wish, title })} placeholder="Например: новые кроссовки" placeholderTextColor={c.textMuted} style={textInputStyle(c)} />
-              <TextInput value={wish.price} onChangeText={(price) => setWish({ ...wish, price })} keyboardType="number-pad" placeholder="Сколько стоит, ₽" placeholderTextColor={c.textMuted} style={textInputStyle(c)} />
-              <Card style={{ gap: 10 }}>
-                <Row style={{ justifyContent: 'space-between' }}>
-                  <T bold style={{ flex: 1 }}>
-                    За идеальный день
-                  </T>
-                  <Stepper value={rate} step={50} min={50} suffix=" ₽" onChange={setRate} />
-                </Row>
-                <T size="sm" tone="muted">
-                  Столько ты разрешаешь себе потратить на награду за день, когда выполнены все три условия.
-                  {daysTo ? ` Такая награда — примерно ${daysTo} хороших дней.` : ''}
-                </T>
-              </Card>
-            </>
-          )}
-
-          {step === 4 && (
-            <>
-              <T size="xl" bold display>
-                Разрешения
-              </T>
-              <Card style={{ gap: 8 }}>
-                <Row gap={10}>
-                  <Icon name="health" size={22} color={c.primary} />
-                  <T bold>Здоровье</T>
-                </Row>
-                <T tone="muted">Шаги, сон, вес и тренировки с часов подтянутся сами.</T>
-                <Btn
-                  title={health === true ? 'Подключено' : health === false ? 'Недоступно — введу вручную' : 'Разрешить'}
-                  kind={health === null ? 'primary' : 'ghost'}
-                  disabled={health !== null}
-                  onPress={async () => setHealth((await requestHealthAccess()).ok)}
-                />
-              </Card>
-              <Card style={{ gap: 8 }}>
-                <Row gap={10}>
-                  <Icon name="bell" size={22} color={c.primary} />
-                  <T bold>Напоминания</T>
-                </Row>
-                <T tone="muted">Два в день: про обед и вечерний итог.</T>
-                <Btn
-                  title={notif === true ? 'Включены' : notif === false ? 'Не разрешено' : 'Разрешить'}
-                  kind={notif === null ? 'primary' : 'ghost'}
-                  disabled={notif !== null}
-                  onPress={async () => setNotif(await syncReminders(true))}
-                />
-              </Card>
-            </>
-          )}
-        </ScrollView>
-        <View style={{ padding: 20, gap: 8 }}>
-          {step < STEPS - 1 ? (
-            <Btn title="Далее" disabled={step === 1 && (!paramsValid || targetTooLow)} onPress={() => setStep(step + 1)} />
-          ) : (
-            <Btn title="Начать" onPress={finish} disabled={!profile} />
-          )}
-          {step > 0 && <Btn title="Назад" kind="ghost" onPress={() => setStep(step - 1)} />}
-        </View>
+            </Row>
+          </View>
+        )}
       </KeyboardAvoidingView>
-    </SafeAreaView>
-  );
-}
-
-function Point({ icon, text }: { icon: IconName; text: string }) {
-  const { c } = useTheme();
-  return (
-    <Row gap={14} style={{ alignItems: 'flex-start' }}>
-      <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: c.fill, alignItems: 'center', justifyContent: 'center' }}>
-        <Icon name={icon} size={22} color={c.primary} />
-      </View>
-      <T style={{ flex: 1 }}>{text}</T>
-    </Row>
-  );
-}
-
-function PortionRow({ icon, label, value, unit, step, onChange }: { icon: IconName; label: string; value: number; unit: string; step: number; onChange: (v: number) => void }) {
-  const { c } = useTheme();
-  return (
-    <Card>
-      <Row style={{ justifyContent: 'space-between' }}>
-        <Row gap={10}>
-          <Icon name={icon} size={22} color={c.primary} />
-          <T bold>{label}</T>
-        </Row>
-        <Stepper value={value} step={step} min={step} suffix={unit} onChange={onChange} />
-      </Row>
-    </Card>
+    </Screen>
   );
 }

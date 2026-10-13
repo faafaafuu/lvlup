@@ -2,7 +2,7 @@ import { createContext, ReactNode, useCallback, useContext, useMemo, useState } 
 import { useVoice, voiceSupported } from '@/lib/voice';
 import { useMealCapture } from '@/state/useMealCapture';
 import { ConfirmSheet } from './ConfirmSheet';
-import { OverlayMode, VoiceOverlay } from './VoiceOverlay';
+import { ListeningOverlay, OverlayMode } from './ListeningOverlay';
 
 interface CaptureApi {
   /** Микрофон: старт/стоп записи (или текстовый ввод, если голоса нет в сборке). */
@@ -64,7 +64,7 @@ export function CaptureHost({ children }: { children: ReactNode }) {
   return (
     <Ctx.Provider value={api}>
       {children}
-      <VoiceOverlay
+      <ListeningOverlay
         mode={mode}
         level={voice.level}
         heardSomething={voice.heardSomething}

@@ -1,18 +1,19 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import {
-  DateKey, DayActivity, MealDraft, MealLog, MotivationState, Profile, Stake, UserPortions, WeightEntry, dateKey, weekStartOf,
-} from '@levelup/domain';
+import { DateKey, DayActivity, GameState, MealDraft, MealLog, Profile, UserPortions, WeightEntry, dateKey, gameSummary, mealSlot, normOn, dayStats } from '@levelup/domain';
 import { newId } from '@/lib/id';
+import type { ThemePref } from '@/ui/theme';
 
 export interface Settings {
   /** Адрес сервера разбора; пусто — только офлайн-разбор на телефоне. */
   apiUrl: string;
   apiToken: string;
-  theme: 'system' | 'dark' | 'light';
+  theme: ThemePref;
   reminders: boolean;
   health: boolean;
+  /** Вибрация при награде. */
+  rewardHaptics: boolean;
   /** Когда последний раз синхронизировались со Здоровьем. */
   healthSyncedAt?: string | null;
 }
@@ -23,17 +24,18 @@ export interface PendingPhrase {
   at: string;
 }
 
-export interface ProgressPhoto {
-  id: string;
-  date: DateKey;
-  uri: string;
-}
-
-export interface ToastMsg {
-  id: string;
-  title: string;
-  subtitle?: string;
-  kind: 'saved' | 'quest' | 'achievement' | 'offline';
+/** Что показать на экране награды после записи. */
+export interface RewardInfo {
+  xp: number;
+  coins: number;
+  totalCoins: number;
+  streak: number;
+  level: number;
+  levelXp: number;
+  levelUp: boolean;
+  kcalLeft: number;
+  slot: string;
+  day: DateKey;
 }
 
 interface Data {
@@ -43,15 +45,13 @@ interface Data {
   meals: MealLog[];
   activity: Record<DateKey, DayActivity>;
   weights: WeightEntry[];
-  motivation: MotivationState;
-  photos: ProgressPhoto[];
   settings: Settings;
   pending: PendingPhrase[];
 }
 
 interface Actions {
-  completeOnboarding(profile: Profile, portions: UserPortions, wish: { title: string; price: number } | null, rate: number): void;
-  /** Записывает и еду, и активность из одной фразы. Возвращает true, если что-то записано. */
+  completeOnboarding(profile: Profile, portions: UserPortions): void;
+  /** Записывает еду и активность из одной фразы и готовит экран награды. */
   addEntry(draft: MealDraft, at?: string): boolean;
   deleteMeal(id: string): void;
   deleteSession(date: DateKey, id: string): void;
@@ -59,34 +59,22 @@ interface Actions {
   patchActivity(date: DateKey, patch: Partial<DayActivity>): void;
   addPending(text: string): void;
   removePending(id: string): void;
-  addWish(title: string, price: number): void;
-  removeWish(id: string): void;
-  claimWish(id: string): void;
-  setRate(rate: number): void;
-  addTransfer(amount: number): void;
-  addStake(stake: Omit<Stake, 'id' | 'weekStart'>): string | null;
-  payStake(id: string): void;
-  cancelStake(id: string): void;
-  addPhoto(uri: string): void;
-  removePhoto(id: string): void;
   updateSettings(patch: Partial<Settings>): void;
   updatePortions(portions: UserPortions): void;
   updateProfile(patch: Partial<Profile>): void;
-  showToast(t: Omit<ToastMsg, 'id'>): void;
-  hideToast(): void;
+  setViewDate(d: DateKey): void;
+  clearReward(): void;
   resetAll(): void;
 }
 
-export type AppState = Data & Actions & {
-  toast: ToastMsg | null;
-  /** День, открытый в календаре; запись голосом идёт в него. Не сохраняется. */
-  viewDate: DateKey;
-  setViewDate(d: DateKey): void;
-};
+export type AppState = Data &
+  Actions & {
+    /** День, открытый в дневнике; запись голосом идёт в него. Не сохраняется. */
+    viewDate: DateKey;
+    reward: RewardInfo | null;
+  };
 
 const today = () => dateKey(new Date());
-
-const freshMotivation = (): MotivationState => ({ startDate: today(), rates: [{ from: today(), rate: 100 }], wishes: [], transfers: [], stakes: [] });
 
 const INITIAL: Data = {
   onboarded: false,
@@ -95,40 +83,28 @@ const INITIAL: Data = {
   meals: [],
   activity: {},
   weights: [],
-  motivation: freshMotivation(),
-  photos: [],
-  settings: { apiUrl: '', apiToken: '', theme: 'system', reminders: true, health: false },
+  settings: { apiUrl: '', apiToken: '', theme: 'dark', reminders: true, health: false, rewardHaptics: true },
   pending: [],
 };
+
+const gameOf = (s: Data): GameState | null => (s.profile ? { profile: s.profile, meals: s.meals, activity: s.activity, weights: s.weights } : null);
 
 export const useStore = create<AppState>()(
   persist(
     (set, get) => ({
       ...INITIAL,
-      toast: null,
       viewDate: today(),
-      setViewDate(d) {
-        set({ viewDate: d > today() ? today() : d });
-      },
+      reward: null,
 
-      completeOnboarding(profile, portions, wish, rate) {
-        const d = today();
-        set({
-          onboarded: true,
-          profile,
-          portions,
-          weights: [{ date: d, kg: profile.startWeightKg }],
-          motivation: {
-            ...freshMotivation(),
-            rates: [{ from: d, rate }],
-            wishes: wish ? [{ id: newId(), title: wish.title, price: wish.price, createdAt: new Date().toISOString() }] : [],
-          },
-        });
+      completeOnboarding(profile, portions) {
+        set({ onboarded: true, profile, portions, weights: [{ date: today(), kg: profile.startWeightKg }] });
       },
 
       addEntry(draft, at = new Date().toISOString()) {
         const activities = draft.activities ?? [];
         if (!draft.items.length && !activities.length) return false;
+        const before = gameOf(get());
+        const prev = before ? gameSummary(before) : null;
         const day = dateKey(new Date(at));
         set((s) => {
           const patch: Partial<Data> = {};
@@ -136,17 +112,31 @@ export const useStore = create<AppState>()(
             patch.meals = [...s.meals, { id: newId(), at, text: draft.sourceText, items: draft.items, totals: draft.totals }];
           }
           if (activities.length) {
-            const prev = s.activity[day];
-            const sessions = [...(prev?.sessions ?? []), ...activities.map((a) => ({ ...a, id: newId(), at }))];
-            patch.activity = { ...s.activity, [day]: { ...prev, date: day, sessions } };
+            const p = s.activity[day];
+            const sessions = [...(p?.sessions ?? []), ...activities.map((a) => ({ ...a, id: newId(), at }))];
+            patch.activity = { ...s.activity, [day]: { ...p, date: day, sessions } };
           }
           return patch;
         });
-        const parts = [
-          draft.items.length ? `~${Math.round(draft.totals.kcal)} ккал` : '',
-          activities.length ? `${activities.reduce((n, a) => n + a.minutes, 0)} мин спорта` : '',
-        ].filter(Boolean);
-        get().showToast({ kind: 'saved', title: 'Записано', subtitle: parts.join(' · ') });
+        const after = gameOf(get());
+        if (after && prev) {
+          const next = gameSummary(after);
+          const stats = dayStats(day, after.meals, after.activity[day]);
+          set({
+            reward: {
+              xp: next.xp - prev.xp,
+              coins: next.coins - prev.coins,
+              totalCoins: next.coins,
+              streak: next.streak,
+              level: next.level,
+              levelXp: next.levelXp,
+              levelUp: next.level > prev.level,
+              kcalLeft: normOn(after, day) - stats.kcal,
+              slot: draft.items.length ? mealSlot(at) : 'Тренировка',
+              day,
+            },
+          });
+        }
         return true;
       },
 
@@ -156,9 +146,9 @@ export const useStore = create<AppState>()(
 
       deleteSession(date, id) {
         set((s) => {
-          const prev = s.activity[date];
-          if (!prev) return {};
-          return { activity: { ...s.activity, [date]: { ...prev, sessions: (prev.sessions ?? []).filter((x) => x.id !== id) } } };
+          const p = s.activity[date];
+          if (!p) return {};
+          return { activity: { ...s.activity, [date]: { ...p, sessions: (p.sessions ?? []).filter((x) => x.id !== id) } } };
         });
       },
 
@@ -178,56 +168,6 @@ export const useStore = create<AppState>()(
         set((s) => ({ pending: s.pending.filter((p) => p.id !== id) }));
       },
 
-      addWish(title, price) {
-        set((s) => ({ motivation: { ...s.motivation, wishes: [...s.motivation.wishes, { id: newId(), title, price, createdAt: new Date().toISOString() }] } }));
-      },
-
-      removeWish(id) {
-        set((s) => ({ motivation: { ...s.motivation, wishes: s.motivation.wishes.filter((w) => w.id !== id) } }));
-      },
-
-      claimWish(id) {
-        set((s) => ({
-          motivation: { ...s.motivation, wishes: s.motivation.wishes.map((w) => (w.id === id ? { ...w, claimedAt: new Date().toISOString() } : w)) },
-        }));
-        get().showToast({ kind: 'achievement', title: 'Награда твоя!', subtitle: 'Заработал честно — забирай' });
-      },
-
-      setRate(rate) {
-        // Новая ставка действует с сегодняшнего дня, прошлые заработки не пересчитываются.
-        const d = today();
-        set((s) => ({ motivation: { ...s.motivation, rates: [...s.motivation.rates.filter((r) => r.from !== d), { from: d, rate }] } }));
-      },
-
-      addTransfer(amount) {
-        set((s) => ({ motivation: { ...s.motivation, transfers: [...s.motivation.transfers, { id: newId(), at: new Date().toISOString(), amount }] } }));
-      },
-
-      addStake(stake) {
-        const week = weekStartOf(today());
-        if (get().motivation.stakes.some((s) => s.weekStart === week)) return 'На эту неделю ставка уже есть';
-        set((s) => ({ motivation: { ...s.motivation, stakes: [...s.motivation.stakes, { ...stake, id: newId(), weekStart: week }] } }));
-        return null;
-      },
-
-      payStake(id) {
-        set((s) => ({
-          motivation: { ...s.motivation, stakes: s.motivation.stakes.map((k) => (k.id === id ? { ...k, paidAt: new Date().toISOString() } : k)) },
-        }));
-      },
-
-      cancelStake(id) {
-        set((s) => ({ motivation: { ...s.motivation, stakes: s.motivation.stakes.filter((k) => k.id !== id) } }));
-      },
-
-      addPhoto(uri) {
-        set((s) => ({ photos: [...s.photos, { id: newId(), date: today(), uri }] }));
-      },
-
-      removePhoto(id) {
-        set((s) => ({ photos: s.photos.filter((p) => p.id !== id) }));
-      },
-
       updateSettings(patch) {
         set((s) => ({ settings: { ...s.settings, ...patch } }));
       },
@@ -240,30 +180,38 @@ export const useStore = create<AppState>()(
         set((s) => (s.profile ? { profile: { ...s.profile, ...patch } } : {}));
       },
 
-      showToast(t) {
-        set({ toast: { ...t, id: newId() } });
+      setViewDate(d) {
+        set({ viewDate: d > today() ? today() : d });
       },
 
-      hideToast() {
-        set({ toast: null });
+      clearReward() {
+        set({ reward: null });
       },
 
       resetAll() {
-        set({ ...INITIAL, motivation: freshMotivation(), toast: null, viewDate: today() });
+        set({ ...INITIAL, viewDate: today(), reward: null });
       },
     }),
     {
       name: 'levelup-state',
-      version: 2,
+      version: 3,
       storage: createJSONStorage(() => AsyncStorage),
-      // v1 → v2: уровни, монеты и персонаж убраны, вместо них копилка. Записи и вес сохраняются.
-      migrate: (persisted, version) => {
-        const old = (persisted ?? {}) as Partial<Data> & Record<string, unknown>;
-        if (version < 2) {
-          const { progress: _p, look: _l, ...rest } = old as Record<string, unknown>;
-          return { ...INITIAL, ...(rest as Partial<Data>), motivation: freshMotivation(), photos: [] } as Data;
-        }
-        return old as Data;
+      // v1/v2 → v3: уровни/копилка/фото прежних версий убраны; записи, вес и настройки сохраняются.
+      migrate: (persisted) => {
+        const old = (persisted ?? {}) as Record<string, unknown> & Partial<Data>;
+        const settings = { ...INITIAL.settings, ...(old.settings ?? {}) } as Settings;
+        if ((settings.theme as string) === 'light') settings.theme = 'cobalt';
+        return {
+          ...INITIAL,
+          onboarded: old.onboarded ?? false,
+          profile: old.profile ?? null,
+          portions: old.portions ?? INITIAL.portions,
+          meals: old.meals ?? [],
+          activity: old.activity ?? {},
+          weights: old.weights ?? [],
+          pending: old.pending ?? [],
+          settings,
+        } satisfies Data;
       },
       partialize: (s): Data => ({
         onboarded: s.onboarded,
@@ -272,8 +220,6 @@ export const useStore = create<AppState>()(
         meals: s.meals,
         activity: s.activity,
         weights: s.weights,
-        motivation: s.motivation,
-        photos: s.photos,
         settings: s.settings,
         pending: s.pending,
       }),

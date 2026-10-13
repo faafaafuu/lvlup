@@ -1,4 +1,4 @@
-import { ActivityLevel, Profile, WeightEntry } from './types';
+import { ActivityLevel, DateKey, GameState, Profile, WeightEntry } from './types';
 
 const ACTIVITY_FACTOR: Record<ActivityLevel, number> = { sedentary: 1.2, light: 1.375, moderate: 1.55, high: 1.725 };
 
@@ -51,4 +51,11 @@ export function smoothWeights(entries: WeightEntry[], tauDays = 7): Array<Weight
 export function currentWeight(p: Profile, weights: WeightEntry[]): number {
   const smoothed = smoothWeights(weights);
   return smoothed.length ? smoothed[smoothed.length - 1]!.trend : p.startWeightKg;
+}
+
+/** Норма калорий на дату: своя цель из настроек или формула по весу на тот день. */
+export function normOn(state: Pick<GameState, 'profile' | 'weights'>, date: DateKey): number {
+  if (state.profile.kcalGoal && state.profile.kcalGoal > 0) return state.profile.kcalGoal;
+  const upTo = state.weights.filter((w) => w.date <= date);
+  return dailyCalorieTarget(state.profile, currentWeight(state.profile, upTo));
 }

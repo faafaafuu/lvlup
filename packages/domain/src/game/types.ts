@@ -45,6 +45,8 @@ export interface Profile {
   targetWeightKg: number;
   activity: ActivityLevel;
   stepsGoal: number;
+  /** Своя цель калорий; если не задана — считаем по формуле. */
+  kcalGoal?: number | null;
 }
 
 export interface GameState {

@@ -15,3 +15,10 @@ export function addDays(key: DateKey, days: number): DateKey {
 export function mealDateKey(iso: string): DateKey {
   return dateKey(new Date(iso));
 }
+
+/** Понедельник недели, в которую входит дата. */
+export function weekStartOf(date: DateKey): DateKey {
+  const [y, m, d] = date.split('-').map(Number) as [number, number, number];
+  const dow = (new Date(y, m - 1, d).getDay() + 6) % 7;
+  return addDays(date, -dow);
+}

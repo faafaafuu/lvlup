@@ -1,16 +1,20 @@
 import { useEffect } from 'react';
-import { Geologica_600SemiBold } from '@expo-google-fonts/geologica/600SemiBold';
-import { Geologica_700Bold } from '@expo-google-fonts/geologica/700Bold';
+import { JetBrainsMono_400Regular } from '@expo-google-fonts/jetbrains-mono/400Regular';
+import { JetBrainsMono_500Medium } from '@expo-google-fonts/jetbrains-mono/500Medium';
+import { Unbounded_200ExtraLight } from '@expo-google-fonts/unbounded/200ExtraLight';
+import { Unbounded_300Light } from '@expo-google-fonts/unbounded/300Light';
+import { Unbounded_400Regular } from '@expo-google-fonts/unbounded/400Regular';
 import { useFonts } from 'expo-font';
 import { AppState } from 'react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { AppToast } from '@/components/AppToast';
+import { CaptureHost } from '@/components/CaptureHost';
+import { RewardModal } from '@/components/RewardModal';
 import { syncHealth } from '@/lib/healthSync';
 import { syncReminders } from '@/lib/notifications';
 import { useStore } from '@/state/store';
-import { useTheme } from '@/theme';
+import { useTheme } from '@/ui/theme';
 
 /** При открытии: последние 3 дня из Здоровья (первый раз — 30, чтобы появилась история). */
 async function refresh() {
@@ -20,10 +24,12 @@ async function refresh() {
 }
 
 export default function RootLayout() {
-  const { c, dark } = useTheme();
+  const t = useTheme();
   const onboarded = useStore((s) => s.onboarded);
   const reminders = useStore((s) => s.settings.reminders);
-  const [fontsLoaded, fontError] = useFonts({ Geologica_600SemiBold, Geologica_700Bold });
+  const [fontsLoaded, fontError] = useFonts({
+    Unbounded_200ExtraLight, Unbounded_300Light, Unbounded_400Regular, JetBrainsMono_400Regular, JetBrainsMono_500Medium,
+  });
 
   useEffect(() => {
     void refresh();
@@ -35,27 +41,31 @@ export default function RootLayout() {
     if (onboarded) void syncReminders(reminders);
   }, [onboarded, reminders]);
 
-  // Шрифт не загрузился (нет сети при первом запуске dev-сборки) — работаем на системном.
+  // Шрифты не загрузились — работаем на системном, а не висим на пустом экране.
   if (!fontsLoaded && !fontError) return null;
 
   return (
     <SafeAreaProvider>
-      <StatusBar style={dark ? 'light' : 'dark'} />
-      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: c.bg } }}>
-        <Stack.Protected guard={onboarded}>
-          <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="log" options={{ presentation: 'transparentModal', animation: 'fade' }} />
-          <Stack.Screen
-            name="settings"
-            options={{ presentation: 'modal', headerShown: true, title: 'Настройки', headerStyle: { backgroundColor: c.bg }, headerTintColor: c.text }}
-          />
-        </Stack.Protected>
-        <Stack.Screen name="connect" options={{ presentation: 'transparentModal', animation: 'fade' }} />
-        <Stack.Protected guard={!onboarded}>
-          <Stack.Screen name="onboarding" />
-        </Stack.Protected>
-      </Stack>
-      <AppToast />
+      <StatusBar style={t.light && t.name === 'carpet' ? 'dark' : 'light'} />
+      <CaptureHost>
+        <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: t.bg }, animation: 'fade' }}>
+          <Stack.Protected guard={onboarded}>
+            <Stack.Screen name="index" />
+            <Stack.Screen name="diary" />
+            <Stack.Screen name="progress" />
+            <Stack.Screen name="level" options={{ animation: 'slide_from_right' }} />
+            <Stack.Screen name="settings" options={{ animation: 'slide_from_right' }} />
+            <Stack.Screen name="profile" options={{ animation: 'slide_from_right' }} />
+            <Stack.Screen name="log" options={{ presentation: 'transparentModal', animation: 'fade' }} />
+          </Stack.Protected>
+          {/* Онбординг раньше «connect»: без профиля роутер открывает первый доступный экран. */}
+          <Stack.Protected guard={!onboarded}>
+            <Stack.Screen name="onboarding" />
+          </Stack.Protected>
+          <Stack.Screen name="connect" options={{ presentation: 'transparentModal', animation: 'fade' }} />
+        </Stack>
+        <RewardModal />
+      </CaptureHost>
     </SafeAreaProvider>
   );
 }

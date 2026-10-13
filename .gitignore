@@ -7,3 +7,4 @@ ios/
 android/
 *.tsbuildinfo
 *.zip
+design/*.zip

@@ -1,179 +1,171 @@
 import { useState } from 'react';
-import { Alert, ScrollView, Switch, TextInput, View } from 'react-native';
-import { ActivityLevel, dateKey, minHealthyWeight, rateOn } from '@levelup/domain';
-import { Btn, Card, Chip, Row, SectionTitle, Stepper, T, textInputStyle } from '@/components/ui';
+import { Alert, ScrollView, View } from 'react-native';
+import { router } from 'expo-router';
+import { Icon } from '@/design/Icon';
+import { fmt } from '@/lib/format';
 import { requestHealthAccess } from '@/lib/health';
 import { syncHealth } from '@/lib/healthSync';
-import { checkServer } from '@/lib/parse';
+import { syncReminders } from '@/lib/notifications';
+import { useDay } from '@/state/useDay';
 import { useStore } from '@/state/store';
-import { useTheme } from '@/theme';
+import { Card, Circ, Ghost, Lbl, Row, Screen, Seg, Sep, Toggle, Txt } from '@/ui/kit';
+import { ThemePref, useTheme } from '@/ui/theme';
 
-const ACTIVITY: Array<[ActivityLevel, string]> = [
-  ['sedentary', 'Сидячая'],
-  ['light', 'Лёгкая'],
-  ['moderate', 'Средняя'],
-  ['high', 'Высокая'],
+const THEMES: Array<[ThemePref, string]> = [
+  ['dark', 'Тёмная'],
+  ['cobalt', 'Кобальт'],
+  ['carpet', 'Ковёр'],
+  ['system', 'Авто'],
 ];
 
-export default function SettingsScreen() {
-  const { c } = useTheme();
+/** Настройки из макета: профиль, тема, цель, переключатели. */
+export default function Settings() {
+  const t = useTheme();
+  const d = useDay();
   const s = useStore();
-  const [serverStatus, setServerStatus] = useState<string | null>(null);
-  const [checking, setChecking] = useState(false);
-  const [confirmWord, setConfirmWord] = useState('');
   const [syncing, setSyncing] = useState(false);
-  const [syncNote, setSyncNote] = useState<string | null>(null);
-  const runSync = async (days: number) => {
+  const [note, setNote] = useState<string | null>(null);
+  if (!d || !s.profile) return null;
+  const profile = s.profile;
+
+  const runSync = async () => {
     setSyncing(true);
     try {
-      const r = await syncHealth(days);
-      setSyncNote(`Готово: шаги за ${r.steps} дн., тренировок ${r.workouts}, взвешиваний ${r.weights}. Если везде ноль — разреши Хруму доступ: Здоровье → Профиль → Приложения → Хрум.`);
+      const r = await syncHealth(30);
+      setNote(`Шаги за ${r.steps} дн., тренировок ${r.workouts}, взвешиваний ${r.weights}. Если везде ноль — Здоровье → Профиль → Приложения → Хрум → разреши всё.`);
     } finally {
       setSyncing(false);
     }
   };
-  if (!s.profile) return null;
-  const p = s.profile;
-  const units = s.portions.units ?? {};
-  const minTarget = minHealthyWeight(p.heightCm);
 
-  const setUnit = (key: 'plate' | 'cup' | 'tbsp', v: number) =>
-    s.updatePortions({ ...s.portions, units: { ...units, [key]: v, ...(key === 'cup' ? { glass: v } : {}) } });
+  const editGoal = () =>
+    Alert.prompt?.('Цель калорий', 'Сколько ккал в день? Пусто — посчитать по формуле.', (v) => {
+      const n = Number(String(v).replace(/\s/g, ''));
+      s.updateProfile({ kcalGoal: n >= 800 && n <= 6000 ? Math.round(n) : null });
+    }, 'plain-text', profile.kcalGoal ? String(profile.kcalGoal) : '', 'number-pad');
+
+  const row = (children: React.ReactNode) => <Row style={{ minHeight: 56, justifyContent: 'space-between', paddingHorizontal: 18 }}>{children}</Row>;
 
   return (
-    <ScrollView style={{ backgroundColor: c.bg }} contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 60 }} keyboardShouldPersistTaps="handled">
-      <SectionTitle>Цель</SectionTitle>
-      <Card style={{ gap: 12 }}>
-        <Row style={{ justifyContent: 'space-between' }}>
-          <T>Целевой вес</T>
-          <Stepper value={p.targetWeightKg} step={0.5} min={minTarget} suffix=" кг" onChange={(v) => s.updateProfile({ targetWeightKg: Math.max(minTarget, v) })} />
+    <Screen>
+      <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 60, gap: 14 }}>
+        <Row style={{ justifyContent: 'space-between', height: 56 }}>
+          <Circ icon="chevronLeft" label="Назад" onPress={() => router.back()} />
+          <Lbl style={{ fontSize: 12 }}>Настройки</Lbl>
+          <View style={{ width: 44 }} />
         </Row>
-        <Row style={{ justifyContent: 'space-between' }}>
-          <T>Цель шагов</T>
-          <Stepper value={p.stepsGoal} step={500} min={2000} onChange={(v) => s.updateProfile({ stepsGoal: v })} />
-        </Row>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-          {ACTIVITY.map(([id, label]) => (
-            <Chip key={id} label={label} active={p.activity === id} onPress={() => s.updateProfile({ activity: id })} />
-          ))}
-        </View>
-      </Card>
 
-      <SectionTitle>Копилка</SectionTitle>
-      <Card style={{ gap: 8 }}>
-        <Row style={{ justifyContent: 'space-between' }}>
-          <T style={{ flex: 1 }}>За идеальный день</T>
-          <Stepper value={rateOn(s.motivation.rates, dateKey(new Date()))} step={50} min={0} suffix=" ₽" onChange={(v) => s.setRate(v)} />
-        </Row>
-        <T size="xs" tone="muted">Новая сумма действует с сегодняшнего дня, прошлые дни не пересчитываются.</T>
-      </Card>
-
-      <SectionTitle>Мои порции</SectionTitle>
-      <Card style={{ gap: 12 }}>
-        <Row style={{ justifyContent: 'space-between' }}>
-          <T>Тарелка</T>
-          <Stepper value={units.plate ?? 300} step={25} min={50} suffix=" г" onChange={(v) => setUnit('plate', v)} />
-        </Row>
-        <Row style={{ justifyContent: 'space-between' }}>
-          <T>Кружка</T>
-          <Stepper value={units.cup ?? 250} step={25} min={50} suffix=" мл" onChange={(v) => setUnit('cup', v)} />
-        </Row>
-        <Row style={{ justifyContent: 'space-between' }}>
-          <T>Ложка</T>
-          <Stepper value={units.tbsp ?? 15} step={5} min={5} suffix=" г" onChange={(v) => setUnit('tbsp', v)} />
-        </Row>
-      </Card>
-
-      <SectionTitle>Распознавание</SectionTitle>
-      <Card style={{ gap: 10 }}>
-        <T size="sm" tone="muted">
-          Сервер с LLM лучше понимает разговорную речь. Без него работает офлайн-разбор прямо на телефоне.
-        </T>
-        <TextInput
-          value={s.settings.apiUrl}
-          onChangeText={(apiUrl) => s.updateSettings({ apiUrl })}
-          placeholder="https://сервер:3100 (пусто — только офлайн)"
-          placeholderTextColor={c.textMuted}
-          autoCapitalize="none"
-          autoCorrect={false}
-          keyboardType="url"
-          style={textInputStyle(c)}
-        />
-        <TextInput
-          value={s.settings.apiToken}
-          onChangeText={(apiToken) => s.updateSettings({ apiToken })}
-          placeholder="Токен API_TOKEN"
-          placeholderTextColor={c.textMuted}
-          autoCapitalize="none"
-          autoCorrect={false}
-          secureTextEntry
-          style={textInputStyle(c)}
-        />
-        <Btn
-          title="Проверить связь"
-          kind="ghost"
-          loading={checking}
-          disabled={!s.settings.apiUrl}
-          onPress={async () => {
-            setChecking(true);
-            setServerStatus(await checkServer(s.settings));
-            setChecking(false);
-          }}
-        />
-        {serverStatus && <T size="sm">{serverStatus}</T>}
-      </Card>
-
-      <SectionTitle>Siri</SectionTitle>
-      <Card style={{ gap: 8 }}>
-        <T>Скажи «Привет, Siri, добавь в Хрум» или «Хрум, запиши» — Siri спросит, что ты съел или как тренировался.</T>
-        <T size="sm" tone="muted">
-          Не говори просто «запиши …» — это команда Заметок. Проверить, что Siri знает Хрум: приложение «Команды» → вкладка «Команды» → раздел приложений → Хрум.
-          Если Хрума там нет — открой приложение один раз после установки и подожди минуту.
-        </T>
-      </Card>
-
-      <SectionTitle>Здоровье и напоминания</SectionTitle>
-      <Card style={{ gap: 12 }}>
-        <Row style={{ justifyContent: 'space-between' }}>
-          <T style={{ flex: 1 }}>Шаги, сон, вес из Здоровья</T>
-          <Switch
-            value={s.settings.health}
-            onValueChange={async (on) => {
-              if (!on) return s.updateSettings({ health: false });
-              const r = await requestHealthAccess();
-              s.updateSettings({ health: r.ok });
-              if (!r.ok) return Alert.alert('Здоровье недоступно', `Причина: ${r.reason}\n\nПока что шаги и вес можно вводить на экране «Ты».`);
-              await runSync(30);
-            }}
-          />
-        </Row>
-        {s.settings.health && (
-          <View style={{ gap: 8 }}>
-            <T size="sm" tone="muted">
-              {syncing ? 'Синхронизирую…' : syncNote ?? (s.settings.healthSyncedAt ? `Обновлено ${new Date(s.settings.healthSyncedAt).toLocaleString('ru-RU', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}` : 'Ещё не синхронизировалось')}
-            </T>
-            <Btn title="Подтянуть за 30 дней" kind="ghost" loading={syncing} onPress={() => void runSync(30)} />
+        <Card onPress={() => router.push('/profile')} style={{ padding: 16, flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+          <View style={{ width: 52, height: 52, borderRadius: 26, backgroundColor: t.sf2, alignItems: 'center', justifyContent: 'center' }}>
+            <Icon name="user" size={22} color={t.tx} />
           </View>
-        )}
-        <Row style={{ justifyContent: 'space-between' }}>
-          <T>Напоминания</T>
-          <Switch value={s.settings.reminders} onValueChange={(reminders) => s.updateSettings({ reminders })} />
-        </Row>
-      </Card>
+          <View style={{ flex: 1 }}>
+            <Txt size={20} weight="600">
+              {s.profile.name || 'Профиль'}
+            </Txt>
+            <Txt size={15} muted>
+              Цель {fmt(d.norm)} ккал · LV {String(d.game.level).padStart(2, '0')}
+            </Txt>
+          </View>
+          <Icon name="chevronRight" size={18} color={t.mu} />
+        </Card>
 
-      <SectionTitle>Тема</SectionTitle>
-      <Row>
-        {(['system', 'dark', 'light'] as const).map((t) => (
-          <Chip key={t} label={{ system: 'Как в системе', dark: 'Тёмная', light: 'Светлая' }[t]} active={s.settings.theme === t} onPress={() => s.updateSettings({ theme: t })} />
-        ))}
-      </Row>
+        <Card>
+          {row(
+            <>
+              <Txt>Тема</Txt>
+              <Seg items={THEMES.map(([, l]) => l)} value={Math.max(0, THEMES.findIndex(([k]) => k === s.settings.theme))} onChange={(i) => s.updateSettings({ theme: THEMES[i]![0] })} />
+            </>,
+          )}
+          <Sep />
+          <Card onPress={editGoal} style={{ borderWidth: 0, backgroundColor: 'transparent' }}>
+            {row(
+              <>
+                <Txt>Цель калорий</Txt>
+                <Txt muted>
+                  {fmt(d.norm)}
+                  {s.profile.kcalGoal ? '' : ' · авто'}
+                </Txt>
+              </>,
+            )}
+          </Card>
+          <Sep />
+          {row(
+            <>
+              <Txt>Язык голоса</Txt>
+              <Txt muted>Русский</Txt>
+            </>,
+          )}
+        </Card>
 
-      <SectionTitle>Данные</SectionTitle>
-      <Card style={{ gap: 10, borderColor: c.danger }}>
-        <T>Удалить все данные: записи, вес, прогресс героя. Отменить нельзя. Всё хранится только на этом телефоне.</T>
-        <TextInput value={confirmWord} onChangeText={setConfirmWord} placeholder="Напиши УДАЛИТЬ" placeholderTextColor={c.textMuted} style={textInputStyle(c)} />
-        <Btn title="Удалить всё" kind="danger" disabled={confirmWord.trim().toUpperCase() !== 'УДАЛИТЬ'} onPress={() => s.resetAll()} />
-      </Card>
-    </ScrollView>
+        <Card>
+          {row(
+            <>
+              <Txt>Напоминания</Txt>
+              <Toggle
+                label="Напоминания"
+                value={s.settings.reminders}
+                onChange={(v) => {
+                  s.updateSettings({ reminders: v });
+                  void syncReminders(v);
+                }}
+              />
+            </>,
+          )}
+          <Sep />
+          {row(
+            <>
+              <Txt>Apple Здоровье</Txt>
+              <Toggle
+                label="Apple Здоровье"
+                value={s.settings.health}
+                onChange={async (on) => {
+                  if (!on) return s.updateSettings({ health: false });
+                  const r = await requestHealthAccess();
+                  s.updateSettings({ health: r.ok });
+                  if (!r.ok) return Alert.alert('Здоровье недоступно', `Причина: ${r.reason}`);
+                  await runSync();
+                }}
+              />
+            </>,
+          )}
+          {s.settings.health && (
+            <View style={{ paddingHorizontal: 18, paddingBottom: 14, gap: 10 }}>
+              <Txt size={14} muted>
+                {syncing
+                  ? 'Синхронизирую…'
+                  : note ??
+                    (s.settings.healthSyncedAt
+                      ? `Обновлено ${new Date(s.settings.healthSyncedAt).toLocaleString('ru-RU', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}`
+                      : 'Ещё не синхронизировалось')}
+              </Txt>
+              <Ghost title="Подтянуть за 30 дней" onPress={() => void runSync()} disabled={syncing} />
+            </View>
+          )}
+          <Sep />
+          {row(
+            <>
+              <Txt>Вибрация наград</Txt>
+              <Toggle label="Вибрация наград" value={s.settings.rewardHaptics} onChange={(v) => s.updateSettings({ rewardHaptics: v })} />
+            </>,
+          )}
+        </Card>
+
+        <Txt size={14} muted style={{ paddingHorizontal: 6 }}>
+          Шаги, сон, вес и тренировки берутся из Apple Здоровье. Записи о еде хранятся только у тебя.
+        </Txt>
+
+        <Card>
+          {row(
+            <>
+              <Txt>Siri</Txt>
+              <Txt size={14} muted style={{ flex: 1, textAlign: 'right' }}>
+                «Привет, Siri, добавь в Хрум»
+              </Txt>
+            </>,
+          )}
+        </Card>
+      </ScrollView>
+    </Screen>
   );
 }

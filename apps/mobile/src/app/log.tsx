@@ -2,10 +2,10 @@ import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ConfirmSheet } from '@/components/ConfirmSheet';
-import { T } from '@/components/ui';
+import { Lbl, Txt } from '@/ui/kit';
 import { useStore } from '@/state/store';
 import { useMealCapture } from '@/state/useMealCapture';
-import { useTheme } from '@/theme';
+import { useTheme } from '@/ui/theme';
 
 /**
  * Вход из Siri / Быстрых команд: levelup://log?text=тарелка%20плова
@@ -13,7 +13,7 @@ import { useTheme } from '@/theme';
  * Если есть уточнения или незнакомые слова — показываем обычное подтверждение.
  */
 export default function LogFromLink() {
-  const { c } = useTheme();
+  const t = useTheme();
   const { text } = useLocalSearchParams<{ text?: string }>();
   const capture = useMealCapture();
   const [status, setStatus] = useState('Разбираю…');
@@ -45,11 +45,11 @@ export default function LogFromLink() {
   const close = () => router.replace('/');
 
   return (
-    <View style={{ flex: 1, backgroundColor: c.scrim, alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+    <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
       {!capture.draft && (
         <>
-          <ActivityIndicator color="#fff" />
-          <T style={{ color: '#fff' }}>{status}</T>
+          <ActivityIndicator color="#FFFFFF" />
+          <Txt color="#FFFFFF">{status}</Txt>
         </>
       )}
       <ConfirmSheet
