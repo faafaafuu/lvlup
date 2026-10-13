@@ -12,6 +12,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { CaptureHost } from '@/components/CaptureHost';
 import { RewardModal } from '@/components/RewardModal';
 import { syncHealth } from '@/lib/healthSync';
+import { startLiveSync } from '@/lib/live';
 import { syncReminders } from '@/lib/notifications';
 import { useStore } from '@/state/store';
 import { useTheme } from '@/ui/theme';
@@ -37,6 +38,9 @@ export default function RootLayout() {
     return () => sub.remove();
   }, [onboarded]);
 
+  // Виджеты и Dynamic Island следят за стором сами.
+  useEffect(() => startLiveSync(), []);
+
   useEffect(() => {
     if (onboarded) void syncReminders(reminders);
   }, [onboarded, reminders]);
@@ -57,6 +61,7 @@ export default function RootLayout() {
             <Stack.Screen name="settings" options={{ animation: 'slide_from_right' }} />
             <Stack.Screen name="profile" options={{ animation: 'slide_from_right' }} />
             <Stack.Screen name="log" options={{ presentation: 'transparentModal', animation: 'fade' }} />
+            <Stack.Screen name="voice" options={{ animation: 'none' }} />
           </Stack.Protected>
           {/* Онбординг раньше «connect»: без профиля роутер открывает первый доступный экран. */}
           <Stack.Protected guard={!onboarded}>

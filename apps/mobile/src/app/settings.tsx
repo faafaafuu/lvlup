@@ -149,6 +149,13 @@ export default function Settings() {
               <Toggle label="Вибрация наград" value={s.settings.rewardHaptics} onChange={(v) => s.updateSettings({ rewardHaptics: v })} />
             </>,
           )}
+          <Sep />
+          {row(
+            <>
+              <Txt>Dynamic Island</Txt>
+              <Toggle label="Dynamic Island" value={s.settings.island !== false} onChange={(v) => s.updateSettings({ island: v })} />
+            </>,
+          )}
         </Card>
 
         <Txt size={14} muted style={{ paddingHorizontal: 6 }}>

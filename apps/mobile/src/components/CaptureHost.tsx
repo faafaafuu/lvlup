@@ -1,4 +1,5 @@
-import { createContext, ReactNode, useCallback, useContext, useMemo, useState } from 'react';
+import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { setRecording } from '@/lib/live';
 import { useVoice, voiceSupported } from '@/lib/voice';
 import { useMealCapture } from '@/state/useMealCapture';
 import { ConfirmSheet } from './ConfirmSheet';
@@ -40,6 +41,9 @@ export function CaptureHost({ children }: { children: ReactNode }) {
     [capture],
   );
   const voice = useVoice((text) => void handlePhrase(text));
+
+  // Островок переключается в «Слушаю» с таймером, пока идёт запись.
+  useEffect(() => setRecording(voice.state === 'listening'), [voice.state]);
 
   const toggleVoice = useCallback(() => {
     if (voice.state === 'listening') return voice.stop();

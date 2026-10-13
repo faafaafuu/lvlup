@@ -14,6 +14,8 @@ export interface Settings {
   health: boolean;
   /** Вибрация при награде. */
   rewardHaptics: boolean;
+  /** Остаток калорий в Dynamic Island; undefined у старых установок = включено. */
+  island?: boolean;
   /** Когда последний раз синхронизировались со Здоровьем. */
   healthSyncedAt?: string | null;
 }

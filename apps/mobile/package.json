@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "main": "expo-router/entry",
   "dependencies": {
+    "@bacons/apple-targets": "^5.0.0",
     "@expo-google-fonts/jetbrains-mono": "^0.4.1",
     "@expo-google-fonts/unbounded": "^0.4.1",
     "@kingstinct/react-native-healthkit": "^16.0.0",

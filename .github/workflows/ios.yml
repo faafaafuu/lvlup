@@ -57,11 +57,17 @@ jobs:
 
       # Без подписи в бинарнике нет entitlements, и SideStore при переподписи не даст
       # HealthKit. Ad-hoc подпись («-») вшивает права, сертификат для этого не нужен.
-      - name: Ad-hoc подпись с правами (HealthKit)
+      - name: Ad-hoc подпись с правами (HealthKit, App Group, виджет)
         working-directory: apps/mobile/ios
         run: |
           APP=build/Build/Products/Release-iphoneos/Hrum.app
           find "$APP/Frameworks" -maxdepth 1 \( -name '*.framework' -o -name '*.dylib' \) -exec codesign --force --sign - {} \; 2>/dev/null || true
+          # Расширение виджетов/Dynamic Island подписывается раньше приложения — со своей группой.
+          for EX in "$APP"/PlugIns/*.appex; do
+            [ -d "$EX" ] || continue
+            codesign --force --sign - --entitlements .targets/HrumWidget/generated.entitlements "$EX"
+            codesign -d --entitlements - "$EX"
+          done
           codesign --force --sign - --entitlements Hrum/Hrum.entitlements "$APP"
           codesign -d --entitlements - "$APP"
 

@@ -15,12 +15,18 @@
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true,
           "NSAllowsLocalNetworking": true
-        }
+        },
+        "NSSupportsLiveActivities": true
       },
       "icon": {
         "light": "./assets/icon/app-icon-default-1024.png",
         "dark": "./assets/icon/app-icon-dark-1024.png",
         "tinted": "./assets/icon/app-icon-tinted-1024.png"
+      },
+      "entitlements": {
+        "com.apple.security.application-groups": [
+          "group.com.faraday13.levelup"
+        ]
       }
     },
     "android": {
@@ -53,7 +59,8 @@
             "Хрумм"
           ]
         }
-      ]
+      ],
+      "@bacons/apple-targets"
     ],
     "experiments": {
       "typedRoutes": true
