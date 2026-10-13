@@ -8,3 +8,6 @@ android/
 *.tsbuildinfo
 *.zip
 design/*.zip
+
+# Нативный код локальных модулей — исходники, а не CNG.
+!apps/mobile/modules/*/ios/
