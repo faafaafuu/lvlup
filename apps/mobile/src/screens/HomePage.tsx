@@ -1,19 +1,20 @@
-import { View, useWindowDimensions } from 'react-native';
+import { Pressable, ScrollView, View, useWindowDimensions } from 'react-native';
 import { router } from 'expo-router';
-import { Pressable } from 'react-native';
+import { NAV_SPACE } from '@/components/BottomNav';
+import { EntryRow } from '@/components/EntryRow';
 import { usePager } from '@/components/Pager';
 import { XP_PER_LEVEL, dateKey, mealDateKey } from '@levelup/domain';
 import { Icon } from '@/design/Icon';
 import { fmt, timeOf } from '@/lib/format';
 import { useDay } from '@/state/useDay';
 import { useStore } from '@/state/store';
-import { Card, Lbl, Num, Pill, Rings, Row, Screen, Txt } from '@/ui/kit';
+import { Card, Lbl, Num, Pill, Rings, Row, Screen, Sep, Txt } from '@/ui/kit';
 import { useTheme } from '@/ui/theme';
 
 const DOW = ['ВС', 'ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ'];
 const MON = ['ЯНВ', 'ФЕВ', 'МАР', 'АПР', 'МАЯ', 'ИЮН', 'ИЮЛ', 'АВГ', 'СЕН', 'ОКТ', 'НОЯ', 'ДЕК'];
 
-/** Главный экран из макета: три кольца (еда · шаги · опыт), остаток калорий, последняя запись. */
+/** Главный экран из макета: три кольца (еда · шаги · опыт), остаток калорий и всё, что съедено сегодня. */
 export function HomePage() {
   const t = useTheme();
   const { width } = useWindowDimensions();
@@ -29,11 +30,16 @@ export function HomePage() {
   const day = d;
   const now = new Date();
   const left = day.norm - day.stats.kcal;
-  const last = meals.filter((m) => mealDateKey(m.at) === today).sort((a, b) => b.at.localeCompare(a.at))[0];
+  // Сегодняшние продукты, свежие сверху: каждый — строка с карточкой и смахиванием.
+  const eaten = meals
+    .filter((m) => mealDateKey(m.at) === today)
+    .sort((a, b) => b.at.localeCompare(a.at))
+    .flatMap((m) => m.items.map((it, idx) => ({ m, it, idx })));
   const size = Math.min(320, width - 70);
 
   return (
     <Screen>
+      <ScrollView contentContainerStyle={{ paddingBottom: NAV_SPACE }} showsVerticalScrollIndicator={false}>
       <Row style={{ paddingHorizontal: 24, height: 44, justifyContent: 'space-between' }}>
         <Lbl style={{ fontSize: 12 }}>
           {DOW[now.getDay()]} · {now.getDate()} {MON[now.getMonth()]}
@@ -70,35 +76,53 @@ export function HomePage() {
         <Legend color={t.xp} label="Опыт" value={String(d.game.levelXp)} of={String(XP_PER_LEVEL)} right onPress={() => router.push('/level')} />
       </Row>
 
-      <View style={{ paddingHorizontal: 20, marginTop: 28 }}>
-        <Card
-          onPress={() => {
-            if (last) return router.push({ pathname: '/entry/[id]', params: { id: last.id } });
-            setViewDate(today);
-            pager.go(0);
-          }}
-          style={{ height: 64, paddingHorizontal: 18, flexDirection: 'row', alignItems: 'center', gap: 14 }}
-        >
-          {last ? (
-            <>
-              <Lbl style={{ fontSize: 12 }}>{timeOf(last.at)}</Lbl>
-              <Txt style={{ flex: 1 }} numberOfLines={1}>
-                {last.items.map((i) => i.name).join(', ')}
-              </Txt>
-              <Num size={17}>
-                {fmt(last.totals.kcal)}
-                <Lbl> ккал</Lbl>
-              </Num>
-            </>
-          ) : (
+      <View style={{ paddingHorizontal: 20, marginTop: 28, gap: 8 }}>
+        {eaten.length > 0 && (
+          <Row style={{ justifyContent: 'space-between', paddingHorizontal: 4 }}>
+            <Lbl>Сегодня · {eaten.length}</Lbl>
+            <Lbl>смахни влево — изменить</Lbl>
+          </Row>
+        )}
+        {eaten.length ? (
+          <Card style={{ overflow: 'hidden' }}>
+            {eaten.map(({ m, it, idx }, i) => (
+              <View key={`${m.id}-${idx}`}>
+                {i > 0 && <Sep />}
+                <EntryRow
+                  onOpen={() => router.push({ pathname: '/entry/[id]', params: { id: m.id } })}
+                  onDelete={() => useStore.getState().deleteItem(m.id, idx)}
+                >
+                  <Row style={{ paddingHorizontal: 18, paddingVertical: 14 }} gap={14}>
+                    <Lbl style={{ fontSize: 12, width: 40 }}>{timeOf(m.at)}</Lbl>
+                    <Txt style={{ flex: 1 }} numberOfLines={1}>
+                      {it.name}
+                    </Txt>
+                    <Num size={17}>
+                      {fmt(it.nutrients.kcal)}
+                      <Lbl> ккал</Lbl>
+                    </Num>
+                    <Icon name="chevronRight" size={16} color={t.mu} />
+                  </Row>
+                </EntryRow>
+              </View>
+            ))}
+          </Card>
+        ) : (
+          <Card
+            onPress={() => {
+              setViewDate(today);
+              pager.go(0);
+            }}
+            style={{ height: 64, paddingHorizontal: 18, flexDirection: 'row', alignItems: 'center', gap: 14 }}
+          >
             <Txt muted style={{ flex: 1 }}>
               Скажи, что съел — нажми на микрофон
             </Txt>
-          )}
-          <Icon name="chevronRight" size={18} color={t.mu} />
-        </Card>
+            <Icon name="chevronRight" size={18} color={t.mu} />
+          </Card>
+        )}
       </View>
-
+      </ScrollView>
     </Screen>
   );
 }

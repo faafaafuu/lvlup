@@ -68,6 +68,8 @@ interface Actions {
   updateMeal(id: string, items: MealLog['items']): void;
   /** Удаляют с плашкой «Вернуть». */
   deleteMeal(id: string): void;
+  /** Убрать один продукт из записи (последний — вся запись). */
+  deleteItem(mealId: string, index: number): void;
   deleteSession(date: DateKey, id: string): void;
   setPage(page: Page): void;
   clearUndo(): void;
@@ -173,6 +175,21 @@ export const useStore = create<AppState>()(
           undo: {
             label: meal.items.map((i) => i.name).join(', ') || 'Запись',
             restore: () => set((x) => ({ meals: [...x.meals, meal], undo: null })),
+          },
+        }));
+      },
+
+      deleteItem(mealId, index) {
+        const meal = get().meals.find((m) => m.id === mealId);
+        const item = meal?.items[index];
+        if (!meal || !item) return;
+        if (meal.items.length === 1) return get().deleteMeal(mealId);
+        const items = meal.items.filter((_, i) => i !== index);
+        set((s) => ({
+          meals: s.meals.map((m) => (m.id === mealId ? { ...m, items, totals: sumNutrients(items) } : m)),
+          undo: {
+            label: item.name,
+            restore: () => set((x) => ({ meals: x.meals.map((m) => (m.id === mealId ? meal : m)), undo: null })),
           },
         }));
       },

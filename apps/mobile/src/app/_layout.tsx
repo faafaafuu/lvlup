@@ -8,6 +8,7 @@ import { useFonts } from 'expo-font';
 import { AppState } from 'react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { CaptureHost } from '@/components/CaptureHost';
 import { RewardModal } from '@/components/RewardModal';
@@ -56,6 +57,7 @@ export default function RootLayout() {
   if (!fontsLoaded && !fontError) return null;
 
   return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
     <SafeAreaProvider>
       <StatusBar style={t.light && t.name === 'carpet' ? 'dark' : 'light'} />
       <CaptureHost>
@@ -81,5 +83,6 @@ export default function RootLayout() {
         <UndoToast />
       </CaptureHost>
     </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }

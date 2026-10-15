@@ -1,18 +1,21 @@
 import { Pressable, ScrollView, View } from 'react-native';
 import { router } from 'expo-router';
 import { useEffect } from 'react';
-import { MealLog, addDays, dateKey, mealDateKey, mealSlot } from '@levelup/domain';
+import { MealLog, addDays, mealDateKey, mealSlot } from '@levelup/domain';
 import { NAV_SPACE } from '@/components/BottomNav';
 import { useCapture } from '@/components/CaptureHost';
+import { EntryRow } from '@/components/EntryRow';
 import { WeekStrip } from '@/components/WeekStrip';
 import { Icon } from '@/design/Icon';
 import { fmt, timeOf } from '@/lib/format';
-import { tap } from '@/lib/haptics';
 import { syncHealth } from '@/lib/healthSync';
 import { useDay } from '@/state/useDay';
 import { useStore } from '@/state/store';
 import { Card, Lbl, Num, Row, Screen, Sep, Txt } from '@/ui/kit';
 import { useTheme } from '@/ui/theme';
+
+/** Строка записи: отступы внутри, чтобы кнопки смахивания были во всю высоту. */
+const ROW = { justifyContent: 'space-between', paddingHorizontal: 18, paddingVertical: 14 } as const;
 
 const MONTHS = ['январь', 'февраль', 'март', 'апрель', 'май', 'июнь', 'июль', 'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь'];
 
@@ -46,10 +49,8 @@ export function DiaryPage() {
   const month = Number(day.slice(5, 7)) - 1;
 
   const open = (id: string, sessionDay?: string) => {
-    tap();
     router.push({ pathname: '/entry/[id]', params: sessionDay ? { id, day: sessionDay } : { id } });
   };
-  const pressed = ({ pressed: on }: { pressed: boolean }) => ({ paddingVertical: 14, opacity: on ? 0.55 : 1 });
 
   return (
     <Screen>
@@ -93,14 +94,14 @@ export function DiaryPage() {
               <Lbl>{g.slot}</Lbl>
               <Lbl>{g.time}</Lbl>
             </Row>
-            <Card style={{ paddingHorizontal: 18 }}>
+            <Card style={{ overflow: 'hidden' }}>
               {g.meals.flatMap((m) =>
-                m.items.map((it, i) => ({ m, it, key: `${m.id}-${i}` })),
-              ).map(({ m, it, key }, i) => (
+                m.items.map((it, idx) => ({ m, it, idx, key: `${m.id}-${idx}` })),
+              ).map(({ m, it, idx, key }, i) => (
                 <View key={key}>
                   {i > 0 && <Sep />}
-                  <Pressable onPress={() => open(m.id)} style={pressed}>
-                    <Row style={{ justifyContent: 'space-between' }}>
+                  <EntryRow onOpen={() => open(m.id)} onDelete={() => useStore.getState().deleteItem(m.id, idx)}>
+                    <Row style={ROW}>
                       <View style={{ flex: 1, gap: 2 }}>
                         <Txt>{it.name}</Txt>
                         <Txt size={14} muted>
@@ -110,7 +111,7 @@ export function DiaryPage() {
                       <Num size={18}>{fmt(it.nutrients.kcal)}</Num>
                       <Icon name="chevronRight" size={16} color={t.mu} />
                     </Row>
-                  </Pressable>
+                  </EntryRow>
                 </View>
               ))}
             </Card>
@@ -120,12 +121,12 @@ export function DiaryPage() {
         {sessions.length > 0 && (
           <View style={{ gap: 8 }}>
             <Lbl style={{ paddingHorizontal: 4 }}>Тренировки</Lbl>
-            <Card style={{ paddingHorizontal: 18 }}>
+            <Card style={{ overflow: 'hidden' }}>
               {sessions.map((a, i) => (
                 <View key={a.id}>
                   {i > 0 && <Sep />}
-                  <Pressable onPress={() => open(a.id, day)} style={pressed}>
-                    <Row style={{ justifyContent: 'space-between' }}>
+                  <EntryRow onOpen={() => open(a.id, day)} onDelete={() => useStore.getState().deleteSession(day, a.id)}>
+                    <Row style={ROW}>
                       <View style={{ flex: 1, gap: 2 }}>
                         <Txt>{a.name}</Txt>
                         <Txt size={14} muted>
@@ -137,7 +138,7 @@ export function DiaryPage() {
                       </Num>
                       <Icon name="chevronRight" size={16} color={t.mu} />
                     </Row>
-                  </Pressable>
+                  </EntryRow>
                 </View>
               ))}
             </Card>
@@ -166,7 +167,7 @@ export function DiaryPage() {
         )}
         {(groups.length > 0 || sessions.length > 0) && (
           <Txt size={13} muted style={{ textAlign: 'center' }}>
-            Нажми на запись — поправить порцию или удалить
+            Нажми на запись — карточка; смахни влево — изменить или удалить
           </Txt>
         )}
       </ScrollView>
