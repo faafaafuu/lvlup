@@ -9,6 +9,7 @@ export function useMealCapture() {
   const [draft, setDraft] = useState<MealDraft | null>(null);
   const [source, setSource] = useState<'server' | 'offline'>('offline');
   const [pendingId, setPendingId] = useState<string | null>(null);
+  const [offlineReason, setOfflineReason] = useState<string | null>(null);
 
   const parse = useCallback(async (text: string, fromPendingId?: string) => {
     const { settings, portions, addPending, profile, weights } = useStore.getState();
@@ -21,6 +22,7 @@ export function useMealCapture() {
       return null;
     }
     setSource(result.source);
+    setOfflineReason(result.reason ?? null);
     setPendingId(fromPendingId ?? null);
     setDraft(result.draft);
     return result.draft;
@@ -40,7 +42,7 @@ export function useMealCapture() {
     setPendingId(null);
   }, []);
 
-  return { draft, source, setDraft, parse, confirm, cancel };
+  return { draft, source, offlineReason, setDraft, parse, confirm, cancel };
 }
 
 /** Время записи: сейчас — для сегодня; для прошлого дня — тот же час, но в выбранную дату. */

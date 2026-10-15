@@ -15,6 +15,8 @@ import { RewardModal } from '@/components/RewardModal';
 import { UndoToast } from '@/components/UndoToast';
 import { syncHealth } from '@/lib/healthSync';
 import { startLiveSync } from '@/lib/live';
+import { pingServer } from '@/lib/parse';
+import Constants from 'expo-constants';
 import { startReminderSync, syncReminders } from '@/lib/notifications';
 import { useStore } from '@/state/store';
 import { useTheme } from '@/ui/theme';
@@ -25,6 +27,9 @@ async function refresh() {
   if (!s.onboarded || !s.settings.health) return;
   await syncHealth(s.settings.healthSyncedAt ? 3 : 30);
 }
+
+/** Коммит сборки (CI подставляет EXPO_PUBLIC_BUILD). */
+const BUILD = process.env.EXPO_PUBLIC_BUILD || 'dev';
 
 export default function RootLayout() {
   const t = useTheme();
@@ -47,6 +52,8 @@ export default function RootLayout() {
 
   // Виджеты и Dynamic Island следят за стором сами.
   useEffect(() => startLiveSync(), []);
+  // Отметка в журнале сервера: какая версия стоит и доходит ли телефон до сервера.
+  useEffect(() => pingServer(useStore.getState().settings, `${Constants.expoConfig?.version ?? '?'}-${BUILD}`), []);
   useEffect(() => startReminderSync(), []);
 
   useEffect(() => {

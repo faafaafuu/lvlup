@@ -1,10 +1,9 @@
-import { useEffect, useState } from 'react';
 import { Modal, Pressable, ScrollView, View, useWindowDimensions } from 'react-native';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
-  ENTRY_XP_CAP, MealDraft, WORKOUT_XP_CAP, XP_PER_ENTRY, XP_PER_WORKOUT, answerQuestion, currentWeight, dateKey, describePortion, massUnit,
-  mealDateKey, mealSlot, normOn, removeItem, setActivityMinutes, setItemGrams,
+  ENTRY_XP_CAP, MealDraft, WORKOUT_XP_CAP, XP_PER_ENTRY, XP_PER_WORKOUT, answerQuestion, currentWeight, dateKey, describePortion,
+  mealDateKey, mealSlot, normOn, removeItem, replaceItem, setActivityMinutes, stepItem,
 } from '@levelup/domain';
 import { Icon } from '@/design/Icon';
 import { fmt, humanDate } from '@/lib/format';
@@ -16,35 +15,28 @@ import { useTheme } from '@/ui/theme';
 interface Props {
   draft: MealDraft | null;
   source?: 'server' | 'offline';
+  /** Почему разбор офлайн: сервер не ответил — причина видна прямо в карточке. */
+  offlineReason?: string | null;
   onChange: (draft: MealDraft) => void;
   onConfirm: () => void;
   onCancel: () => void;
 }
 
-/** «Проверка записи» из макета: главное блюдо крупно, остальное карточками, порция одним степпером. */
-export function ConfirmSheet({ draft, source, onChange, onConfirm, onCancel }: Props) {
+/** «Проверка записи»: итог крупно, у каждого блюда своя порция ± и «убрать». */
+export function ConfirmSheet({ draft, source, offlineReason, onChange, onConfirm, onCancel }: Props) {
   const t = useTheme();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
-  const [edit, setEdit] = useState(false);
-  const [mult, setMult] = useState(1);
   const profile = useStore((s) => s.profile);
   const weights = useStore((s) => s.weights);
   const meals = useStore((s) => s.meals);
   const activity = useStore((s) => s.activity);
   const viewDate = useStore((s) => s.viewDate);
 
-  useEffect(() => {
-    setEdit(false);
-    setMult(1);
-  }, [draft?.sourceText]);
-
   if (!draft) return null;
   const kg = profile ? currentWeight(profile, weights) : 75;
   const activities = draft.activities ?? [];
   const items = draft.items;
-  const main = [...items].sort((a, b) => b.nutrients.kcal - a.nutrients.kcal)[0];
-  const rest = items.filter((i) => i !== main);
   const totals = draft.totals;
   const burned = activities.reduce((n, a) => n + a.kcal, 0);
   const nothing = items.length === 0 && activities.length === 0;
@@ -62,17 +54,11 @@ export function ConfirmSheet({ draft, source, onChange, onConfirm, onCancel }: P
   const norm = profile ? normOn({ profile, weights }, viewDate) : 2000;
   const macroTarget = { protein: (norm * 0.25) / 4, fat: (norm * 0.3) / 9, carbs: (norm * 0.45) / 4 };
 
-  const scale = (next: number) => {
-    if (next < 0.5) return;
-    const f = next / mult;
-    let d = draft;
-    d.items.forEach((it, i) => {
-      d = setItemGrams(d, i, it.grams * f);
-    });
-    setMult(next);
-    onChange(d);
+  const step = (i: number, dir: 1 | -1) => {
+    const next = stepItem(items[i]!, dir);
+    onChange(next ? replaceItem(draft, i, next) : removeItem(draft, i));
   };
-  const idx = (it: typeof items[number]) => items.indexOf(it);
+  const offline = source === 'offline' ? (offlineReason ? `офлайн — ${offlineReason}` : 'офлайн') : '';
 
   return (
     <Modal visible animationType="slide" onRequestClose={onCancel} presentationStyle="fullScreen">
@@ -84,16 +70,16 @@ export function ConfirmSheet({ draft, source, onChange, onConfirm, onCancel }: P
         </Row>
 
         <ScrollView contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 16, paddingBottom: 140, gap: 18 }}>
-          {main ? (
+          {items.length ? (
             <View style={{ gap: 4 }}>
-              <Txt size={28} weight="300">
-                {main.name}
+              <Txt size={28} weight="300" numberOfLines={2}>
+                {items.length === 1 ? items[0]!.name : items.map((i) => i.name).join(', ')}
               </Txt>
-              <Txt size={15} muted>
-                {describePortion(main)}
-                {main.assumed ? ' · на глаз' : ''}
-                {source === 'offline' ? ' · офлайн' : ''}
-              </Txt>
+              {!!offline && (
+                <Txt size={14} color={t.xp}>
+                  {offline}
+                </Txt>
+              )}
             </View>
           ) : activities[0] ? (
             <Txt size={28} weight="300">
@@ -152,49 +138,22 @@ export function ConfirmSheet({ draft, source, onChange, onConfirm, onCancel }: P
             </Card>
           ))}
 
-          {items.length > 0 && !edit && (
-            <Card style={{ paddingHorizontal: 16, height: 64, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-              <Txt>Порция</Txt>
-              <Row gap={14}>
-                <Circ icon="minus" label="Меньше" onPress={() => scale(mult - 0.5)} />
-                <Num size={17} style={{ minWidth: 28, textAlign: 'center' }}>
-                  {String(mult).replace('.', ',')}
-                </Num>
-                <Circ icon="plus" label="Больше" onPress={() => scale(mult + 0.5)} />
-              </Row>
-            </Card>
-          )}
-
-          {(edit ? items : rest).map((it) => (
-            <Card key={`${it.foodId}-${idx(it)}`} style={{ padding: 16, gap: 10 }}>
-              <Row style={{ justifyContent: 'space-between' }}>
-                <View style={{ flex: 1 }}>
-                  <Txt>{it.name}</Txt>
+          {items.map((it, i) => (
+            <Card key={`${it.foodId}-${i}`} style={{ paddingLeft: 16, paddingRight: 8, paddingVertical: 12 }}>
+              <Row gap={8}>
+                <View style={{ flex: 1, gap: 2 }}>
+                  <Txt numberOfLines={2}>{it.name}</Txt>
                   <Txt size={14} muted>
                     {describePortion(it)}
+                    {it.assumed ? ' · на глаз' : ''} · {fmt(it.nutrients.kcal)} ккал
                   </Txt>
                 </View>
-                <Num size={17}>
-                  {it.nutrients.kcal}
-                  <Txt size={11} muted>
-                    {' '}ККАЛ
-                  </Txt>
-                </Num>
+                <Circ icon="minus" label={`Меньше: ${it.name}`} size={38} onPress={() => step(i, -1)} />
+                <Circ icon="plus" label={`Больше: ${it.name}`} size={38} onPress={() => step(i, 1)} />
+                <Pressable accessibilityLabel={`Убрать: ${it.name}`} hitSlop={8} onPress={() => onChange(removeItem(draft, i))} style={{ padding: 6 }}>
+                  <Icon name="close" size={18} color={t.mu} />
+                </Pressable>
               </Row>
-              {edit && (
-                <Row style={{ justifyContent: 'space-between' }}>
-                  <Row gap={14}>
-                    <Circ icon="minus" label="Меньше" onPress={() => onChange(setItemGrams(draft, idx(it), Math.max(5, it.grams - (it.grams > 100 ? 25 : 10))))} />
-                    <Num size={15} style={{ minWidth: 64, textAlign: 'center' }}>
-                      {it.grams} {massUnit(it)}
-                    </Num>
-                    <Circ icon="plus" label="Больше" onPress={() => onChange(setItemGrams(draft, idx(it), it.grams + (it.grams >= 100 ? 25 : 10)))} />
-                  </Row>
-                  <Pressable accessibilityLabel={`Убрать ${it.name}`} hitSlop={10} onPress={() => onChange(removeItem(draft, idx(it)))}>
-                    <Icon name="trash" size={20} color={t.mu} />
-                  </Pressable>
-                </Row>
-              )}
             </Card>
           ))}
 
@@ -211,7 +170,7 @@ export function ConfirmSheet({ draft, source, onChange, onConfirm, onCancel }: P
                   −{a.kcal}
                 </Num>
               </Row>
-              {edit && (
+              {(
                 <Row style={{ justifyContent: 'space-between' }}>
                   <Row gap={14}>
                     <Circ icon="minus" label="Меньше" onPress={() => onChange({ ...draft, activities: activities.map((x, j) => (j === i ? setActivityMinutes(x, Math.max(5, x.minutes - 5), kg) : x)) })} />
@@ -254,7 +213,7 @@ export function ConfirmSheet({ draft, source, onChange, onConfirm, onCancel }: P
           <Rect x={0} y={0} width={width} height={Math.max(insets.bottom, 16) + 120} fill="url(#cfade)" />
         </Svg>
         <Row style={{ position: 'absolute', left: 24, right: 24, bottom: Math.max(insets.bottom, 16) + 8 }}>
-          <Ghost title={edit ? 'Готово' : 'Изменить'} onPress={() => setEdit(!edit)} disabled={nothing} />
+          <Ghost title="Отмена" onPress={onCancel} />
           <Cta title="Добавить" extra={xp ? `+${xp} XP` : undefined} style={{ flex: 1 }} disabled={nothing} onPress={onConfirm} />
         </Row>
       </View>

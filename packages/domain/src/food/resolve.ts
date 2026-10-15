@@ -153,6 +153,31 @@ function perGramOf(item: ResolvedItem): Food | null {
   };
 }
 
+/**
+ * Порция одного блюда ± шаг: штуки, тарелки, куски — по половинке; граммы и миллилитры —
+ * шагом по размеру порции. Пищевая ценность — пропорционально весу. Меньше нуля — null.
+ */
+export function stepItem(item: ResolvedItem, dir: 1 | -1): ResolvedItem | null {
+  const byWeight = item.unit === 'g' || item.unit === 'ml';
+  const next = byWeight ? item.grams + dir * (item.grams >= 200 ? 50 : item.grams >= 50 ? 10 : 5) : item.quantity + dir * 0.5;
+  if (next <= 0) return null;
+  const f = byWeight ? next / item.grams : next / item.quantity;
+  const n = item.nutrients;
+  return {
+    ...item,
+    quantity: byWeight ? Math.round(next) : next,
+    grams: Math.round(item.grams * f),
+    assumed: false,
+    nutrients: { kcal: Math.round(n.kcal * f), protein: round1(n.protein * f), fat: round1(n.fat * f), carbs: round1(n.carbs * f) },
+  };
+}
+
+/** Заменить одно блюдо черновика; вопрос про его порцию снимается — человек решил сам. */
+export function replaceItem(draft: MealDraft, itemIndex: number, item: ResolvedItem): MealDraft {
+  const items = draft.items.map((it, i) => (i === itemIndex ? item : it));
+  return { ...draft, items, questions: draft.questions.filter((q) => q.itemIndex !== itemIndex), totals: sumNutrients(items) };
+}
+
 export function removeItem(draft: MealDraft, itemIndex: number): MealDraft {
   const items = draft.items.filter((_, i) => i !== itemIndex);
   const questions = draft.questions

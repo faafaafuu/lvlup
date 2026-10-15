@@ -1,4 +1,4 @@
-import { answerQuestion, parseHeuristic, resolveMeal, setItemGrams, stem } from './index';
+import { answerQuestion, parseHeuristic, replaceItem, resolveMeal, setItemGrams, stem, stepItem } from './index';
 
 function parse(text: string, portions = {}) {
   return resolveMeal(text, parseHeuristic(text), { portions });
@@ -157,5 +157,26 @@ describe('блюда вне каталога', () => {
       { text: 'панна котта', foodId: null, estimate: { name: 'Панна котта', kcal100: 300, protein100: 5, fat100: 18, carbs100: 30, portionGrams: 120 } },
     ]);
     expect(setItemGrams(draft, 0, 60).items[0]?.nutrients.kcal).toBe(180);
+  });
+});
+
+describe('порция одного блюда', () => {
+  const draft = resolveMeal('полтарелки макарон и чай', [
+    { text: 'макароны', foodId: 'pasta', quantity: 0.5, unit: 'plate' },
+    { text: 'чай', foodId: 'tea' },
+  ]);
+
+  it('± меняет только это блюдо: тарелки по половинке', () => {
+    const pasta = draft.items[0]!;
+    const more = replaceItem(draft, 0, stepItem(pasta, 1)!);
+    expect(more.items[0]).toMatchObject({ quantity: 1, grams: pasta.grams * 2, nutrients: { kcal: pasta.nutrients.kcal * 2 } });
+    expect(more.items[1]).toEqual(draft.items[1]);
+    expect(more.totals.kcal).toBe(pasta.nutrients.kcal * 2 + draft.items[1]!.nutrients.kcal);
+  });
+
+  it('граммы — шагом по размеру порции, до нуля — null', () => {
+    const grams = resolveMeal('гречка 40 грамм', [{ text: 'гречка', foodId: 'buckwheat', grams: 40 }]).items[0]!;
+    expect(stepItem(grams, 1)?.grams).toBe(45);
+    expect(stepItem({ ...grams, grams: 5, quantity: 5 }, -1)).toBeNull();
   });
 });

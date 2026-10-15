@@ -23,6 +23,7 @@ jobs:
     # в репозитории его нет. Нет секрета — приложение разбирает фразы офлайн.
     env:
       EXPO_PUBLIC_API_TOKEN: ${{ secrets.HRUM_API_TOKEN }}
+      EXPO_PUBLIC_BUILD: ${{ github.sha }}
     steps:
       - uses: actions/checkout@v4
 

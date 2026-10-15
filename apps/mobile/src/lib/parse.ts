@@ -6,6 +6,8 @@ export interface PhraseResult {
   source: 'server' | 'offline';
   /** Сервер был настроен, но не ответил — фразу стоит разобрать позже. */
   serverFailed: boolean;
+  /** Почему не сервер — показываем в карточке, чтобы «офлайн» не был загадкой. */
+  reason?: string;
 }
 
 // Дольше, чем сервер ждёт модель (LLM_TIMEOUT_MS=15 с): иначе приложение сдаётся раньше сервера.
@@ -47,8 +49,10 @@ export async function parsePhrase(text: string, settings: Settings, portions: Us
     // Старый сервер без активностей — дополним офлайн-разбором.
     if (!body.draft.activities) body.draft.activities = offline().activities;
     return { draft: body.draft, source: 'server', serverFailed: false };
-  } catch {
-    return { draft: offline(), source: 'offline', serverFailed: true };
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    const reason = /abort/i.test(msg) ? 'сервер долго не отвечал' : /network request failed/i.test(msg) ? 'нет связи с сервером' : `сервер: ${msg}`;
+    return { draft: offline(), source: 'offline', serverFailed: true, reason };
   }
 }
 
@@ -67,4 +71,10 @@ export async function checkServer(settings: Settings): Promise<string> {
   } catch (e) {
     return `Не достучался: ${e instanceof Error ? e.message : e}`;
   }
+}
+
+/** При запуске: сервер видит версию приложения в журнале, приложение — жив ли сервер. */
+export function pingServer(settings: Settings, build: string) {
+  const { url } = serverOf(settings);
+  void fetch(`${url}/health?app=${encodeURIComponent(build)}`).catch(() => {});
 }

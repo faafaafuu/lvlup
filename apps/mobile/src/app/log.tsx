@@ -54,7 +54,7 @@ export default function LogFromLink() {
       )}
       <ConfirmSheet
         draft={capture.draft}
-        source={capture.source}
+        source={capture.source} offlineReason={capture.offlineReason}
         onChange={capture.setDraft}
         onConfirm={() => {
           capture.confirm();

@@ -86,7 +86,7 @@ export function CaptureHost({ children }: { children: ReactNode }) {
         }}
         onSubmitText={(text) => void handlePhrase(text)}
       />
-      <ConfirmSheet draft={capture.draft} source={capture.source} onChange={capture.setDraft} onConfirm={capture.confirm} onCancel={capture.cancel} />
+      <ConfirmSheet draft={capture.draft} source={capture.source} offlineReason={capture.offlineReason} onChange={capture.setDraft} onConfirm={capture.confirm} onCancel={capture.cancel} />
     </Ctx.Provider>
   );
 }

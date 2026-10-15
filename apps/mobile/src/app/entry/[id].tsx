@@ -1,6 +1,6 @@
 import { Pressable, ScrollView, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { MealDraft, MealLog, dateKey, mealDateKey, mealSlot } from '@levelup/domain';
+import { MealDraft, MealLog, dateKey, mealDateKey, mealSlot, stepItem } from '@levelup/domain';
 import { Icon } from '@/design/Icon';
 import { fmt, humanDate, timeOf } from '@/lib/format';
 import { success, tap } from '@/lib/haptics';
@@ -17,25 +17,6 @@ const UNIT_WORD: Record<string, string> = {
 const byWeight = (it: Item) => it.unit === 'g' || it.unit === 'ml';
 const amountOf = (it: Item) =>
   byWeight(it) ? `${Math.round(it.grams)} ${it.unit === 'ml' ? 'мл' : 'г'}` : `${String(it.quantity).replace('.', ',')} ${UNIT_WORD[it.unit] ?? it.unit}`;
-
-const r1 = (n: number) => Math.round(n * 10) / 10;
-
-/** Порция ±: штуки — по половинке, граммы — шагом по размеру порции. Пищевая ценность — пропорционально весу. */
-function stepItem(it: Item, dir: 1 | -1): Item | null {
-  const next = byWeight(it)
-    ? it.grams + dir * (it.grams >= 200 ? 50 : it.grams >= 50 ? 10 : 5)
-    : it.quantity + dir * 0.5;
-  if (next <= 0) return null;
-  const f = byWeight(it) ? next / it.grams : next / it.quantity;
-  const n = it.nutrients;
-  return {
-    ...it,
-    quantity: byWeight(it) ? Math.round(next) : next,
-    grams: Math.round(it.grams * f),
-    assumed: false,
-    nutrients: { kcal: Math.round(n.kcal * f), protein: r1(n.protein * f), fat: r1(n.fat * f), carbs: r1(n.carbs * f) },
-  };
-}
 
 /** Карточка записи из дневника: что сказал, продукты с порцией ±, повторить, удалить (с «Вернуть»). */
 export default function Entry() {
