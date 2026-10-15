@@ -138,12 +138,12 @@ describe('«без …» — этого не ели', () => {
   });
 });
 describe('блюда вне каталога', () => {
-  it('считает по оценке модели: кусок тирамису', () => {
-    const draft = resolveMeal('тирамису кусочек', [
-      { text: 'тирамису', foodId: null, quantity: 1, unit: 'slice', grams: null, estimate: { name: 'Тирамису', kcal100: 300, protein100: 5, fat100: 18, carbs100: 30, portionGrams: 120 } },
+  it('считает по оценке модели: кусок панна котты', () => {
+    const draft = resolveMeal('панна котта кусочек', [
+      { text: 'панна котта', foodId: null, quantity: 1, unit: 'slice', grams: null, estimate: { name: 'Панна котта', kcal100: 300, protein100: 5, fat100: 18, carbs100: 30, portionGrams: 120 } },
     ]);
     expect(draft.unknown).toEqual([]);
-    expect(draft.items[0]).toMatchObject({ name: 'Тирамису', grams: 120, nutrients: { kcal: 360 } });
+    expect(draft.items[0]).toMatchObject({ name: 'Панна котта', grams: 120, nutrients: { kcal: 360 } });
   });
 
   it('без правдоподобной оценки — «не понял»', () => {
@@ -153,8 +153,8 @@ describe('блюда вне каталога', () => {
   });
 
   it('порцию можно поправить: граммы пересчитываются по той же калорийности', () => {
-    const draft = resolveMeal('тирамису', [
-      { text: 'тирамису', foodId: null, estimate: { name: 'Тирамису', kcal100: 300, protein100: 5, fat100: 18, carbs100: 30, portionGrams: 120 } },
+    const draft = resolveMeal('панна котта', [
+      { text: 'панна котта', foodId: null, estimate: { name: 'Панна котта', kcal100: 300, protein100: 5, fat100: 18, carbs100: 30, portionGrams: 120 } },
     ]);
     expect(setItemGrams(draft, 0, 60).items[0]?.nutrients.kcal).toBe(180);
   });

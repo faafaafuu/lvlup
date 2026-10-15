@@ -1,6 +1,6 @@
 import { findActivities } from '../activity/parse';
 import { CATALOG } from './catalog';
-import { findFoods } from './match';
+import { FoodMatch, findFoods } from './match';
 import { splitHalfPrefix, stem, tokenize, wordToNumber } from './text';
 import { UNIT_SCALE, UNIT_WORDS } from './units';
 import { Food, ParsedEntity, UnitId } from './types';
@@ -16,7 +16,20 @@ export function parseHeuristic(text: string, catalog: readonly Food[] = CATALOG)
   for (const a of findActivities(tokens)) for (let i = a.start; i < a.end; i++) tokens[i] = '·';
   // «без сахара», «без майонеза» — этого как раз не ели: блюдо сразу после «без» выкидываем.
   // Готовые позиции вида «кола без сахара» находятся раньше как целый алиас и не страдают.
-  const matches = findFoods(tokens, catalog).filter((m) => tokens[m.start - 1] !== 'без');
+  const found = findFoods(tokens, catalog)
+    .filter((m) => tokens[m.start - 1] !== 'без')
+    .sort((a, b) => a.start - b.start);
+  // «глазунья из двух яиц», «омлет из трёх яиц» — одно блюдо, число яиц — его количество.
+  const eggsIn = new Map<FoodMatch, number>();
+  const matches = found.filter((m, i) => {
+    const dish = found[i - 1];
+    if (!dish || !EGG_DISHES.has(dish.food.id) || !m.food.id.startsWith('egg') || tokens[dish.end] !== 'из') return true;
+    const between = tokens.slice(dish.end + 1, m.start);
+    const n = between.length === 1 ? wordToNumber(between[0]!) : between.length === 0 ? 1 : null;
+    if (n == null) return true;
+    eggsIn.set(dish, n);
+    return false;
+  });
 
   // Фраза режется на части по «и», запятым и глаголам («выпил», «съел»): количество
   // берётся только из своей части, в каком бы порядке его ни сказали —
@@ -57,17 +70,19 @@ export function parseHeuristic(text: string, catalog: readonly Food[] = CATALOG)
       }
     }
 
+    const eggs = eggsIn.get(match);
     out.push({
       text: tokens.slice(match.start, match.end).join(' '),
       foodId: match.food.id,
-      quantity: amount.quantity,
-      unit: amount.unit,
-      grams: amount.grams,
+      quantity: eggs ?? amount.quantity,
+      unit: eggs ? 'piece' : amount.unit,
+      grams: eggs ? null : amount.grams,
     });
   });
   return out;
 }
 
+const EGG_DISHES = new Set(['fried_eggs', 'omelet']);
 const BOUNDARY = '|';
 const CONJUNCTIONS = new Set(['и', 'а', 'потом', 'затем', 'еще', 'плюс', 'также', 'тоже', 'после', 'ну', 'короче', 'типа']);
 /** Глаголы еды и питья начинают новую часть фразы. */
