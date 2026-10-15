@@ -8,7 +8,8 @@ export interface PhraseResult {
   serverFailed: boolean;
 }
 
-const SERVER_TIMEOUT_MS = 10000;
+// Дольше, чем сервер ждёт модель (LLM_TIMEOUT_MS=15 с): иначе приложение сдаётся раньше сервера.
+const SERVER_TIMEOUT_MS = 22000;
 
 /**
  * Сервер разбора по умолчанию — чтобы после установки фразы сразу понимала модель,
