@@ -12,7 +12,7 @@ class FakeExtractor implements FoodExtractor {
 
 describe('MealParser', () => {
   it('калории считает резолвер из сущностей LLM', async () => {
-    const parser = new MealParser(new FakeExtractor(async () => ({ items: [{ text: 'плов', foodId: 'plov', quantity: 1, unit: 'plate', grams: null }], activities: [] })), 1000);
+    const parser = new MealParser(new FakeExtractor(async () => ({ items: [{ text: 'плов', foodId: 'plov', quantity: 1, unit: 'plate', grams: null, estimate: null }], activities: [] })), 1000);
     const result = await parser.parse('тарелка плова', { units: { plate: 400 } });
     expect(result).toMatchObject({ parser: 'fake', fallback: false });
     expect(result.draft.totals.kcal).toBe(720);

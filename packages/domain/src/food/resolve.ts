@@ -28,7 +28,7 @@ export function resolveMeal(sourceText: string, entities: ParsedEntity[], option
   const unknown: string[] = [];
 
   for (const entity of entities) {
-    const food = (entity.foodId ? byId.get(entity.foodId) : undefined) ?? matchFood(entity.text, catalog);
+    const food = (entity.foodId ? byId.get(entity.foodId) : undefined) ?? matchFood(entity.text, catalog) ?? estimatedFood(entity);
     if (!food) {
       unknown.push(entity.text);
       continue;
@@ -40,6 +40,26 @@ export function resolveMeal(sourceText: string, entities: ParsedEntity[], option
   const draft: MealDraft = { sourceText, items, activities, unknown, questions: [], totals: sumNutrients(items) };
   draft.questions = buildQuestions(draft, byId);
   return draft;
+}
+
+/** Блюдо вне каталога по оценке модели; без правдоподобной оценки — null («не понял»). */
+export function estimatedFood(entity: ParsedEntity): Food | null {
+  const e = entity.estimate;
+  if (!e) return null;
+  const ok = (n: number, max: number) => Number.isFinite(n) && n >= 0 && n <= max;
+  if (!ok(e.kcal100, 950) || e.kcal100 <= 0 || !ok(e.protein100, 100) || !ok(e.fat100, 100) || !ok(e.carbs100, 100)) return null;
+  const portion = ok(e.portionGrams, 2000) && e.portionGrams >= 5 ? Math.round(e.portionGrams) : 200;
+  const raw = (e.name || entity.text).trim();
+  const name = raw.charAt(0).toUpperCase() + raw.slice(1);
+  return {
+    id: `est:${name.toLowerCase()}`,
+    name,
+    aliases: [],
+    per100g: { kcal: Math.round(e.kcal100), protein: round1(e.protein100), fat: round1(e.fat100), carbs: round1(e.carbs100) },
+    defaultUnit: 'serving',
+    // Порция, штука и кусок — «обычная порция» по оценке; посуда — как у остальных блюд.
+    units: { serving: portion, piece: portion, slice: portion },
+  };
 }
 
 export function resolveItem(food: Food, entity: ParsedEntity, portions: UserPortions = {}): ResolvedItem {
@@ -113,13 +133,24 @@ export function answerQuestion(draft: MealDraft, questionId: string, optionIndex
 /** Ручная правка граммов (степпер ±). Блюдо ищем по id, поэтому каталог не нужен снаружи. */
 export function setItemGrams(draft: MealDraft, itemIndex: number, grams: number, catalog: readonly Food[] = CATALOG): MealDraft {
   const item = draft.items[itemIndex];
-  const food = item && (CATALOG_BY_ID.get(item.foodId) ?? catalog.find((f) => f.id === item.foodId));
+  // Блюдо вне каталога (оценка модели) — пищевая ценность на 100 г восстанавливается из самой позиции.
+  const food = item && (CATALOG_BY_ID.get(item.foodId) ?? catalog.find((f) => f.id === item.foodId) ?? perGramOf(item));
   if (!item || !food) return draft;
   const safeGrams = Math.max(1, Math.round(grams));
   const unit: UnitId = item.unit === 'ml' || food.tags?.includes('drink') ? 'ml' : 'g';
   const updated: ResolvedItem = { ...item, quantity: safeGrams, unit, grams: safeGrams, assumed: false, nutrients: nutrientsFor(food, safeGrams) };
   const items = draft.items.map((it, i) => (i === itemIndex ? updated : it));
   return { ...draft, items, totals: sumNutrients(items) };
+}
+
+function perGramOf(item: ResolvedItem): Food | null {
+  if (!item.grams) return null;
+  const k = 100 / item.grams;
+  const n = item.nutrients;
+  return {
+    id: item.foodId, name: item.name, aliases: [], defaultUnit: 'serving',
+    per100g: { kcal: n.kcal * k, protein: n.protein * k, fat: n.fat * k, carbs: n.carbs * k },
+  };
 }
 
 export function removeItem(draft: MealDraft, itemIndex: number): MealDraft {

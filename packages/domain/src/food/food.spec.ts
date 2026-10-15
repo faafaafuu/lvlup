@@ -137,3 +137,25 @@ describe('«без …» — этого не ели', () => {
     expect(ids('салат без майонеза')).toEqual(['veg_salad']);
   });
 });
+describe('блюда вне каталога', () => {
+  it('считает по оценке модели: кусок тирамису', () => {
+    const draft = resolveMeal('тирамису кусочек', [
+      { text: 'тирамису', foodId: null, quantity: 1, unit: 'slice', grams: null, estimate: { name: 'Тирамису', kcal100: 300, protein100: 5, fat100: 18, carbs100: 30, portionGrams: 120 } },
+    ]);
+    expect(draft.unknown).toEqual([]);
+    expect(draft.items[0]).toMatchObject({ name: 'Тирамису', grams: 120, nutrients: { kcal: 360 } });
+  });
+
+  it('без правдоподобной оценки — «не понял»', () => {
+    const draft = resolveMeal('штуковина', [{ text: 'штуковина', foodId: null, estimate: { kcal100: 5000, protein100: 0, fat100: 0, carbs100: 0, portionGrams: 100 } }]);
+    expect(draft.items).toEqual([]);
+    expect(draft.unknown).toEqual(['штуковина']);
+  });
+
+  it('порцию можно поправить: граммы пересчитываются по той же калорийности', () => {
+    const draft = resolveMeal('тирамису', [
+      { text: 'тирамису', foodId: null, estimate: { name: 'Тирамису', kcal100: 300, protein100: 5, fat100: 18, carbs100: 30, portionGrams: 120 } },
+    ]);
+    expect(setItemGrams(draft, 0, 60).items[0]?.nutrients.kcal).toBe(180);
+  });
+});

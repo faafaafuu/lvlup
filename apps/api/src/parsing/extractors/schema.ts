@@ -18,6 +18,16 @@ export const ExtractionSchema = z.object({
       quantity: z.number().nullable(),
       unit: z.enum(UNIT_IDS).nullable(),
       grams: z.number().nullable(),
+      estimate: z
+        .object({
+          name: z.string(),
+          kcal100: z.number(),
+          protein100: z.number(),
+          fat100: z.number(),
+          carbs100: z.number(),
+          portionGrams: z.number(),
+        })
+        .nullable(),
     }),
   ),
 });

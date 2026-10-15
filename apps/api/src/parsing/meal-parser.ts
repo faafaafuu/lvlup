@@ -52,6 +52,9 @@ export function withMissed(llm: ParsedEntity[], dict: ParsedEntity[]): ParsedEnt
   };
   const ids = new Set(llm.map((e) => e.foodId).filter(Boolean));
   const llmStems = new Set(llm.flatMap((e) => [...foodStems(e.foodId)]));
-  const extra = dict.filter((d) => d.foodId && !ids.has(d.foodId) && ![...foodStems(d.foodId)].some((w) => llmStems.has(w)));
+  // Слова, которые LLM уже отнесла к своим блюдам: «яиц» внутри «глазуньи из двух яиц» — не отдельное яйцо.
+  const llmWords = new Set(llm.flatMap((e) => tokenize(e.text).map(stem)).filter((w) => w.length > 2));
+  const covered = (d: ParsedEntity) => tokenize(d.text).map(stem).filter((w) => w.length > 2).some((w) => llmWords.has(w));
+  const extra = dict.filter((d) => d.foodId && !ids.has(d.foodId) && ![...foodStems(d.foodId)].some((w) => llmStems.has(w)) && !covered(d));
   return [...llm, ...extra];
 }

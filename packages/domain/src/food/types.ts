@@ -41,6 +41,22 @@ export interface ParsedEntity {
   unit?: UnitId | null;
   /** Явно названный вес/объём («200 грамм»). */
   grams?: number | null;
+  /**
+   * Блюда нет в каталоге — оценка модели: пищевая ценность на 100 г и вес обычной
+   * порции/штуки. Без неё такое блюдо попадает в «не понял».
+   */
+  estimate?: FoodEstimate | null;
+}
+
+export interface FoodEstimate {
+  /** Нормальное название: «Тирамису», «Паста болоньезе». */
+  name?: string | null;
+  kcal100: number;
+  protein100: number;
+  fat100: number;
+  carbs100: number;
+  /** Граммы одной обычной порции / штуки / куска. */
+  portionGrams: number;
 }
 
 /** Личные порции «ленивого режима»: «моя тарелка = 300 г», «мой бутерброд = 80 г». */
