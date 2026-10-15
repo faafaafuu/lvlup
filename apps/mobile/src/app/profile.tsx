@@ -79,13 +79,13 @@ export default function ProfileScreen() {
 
         <Lbl style={{ paddingHorizontal: 6, marginTop: 8 }}>Сервер распознавания</Lbl>
         <Card>
-          <TextInput value={s.settings.apiUrl} onChangeText={(apiUrl) => s.updateSettings({ apiUrl })} placeholder="http://адрес:3100 (пусто — офлайн)" placeholderTextColor={t.mu} autoCapitalize="none" autoCorrect={false} style={input} />
+          <TextInput value={s.settings.apiUrl} onChangeText={(apiUrl) => s.updateSettings({ apiUrl })} placeholder="Свой адрес (пусто — сервер Хрума)" placeholderTextColor={t.mu} autoCapitalize="none" autoCorrect={false} style={input} />
           <Sep />
           <TextInput value={s.settings.apiToken} onChangeText={(apiToken) => s.updateSettings({ apiToken })} placeholder="Токен" placeholderTextColor={t.mu} autoCapitalize="none" autoCorrect={false} secureTextEntry style={input} />
         </Card>
         <Ghost
           title={checking ? 'Проверяю…' : 'Проверить связь'}
-          disabled={!s.settings.apiUrl || checking}
+          disabled={checking}
           onPress={async () => {
             setChecking(true);
             setServer(await checkServer(s.settings));

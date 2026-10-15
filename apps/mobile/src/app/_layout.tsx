@@ -11,9 +11,10 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { CaptureHost } from '@/components/CaptureHost';
 import { RewardModal } from '@/components/RewardModal';
+import { UndoToast } from '@/components/UndoToast';
 import { syncHealth } from '@/lib/healthSync';
 import { startLiveSync } from '@/lib/live';
-import { syncReminders } from '@/lib/notifications';
+import { startReminderSync, syncReminders } from '@/lib/notifications';
 import { useStore } from '@/state/store';
 import { useTheme } from '@/ui/theme';
 
@@ -34,12 +35,18 @@ export default function RootLayout() {
 
   useEffect(() => {
     void refresh();
-    const sub = AppState.addEventListener('change', (state) => state === 'active' && void refresh());
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state !== 'active') return;
+      void refresh();
+      const st = useStore.getState();
+      if (st.onboarded) void syncReminders(st.settings.reminders);
+    });
     return () => sub.remove();
   }, [onboarded]);
 
   // Виджеты и Dynamic Island следят за стором сами.
   useEffect(() => startLiveSync(), []);
+  useEffect(() => startReminderSync(), []);
 
   useEffect(() => {
     if (onboarded) void syncReminders(reminders);
@@ -62,6 +69,7 @@ export default function RootLayout() {
             <Stack.Screen name="profile" options={{ animation: 'slide_from_right' }} />
             <Stack.Screen name="log" options={{ presentation: 'transparentModal', animation: 'fade' }} />
             <Stack.Screen name="voice" options={{ animation: 'none' }} />
+            <Stack.Screen name="entry/[id]" options={{ animation: 'slide_from_right' }} />
           </Stack.Protected>
           {/* Онбординг раньше «connect»: без профиля роутер открывает первый доступный экран. */}
           <Stack.Protected guard={!onboarded}>
@@ -70,6 +78,7 @@ export default function RootLayout() {
           <Stack.Screen name="connect" options={{ presentation: 'transparentModal', animation: 'fade' }} />
         </Stack>
         <RewardModal />
+        <UndoToast />
       </CaptureHost>
     </SafeAreaProvider>
   );

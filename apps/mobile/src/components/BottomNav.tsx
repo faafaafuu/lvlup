@@ -1,22 +1,24 @@
 import { Pressable, View, useWindowDimensions } from 'react-native';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
-import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Icon } from '@/design/Icon';
 import { tap } from '@/lib/haptics';
 import { Circ } from '@/ui/kit';
 import { useTheme } from '@/ui/theme';
+import { useStore } from '@/state/store';
 import { useCapture } from './CaptureHost';
 
 export const NAV_SPACE = 150;
 
-/** Низ экрана из макета: дневник · микрофон · прогресс. Микрофон пишет в открытый день. */
-export function BottomNav({ active }: { active?: 'diary' | 'progress' }) {
+/** Низ экрана из макета: дневник · микрофон · прогресс. Повторный тап по разделу — обратно на «сегодня». */
+export function BottomNav() {
   const t = useTheme();
   const insets = useSafeAreaInsets();
   const capture = useCapture();
   const { width } = useWindowDimensions();
-  const go = (path: '/diary' | '/progress') => (active ? router.replace(path) : router.push(path));
+  const page = useStore((s) => s.page);
+  const setPage = useStore((s) => s.setPage);
+  const go = (target: 0 | 2) => setPage(page === target ? 1 : target);
   const bottom = Math.max(insets.bottom, 12) + 6;
   return (
     <>
@@ -35,7 +37,7 @@ export function BottomNav({ active }: { active?: 'diary' | 'progress' }) {
       pointerEvents="box-none"
       style={{ position: 'absolute', left: 0, right: 0, bottom, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 44 }}
     >
-      <Circ icon="tabDiary" label="Дневник" active={active === 'diary'} size={50} onPress={() => go('/diary')} />
+      <Circ icon="tabDiary" label="Дневник" active={page === 0} size={50} onPress={() => go(0)} />
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={capture.recording ? 'Остановить запись' : 'Записать голосом'}
@@ -51,7 +53,7 @@ export function BottomNav({ active }: { active?: 'diary' | 'progress' }) {
       >
         <Icon name="mic" size={28} strokeWidth={2} color={t.onCta} />
       </Pressable>
-      <Circ icon="tabProgress" label="Прогресс" active={active === 'progress'} size={50} onPress={() => go('/progress')} />
+      <Circ icon="tabProgress" label="Прогресс" active={page === 2} size={50} onPress={() => go(2)} />
     </View>
     </>
   );

@@ -30,6 +30,13 @@ export class ParseController {
     }
     if (++this.count > DAILY_LIMIT) throw new HttpException('Дневной лимит разборов исчерпан', HttpStatus.TOO_MANY_REQUESTS);
     const kg = typeof body.bodyWeightKg === 'number' && body.bodyWeightKg > 20 ? body.bodyWeightKg : undefined;
-    return this.parser.parse(body.text, body.portions, kg);
+    const text = body.text;
+    return this.parser.parse(text, body.portions, kg).then((r) => {
+      // Одна строка на разбор — чтобы по журналу видеть, где разбор путает фразу.
+      const items = r.draft.items.map((i) => `${i.name} ${i.quantity}${i.unit}`).join(', ') || '—';
+      const acts = (r.draft.activities ?? []).map((a) => a.name).join(', ');
+      console.log(`разбор ${r.parser} ${r.latencyMs}мс «${text.slice(0, 160)}» → ${items}${acts ? ` · ${acts}` : ''}${r.draft.unknown.length ? ` · не понял: ${r.draft.unknown.join(', ')}` : ''}`);
+      return r;
+    });
   }
 }

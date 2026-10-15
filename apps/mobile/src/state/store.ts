@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import { DateKey, DayActivity, GameState, MealDraft, MealLog, Profile, UserPortions, WeightEntry, dateKey, gameSummary, mealSlot, normOn, dayStats } from '@levelup/domain';
+import { DateKey, DayActivity, GameState, MealDraft, MealLog, Profile, UserPortions, WeightEntry, dateKey, gameSummary, mealSlot, normOn, dayStats, sumNutrients } from '@levelup/domain';
 import { newId } from '@/lib/id';
 import type { ThemePref } from '@/ui/theme';
 
@@ -40,6 +40,15 @@ export interface RewardInfo {
   day: DateKey;
 }
 
+/** Раздел главного экрана: дневник · сегодня · прогресс. */
+export type Page = 0 | 1 | 2;
+
+/** Только что удалённое — плашка «Вернуть» на несколько секунд. */
+export interface UndoInfo {
+  label: string;
+  restore(): void;
+}
+
 interface Data {
   onboarded: boolean;
   profile: Profile | null;
@@ -55,8 +64,13 @@ interface Actions {
   completeOnboarding(profile: Profile, portions: UserPortions): void;
   /** Записывает еду и активность из одной фразы и готовит экран награды. */
   addEntry(draft: MealDraft, at?: string): boolean;
+  /** Заменить продукты записи (порция поправлена, продукт убран); пусто — запись удаляется. */
+  updateMeal(id: string, items: MealLog['items']): void;
+  /** Удаляют с плашкой «Вернуть». */
   deleteMeal(id: string): void;
   deleteSession(date: DateKey, id: string): void;
+  setPage(page: Page): void;
+  clearUndo(): void;
   addWeight(kg: number, date?: DateKey): void;
   patchActivity(date: DateKey, patch: Partial<DayActivity>): void;
   addPending(text: string): void;
@@ -74,6 +88,8 @@ export type AppState = Data &
     /** День, открытый в дневнике; запись голосом идёт в него. Не сохраняется. */
     viewDate: DateKey;
     reward: RewardInfo | null;
+    page: Page;
+    undo: UndoInfo | null;
   };
 
 const today = () => dateKey(new Date());
@@ -97,6 +113,8 @@ export const useStore = create<AppState>()(
       ...INITIAL,
       viewDate: today(),
       reward: null,
+      page: 1,
+      undo: null,
 
       completeOnboarding(profile, portions) {
         set({ onboarded: true, profile, portions, weights: [{ date: today(), kg: profile.startWeightKg }] });
@@ -142,16 +160,49 @@ export const useStore = create<AppState>()(
         return true;
       },
 
+      updateMeal(id, items) {
+        if (!items.length) return get().deleteMeal(id);
+        set((s) => ({ meals: s.meals.map((m) => (m.id === id ? { ...m, items, totals: sumNutrients(items) } : m)) }));
+      },
+
       deleteMeal(id) {
-        set((s) => ({ meals: s.meals.filter((m) => m.id !== id) }));
+        const meal = get().meals.find((m) => m.id === id);
+        if (!meal) return;
+        set((s) => ({
+          meals: s.meals.filter((m) => m.id !== id),
+          undo: {
+            label: meal.items.map((i) => i.name).join(', ') || 'Запись',
+            restore: () => set((x) => ({ meals: [...x.meals, meal], undo: null })),
+          },
+        }));
       },
 
       deleteSession(date, id) {
-        set((s) => {
+        const session = get().activity[date]?.sessions?.find((x) => x.id === id);
+        if (!session) return;
+        const without = (s: AppState) => {
           const p = s.activity[date];
-          if (!p) return {};
-          return { activity: { ...s.activity, [date]: { ...p, sessions: (p.sessions ?? []).filter((x) => x.id !== id) } } };
-        });
+          return { ...s.activity, [date]: { ...p, date, sessions: (p?.sessions ?? []).filter((x) => x.id !== id) } };
+        };
+        set((s) => ({
+          activity: without(s),
+          undo: {
+            label: session.name,
+            restore: () =>
+              set((x) => {
+                const p = x.activity[date];
+                return { activity: { ...x.activity, [date]: { ...p, date, sessions: [...(p?.sessions ?? []), session] } }, undo: null };
+              }),
+          },
+        }));
+      },
+
+      setPage(page) {
+        set({ page });
+      },
+
+      clearUndo() {
+        set({ undo: null });
       },
 
       addWeight(kg, date = today()) {
@@ -191,7 +242,7 @@ export const useStore = create<AppState>()(
       },
 
       resetAll() {
-        set({ ...INITIAL, viewDate: today(), reward: null });
+        set({ ...INITIAL, viewDate: today(), reward: null, page: 1, undo: null });
       },
     }),
     {
