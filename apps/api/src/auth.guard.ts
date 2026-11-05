@@ -43,7 +43,11 @@ export class ApiTokenGuard implements CanActivate {
       this.perDevice.set(device, n);
       if (n > this.config.perDeviceLimit) throw new HttpException('Дневной лимит разборов исчерпан — завтра снова', HttpStatus.TOO_MANY_REQUESTS);
     }
-    const ip = req.socket?.remoteAddress ?? '?';
+    // За nginx (hrum.noahlab.ru) все приходят с его адреса — настоящий берём из X-Real-IP,
+    // но верим заголовку только от своих (локальных) адресов.
+    const peer = req.socket?.remoteAddress ?? '?';
+    const local = /^(::ffff:)?(127\.|172\.(1[6-9]|2\d|3[01])\.|10\.)|^::1$/.test(peer);
+    const ip = (local && req.headers['x-real-ip']) || peer;
     const used = (this.perIp.get(ip) ?? 0) + 1;
     this.perIp.set(ip, used);
     if (used > limit) throw new HttpException('Дневной лимит разборов для этого адреса исчерпан', HttpStatus.TOO_MANY_REQUESTS);
