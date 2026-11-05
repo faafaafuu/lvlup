@@ -3,13 +3,14 @@ import { APP_GUARD } from '@nestjs/core';
 import { ApiTokenGuard } from './auth.guard';
 import { AppConfig, loadConfig } from './config';
 import { HealthController } from './health.controller';
+import { PagesController } from './pages.controller';
 import { createExtractor } from './parsing/extractors';
 import { MealParser } from './parsing/meal-parser';
 import { ParseController } from './parsing/parse.controller';
 import { APP_CONFIG } from './tokens';
 
 @Module({
-  controllers: [ParseController, HealthController],
+  controllers: [ParseController, HealthController, PagesController],
   providers: [
     { provide: APP_CONFIG, useFactory: () => loadConfig() },
     {

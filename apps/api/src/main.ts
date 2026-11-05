@@ -2,6 +2,7 @@ import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { loadConfig } from './config';
+import { journal } from './journal';
 
 async function bootstrap() {
   const config = loadConfig();
@@ -9,7 +10,8 @@ async function bootstrap() {
   // Каждое обращение — строкой в журнал: видно, доходит ли телефон и какая версия у него стоит.
   app.use((req: { method: string; originalUrl: string; socket?: { remoteAddress?: string } }, res: { statusCode: number; on(e: 'finish', f: () => void): void }, next: () => void) => {
     const started = Date.now();
-    res.on('finish', () => console.log(`запрос ${req.method} ${req.originalUrl.slice(0, 120)} → ${res.statusCode} за ${Date.now() - started}мс от ${req.socket?.remoteAddress ?? '?'}`));
+    // Без IP-адресов — так обещает политика конфиденциальности.
+    res.on('finish', () => journal(`запрос ${req.method} ${req.originalUrl.slice(0, 120)} → ${res.statusCode} за ${Date.now() - started}мс`));
     next();
   });
   await app.listen(config.port, '0.0.0.0');

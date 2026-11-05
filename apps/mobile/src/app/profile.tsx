@@ -1,10 +1,8 @@
-import { useState } from 'react';
 import { Alert, Pressable, ScrollView, TextInput, View } from 'react-native';
 import { router } from 'expo-router';
 import { ActivityLevel, minHealthyWeight } from '@levelup/domain';
-import { checkServer } from '@/lib/parse';
 import { useStore } from '@/state/store';
-import { Card, Circ, Cta, Ghost, Lbl, Num, Row, Screen, Sep, Txt } from '@/ui/kit';
+import { Card, Circ, Cta, Lbl, Num, Row, Screen, Sep, Txt } from '@/ui/kit';
 import { useTheme } from '@/ui/theme';
 
 const ACTIVITY: Array<[ActivityLevel, string]> = [
@@ -18,8 +16,6 @@ const ACTIVITY: Array<[ActivityLevel, string]> = [
 export default function ProfileScreen() {
   const t = useTheme();
   const s = useStore();
-  const [server, setServer] = useState<string | null>(null);
-  const [checking, setChecking] = useState(false);
   if (!s.profile) return null;
   const p = s.profile;
   const units = s.portions.units ?? {};
@@ -77,22 +73,7 @@ export default function ProfileScreen() {
           {step('Ложка', `${units.tbsp ?? 15} г`, () => setUnit('tbsp', Math.max(5, (units.tbsp ?? 15) - 5)), () => setUnit('tbsp', (units.tbsp ?? 15) + 5))}
         </Card>
 
-        <Lbl style={{ paddingHorizontal: 6, marginTop: 8 }}>Сервер распознавания</Lbl>
-        <Card>
-          <TextInput value={s.settings.apiUrl} onChangeText={(apiUrl) => s.updateSettings({ apiUrl })} placeholder="Свой адрес (пусто — сервер Хрума)" placeholderTextColor={t.mu} autoCapitalize="none" autoCorrect={false} style={input} />
-          <Sep />
-          <TextInput value={s.settings.apiToken} onChangeText={(apiToken) => s.updateSettings({ apiToken })} placeholder="Токен" placeholderTextColor={t.mu} autoCapitalize="none" autoCorrect={false} secureTextEntry style={input} />
-        </Card>
-        <Ghost
-          title={checking ? 'Проверяю…' : 'Проверить связь'}
-          disabled={checking}
-          onPress={async () => {
-            setChecking(true);
-            setServer(await checkServer(s.settings));
-            setChecking(false);
-          }}
-        />
-        {server && <Txt size={14} muted>{server}</Txt>}
+
 
         <Cta
           title="Удалить все данные"

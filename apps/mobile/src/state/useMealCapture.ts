@@ -1,7 +1,8 @@
 import { useCallback, useState } from 'react';
-import { Alert } from 'react-native';
+import { Alert, Linking } from 'react-native';
 import { MealDraft, currentWeight, dateKey } from '@levelup/domain';
-import { parsePhrase } from '@/lib/parse';
+import { SITE, parsePhrase } from '@/lib/parse';
+import { newId } from '@/lib/id';
 import { useStore } from './store';
 
 /** Общий поток «фраза → черновик → подтверждение → запись» для главного экрана и дневника. */
@@ -12,6 +13,10 @@ export function useMealCapture() {
   const [offlineReason, setOfflineReason] = useState<string | null>(null);
 
   const parse = useCallback(async (text: string, fromPendingId?: string) => {
+    if (useStore.getState().settings.ai === undefined) {
+      const ai = await askAiConsent();
+      useStore.getState().updateSettings({ ai, deviceId: useStore.getState().settings.deviceId ?? newId() });
+    }
     const { settings, portions, addPending, profile, weights } = useStore.getState();
     const kg = profile ? currentWeight(profile, weights) : 75;
     const result = await parsePhrase(text, settings, portions, kg);
@@ -43,6 +48,25 @@ export function useMealCapture() {
   }, []);
 
   return { draft, source, offlineReason, setDraft, parse, confirm, cancel };
+}
+
+/**
+ * Перед первой отправкой фразы — явное согласие (App Store, 5.1.2): что уходит, кому и
+ * что можно отказаться. Отказ — разбор на телефоне; меняется в «Настройки → Распознавание с ИИ».
+ */
+function askAiConsent(): Promise<boolean> {
+  return new Promise((resolve) =>
+    Alert.alert(
+      'Распознавание с ИИ',
+      'Чтобы понимать живую речь, Хрум отправляет текст фразы о еде на свой сервер и языковой модели DeepSeek (через OpenRouter). Голос, имя и данные Здоровья не передаются.\n\nБез этого фразы разбираются на телефоне, но хуже.',
+      [
+        { text: 'Подробнее', onPress: () => { void Linking.openURL(`${SITE}/privacy`); resolve(false); } },
+        { text: 'Только на телефоне', style: 'cancel', onPress: () => resolve(false) },
+        { text: 'Разрешить', onPress: () => resolve(true) },
+      ],
+      { cancelable: false },
+    ),
+  );
 }
 
 /** Время записи: сейчас — для сегодня; для прошлого дня — тот же час, но в выбранную дату. */

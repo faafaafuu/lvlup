@@ -1,5 +1,6 @@
 import { BadRequestException, Body, Controller, HttpException, HttpStatus, Inject, Post } from '@nestjs/common';
 import { UserPortions } from '@levelup/domain';
+import { journal } from '../journal';
 import { MealParser, ParseResult } from './meal-parser';
 
 interface ParseBody {
@@ -9,7 +10,7 @@ interface ParseBody {
 }
 
 /** Предохранитель от слива денег за LLM, если токен утечёт: не больше N разборов в сутки. */
-const DAILY_LIMIT = Number(process.env.DAILY_PARSE_LIMIT ?? 300);
+const DAILY_LIMIT = Number(process.env.DAILY_PARSE_LIMIT ?? 5000);
 
 @Controller('v1/meals')
 export class ParseController {
@@ -35,7 +36,7 @@ export class ParseController {
       // Одна строка на разбор — чтобы по журналу видеть, где разбор путает фразу.
       const items = r.draft.items.map((i) => `${i.name} ${i.quantity}${i.unit}`).join(', ') || '—';
       const acts = (r.draft.activities ?? []).map((a) => a.name).join(', ');
-      console.log(`разбор ${r.parser} ${r.latencyMs}мс «${text.slice(0, 160)}» → ${items}${acts ? ` · ${acts}` : ''}${r.draft.unknown.length ? ` · не понял: ${r.draft.unknown.join(', ')}` : ''}`);
+      journal(`разбор ${r.parser} ${r.latencyMs}мс «${text.slice(0, 160)}» → ${items}${acts ? ` · ${acts}` : ''}${r.draft.unknown.length ? ` · не понял: ${r.draft.unknown.join(', ')}` : ''}`);
       return r;
     });
   }

@@ -16,6 +16,10 @@ export interface Settings {
   rewardHaptics: boolean;
   /** Остаток калорий в Dynamic Island; undefined у старых установок = включено. */
   island?: boolean;
+  /** Согласие отправлять текст фраз на сервер и ИИ; undefined — ещё не спрашивали. */
+  ai?: boolean;
+  /** Случайный id установки — для дневного лимита сервера, с личностью не связан. */
+  deviceId?: string;
   /** Когда последний раз синхронизировались со Здоровьем. */
   healthSyncedAt?: string | null;
 }

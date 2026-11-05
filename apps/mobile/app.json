@@ -3,7 +3,7 @@
     "name": "Хрум",
     "slug": "levelup",
     "scheme": "levelup",
-    "version": "0.1.0",
+    "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon/app-icon-default-1024.png",
     "userInterfaceStyle": "automatic",
@@ -12,10 +12,6 @@
       "supportsTablet": false,
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
-        "NSAppTransportSecurity": {
-          "NSAllowsArbitraryLoads": true,
-          "NSAllowsLocalNetworking": true
-        },
         "NSSupportsLiveActivities": true
       },
       "icon": {
@@ -27,7 +23,8 @@
         "com.apple.security.application-groups": [
           "group.com.faraday13.levelup"
         ]
-      }
+      },
+      "buildNumber": "1"
     },
     "android": {
       "package": "com.faraday13.levelup"

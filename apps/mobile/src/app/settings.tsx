@@ -1,11 +1,13 @@
 import { useState } from 'react';
-import { Alert, ScrollView, View } from 'react-native';
+import { Alert, Linking, Pressable, ScrollView, View } from 'react-native';
 import { router } from 'expo-router';
 import { Icon } from '@/design/Icon';
 import { fmt } from '@/lib/format';
 import { requestHealthAccess } from '@/lib/health';
 import { syncHealth } from '@/lib/healthSync';
 import { syncReminders } from '@/lib/notifications';
+import { SITE } from '@/lib/parse';
+import { newId } from '@/lib/id';
 import { useDay } from '@/state/useDay';
 import { useStore } from '@/state/store';
 import { Card, Circ, Ghost, Lbl, Row, Screen, Seg, Sep, Toggle, Txt } from '@/ui/kit';
@@ -152,10 +154,38 @@ export default function Settings() {
           <Sep />
           {row(
             <>
+              <View style={{ flex: 1, gap: 2 }}>
+                <Txt>Распознавание с ИИ</Txt>
+                <Txt size={13} muted>
+                  Текст фразы — на сервер Хрума и модели DeepSeek
+                </Txt>
+              </View>
+              <Toggle label="Распознавание с ИИ" value={s.settings.ai === true} onChange={(v) => s.updateSettings({ ai: v, deviceId: s.settings.deviceId ?? newId() })} />
+            </>,
+          )}
+          <Sep />
+          {row(
+            <>
               <Txt>Dynamic Island</Txt>
               <Toggle label="Dynamic Island" value={s.settings.island !== false} onChange={(v) => s.updateSettings({ island: v })} />
             </>,
           )}
+        </Card>
+
+        <Card>
+          {[['Политика конфиденциальности', '/privacy'], ['Поддержка', '/support']].map(([label, path], i) => (
+            <View key={path}>
+              {i > 0 && <Sep />}
+              <Pressable onPress={() => void Linking.openURL(`${SITE}${path}`)} style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}>
+                {row(
+                  <>
+                    <Txt>{label}</Txt>
+                    <Icon name="chevronRight" size={16} color={t.mu} />
+                  </>,
+                )}
+              </Pressable>
+            </View>
+          ))}
         </Card>
 
         <Txt size={14} muted style={{ paddingHorizontal: 6 }}>

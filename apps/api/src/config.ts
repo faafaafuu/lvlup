@@ -6,6 +6,10 @@ export interface AppConfig {
   apiToken: string | null;
   /** Без токена — столько разборов в сутки на адрес; 0 — только по токену. */
   publicPerIpLimit: number;
+  /** Без токена — столько разборов в сутки на установку приложения (x-device). */
+  perDeviceLimit: number;
+  /** Почта поддержки для /privacy и /support. */
+  supportEmail: string | null;
   extractor: ExtractorName;
   llmTimeoutMs: number;
   anthropic: { apiKey: string | null; model: string };
@@ -17,7 +21,10 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   return {
     port: Number(env.PORT ?? 3100),
     apiToken: env.API_TOKEN || null,
-    publicPerIpLimit: Number(env.PUBLIC_PER_IP_LIMIT ?? 150),
+    // Мобильные операторы сажают тысячи людей за один адрес — лимит на адрес большой, точный — на устройство.
+    publicPerIpLimit: Number(env.PUBLIC_PER_IP_LIMIT ?? 3000),
+    perDeviceLimit: Number(env.PER_DEVICE_LIMIT ?? 120),
+    supportEmail: env.SUPPORT_EMAIL || null,
     extractor: (env.EXTRACTOR as ExtractorName) || 'anthropic',
     llmTimeoutMs: Number(env.LLM_TIMEOUT_MS ?? 5000),
     anthropic: { apiKey: env.ANTHROPIC_API_KEY || null, model: env.ANTHROPIC_MODEL || 'claude-haiku-4-5' },

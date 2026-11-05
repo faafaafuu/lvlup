@@ -18,7 +18,8 @@ const SERVER_TIMEOUT_MS = 22000;
  * а не офлайн-словарь. Токен не обязателен: без него сервер пускает с дневным лимитом
  * на адрес. Свой адрес/токен из профиля или ссылки levelup://connect важнее.
  */
-const DEFAULT_URL = process.env.EXPO_PUBLIC_API_URL || 'http://84.247.166.53:3100';
+export const SITE = 'https://hrum.noahlab.ru';
+const DEFAULT_URL = process.env.EXPO_PUBLIC_API_URL || SITE;
 const DEFAULT_TOKEN = process.env.EXPO_PUBLIC_API_TOKEN || '';
 
 export function serverOf(settings: Settings): { url: string; token: string } {
@@ -33,6 +34,8 @@ export function serverOf(settings: Settings): { url: string; token: string } {
  */
 export async function parsePhrase(text: string, settings: Settings, portions: UserPortions, bodyWeightKg: number): Promise<PhraseResult> {
   const offline = () => resolveMeal(text, parseHeuristic(text), { portions, activities: parseActivitiesHeuristic(text), bodyWeightKg });
+  // Без согласия на ИИ фраза никуда не уходит — разбор на телефоне.
+  if (settings.ai !== true) return { draft: offline(), source: 'offline', serverFailed: false, reason: 'распознавание с ИИ выключено в настройках' };
   const server = serverOf(settings);
 
   try {
@@ -41,7 +44,7 @@ export async function parsePhrase(text: string, settings: Settings, portions: Us
     const res = await fetch(`${server.url}/v1/meals/parse`, {
       method: 'POST',
       signal: controller.signal,
-      headers: { 'content-type': 'application/json', ...(server.token ? { 'x-api-key': server.token } : {}) },
+      headers: headersFor(settings, server.token),
       body: JSON.stringify({ text, portions, bodyWeightKg }),
     }).finally(() => clearTimeout(timer));
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -56,12 +59,20 @@ export async function parsePhrase(text: string, settings: Settings, portions: Us
   }
 }
 
+function headersFor(settings: Settings, token: string): Record<string, string> {
+  return {
+    'content-type': 'application/json',
+    ...(token ? { 'x-api-key': token } : {}),
+    ...(settings.deviceId ? { 'x-device': settings.deviceId } : {}),
+  };
+}
+
 export async function checkServer(settings: Settings): Promise<string> {
   try {
     const server = serverOf(settings);
     const res = await fetch(`${server.url}/v1/meals/parse`, {
       method: 'POST',
-      headers: { 'content-type': 'application/json', ...(server.token ? { 'x-api-key': server.token } : {}) },
+      headers: headersFor(settings, server.token),
       body: JSON.stringify({ text: 'банан' }),
     });
     if (res.status === 401) return 'Сервер отвечает, но токен неверный';
