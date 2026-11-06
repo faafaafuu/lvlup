@@ -34,12 +34,12 @@ struct HrumLiveActivity: Widget {
           if !s.listening {
             Link(destination: URL(string: "levelup://voice")!) {
               HStack(spacing: 8) {
-                Image(systemName: "mic.fill")
-                Text("Записать").font(.system(size: 15, weight: .semibold))
+                Image(systemName: "plus")
+                Text("Записать еду").font(.system(size: 15, weight: .semibold))
               }
               .foregroundColor(.white)
               .frame(maxWidth: .infinity, minHeight: 40)
-              .background(Capsule().fill(Palette.xp))
+              .background(Capsule().fill(Color.white.opacity(0.14)))
             }
           }
         }
@@ -88,9 +88,11 @@ private struct LockScreenView: View {
       }
       Spacer()
       if !state.listening {
+        // Спокойная «+», а не красный микрофон: на экране блокировки красный кружок
+        // с микрофоном читается как «тебя сейчас записывают».
         Link(destination: URL(string: "levelup://voice")!) {
-          Image(systemName: "mic.fill").font(.system(size: 18, weight: .semibold)).foregroundColor(.white)
-            .frame(width: 48, height: 48).background(Circle().fill(Palette.xp))
+          Image(systemName: "plus").font(.system(size: 20, weight: .medium)).foregroundColor(.white)
+            .frame(width: 44, height: 44).background(Circle().fill(Color.white.opacity(0.14)))
         }
       }
     }

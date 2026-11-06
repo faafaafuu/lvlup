@@ -1,5 +1,5 @@
 import { MealDraft, UserPortions, parseActivitiesHeuristic, parseHeuristic, resolveMeal } from '@levelup/domain';
-import { Settings } from '@/state/store';
+import { Settings, useStore } from '@/state/store';
 
 export interface PhraseResult {
   draft: MealDraft;
@@ -47,7 +47,13 @@ export async function parsePhrase(text: string, settings: Settings, portions: Us
       headers: headersFor(settings, server.token),
       body: JSON.stringify({ text, portions, bodyWeightKg }),
     }).finally(() => clearTimeout(timer));
+    if (res.status === 402) {
+      useStore.getState().updateSettings({ aiLeft: 0 });
+      return { draft: offline(), source: 'offline', serverFailed: false, reason: 'бесплатные распознавания с ИИ на этот месяц закончились — разобрал на телефоне' };
+    }
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const left = res.headers.get('x-ai-left');
+    if (left != null && Number.isFinite(Number(left))) useStore.getState().updateSettings({ aiLeft: Number(left) });
     const body = (await res.json()) as { draft: MealDraft };
     // Старый сервер без активностей — дополним офлайн-разбором.
     if (!body.draft.activities) body.draft.activities = offline().activities;

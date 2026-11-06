@@ -59,3 +59,17 @@ export function normOn(state: Pick<GameState, 'profile' | 'weights'>, date: Date
   const upTo = state.weights.filter((w) => w.date <= date);
   return dailyCalorieTarget(state.profile, currentWeight(state.profile, upTo));
 }
+
+/** Сожжено на тренировках за день: сказанные голосом и пришедшие из Здоровья. */
+export function workoutKcalOn(state: Pick<GameState, 'activity'>, date: DateKey): number {
+  return Math.round((state.activity[date]?.sessions ?? []).reduce((k, s) => k + (s.kcal || 0), 0));
+}
+
+/**
+ * Бюджет дня: норма плюс тренировки. Обычные шаги и бытовая активность уже сидят в норме
+ * (коэффициент активности), поэтому общий «активный расход» из Здоровья не прибавляем —
+ * иначе одни и те же калории посчитаются дважды.
+ */
+export function budgetOn(state: Pick<GameState, 'profile' | 'weights' | 'activity'>, date: DateKey): number {
+  return normOn(state, date) + workoutKcalOn(state, date);
+}

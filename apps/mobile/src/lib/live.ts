@@ -1,6 +1,6 @@
 import { Platform } from 'react-native';
 import { ExtensionStorage } from '@bacons/apple-targets';
-import { XP_PER_LEVEL, dateKey, dayStats, gameSummary, normOn } from '@levelup/domain';
+import { XP_PER_LEVEL, budgetOn, dateKey, dayStats, gameSummary } from '@levelup/domain';
 import { HrumActivity } from '../../modules/hrum-activity';
 import { useStore } from '@/state/store';
 
@@ -22,7 +22,7 @@ function snapshot() {
   const game = gameSummary(state);
   return {
     kcal: Math.round(stats.kcal),
-    norm: Math.round(normOn(state, today)),
+    norm: Math.round(budgetOn(state, today)),
     steps: Math.round(stats.steps),
     stepsGoal: s.profile.stepsGoal,
     level: game.level,

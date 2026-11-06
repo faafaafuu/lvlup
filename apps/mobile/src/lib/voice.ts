@@ -14,6 +14,14 @@ try {
 
 export const voiceSupported = speech != null;
 
+const OPTIONS = {
+  lang: 'ru-RU',
+  interimResults: true,
+  continuous: true,
+  addsPunctuation: false,
+  volumeChangeEventOptions: { enabled: true, intervalMillis: 80 },
+};
+
 export type VoiceState = 'idle' | 'listening' | 'error';
 
 /** Сколько ждать первых слов — человек может вспоминать, что ел. */
@@ -46,6 +54,10 @@ export function useVoice(onFinal: (text: string) => void) {
   const committed = useRef('');
   const current = useRef('');
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const startedAt = useRef(0);
+  /** Перезапуск после прерывания идёт: «end» от прерванной сессии игнорируем. */
+  const retrying = useRef(false);
+  const retried = useRef(false);
   const finalCb = useRef(onFinal);
   finalCb.current = onFinal;
 
@@ -86,11 +98,27 @@ export function useVoice(onFinal: (text: string) => void) {
           return;
         }
         if (stateRef.current !== 'listening') return;
+        // С экрана блокировки и из островка приложение ещё «просыпается», и iOS обрывает
+        // аудиосессию в первые доли секунды. Это не звонок — тихо пробуем ещё раз.
+        const early = Date.now() - startedAt.current < 2500;
+        if ((e.error === 'interrupted' || e.error === 'audio-capture') && early && !text() && !retried.current) {
+          retried.current = true;
+          retrying.current = true;
+          setTimeout(() => {
+            retrying.current = false;
+            if (stateRef.current !== 'listening') return;
+            startedAt.current = Date.now();
+            m.start(OPTIONS);
+            armTimer(WAIT_FOR_SPEECH_MS);
+          }, 700);
+          return;
+        }
         if (e.error === 'no-speech' && text()) return; // уже что-то сказал — дождёмся end
         setError(ERRORS[e.error] ?? 'Не получилось распознать, попробуй ещё раз или введи текстом');
         setState('error');
       }),
       m.addListener('end', () => {
+        if (retrying.current) return;
         if (timer.current) clearTimeout(timer.current);
         setLevel(0);
         if (stateRef.current === 'error') return;
@@ -120,13 +148,10 @@ export function useVoice(onFinal: (text: string) => void) {
     setHeardSomething(false);
     setError(null);
     setState('listening');
-    m.start({
-      lang: 'ru-RU',
-      interimResults: true,
-      continuous: true,
-      addsPunctuation: false,
-      volumeChangeEventOptions: { enabled: true, intervalMillis: 80 },
-    });
+    startedAt.current = Date.now();
+    retried.current = false;
+    retrying.current = false;
+    m.start(OPTIONS);
     armTimer(WAIT_FOR_SPEECH_MS);
     return true;
   }, [setState, armTimer]);

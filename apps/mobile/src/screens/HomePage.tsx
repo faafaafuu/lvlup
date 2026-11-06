@@ -66,6 +66,7 @@ export function HomePage() {
         <Rings size={size} food={day.stats.kcal / day.norm} steps={day.stats.steps / profile.stepsGoal} xp={d.game.levelXp / XP_PER_LEVEL}>
           <Num size={Math.round(size * (Math.abs(left) >= 1000 ? 0.16 : 0.19))}>{fmt(Math.abs(left))}</Num>
           <Lbl style={{ fontSize: 12, letterSpacing: 2.4, marginTop: 4 }}>{left >= 0 ? 'ккал осталось' : 'ккал сверх плана'}</Lbl>
+          {d.burned > 0 && <Lbl color={t.steps} style={{ fontSize: 11, marginTop: 6 }}>+{fmt(d.burned)} за тренировки</Lbl>}
         </Rings>
         </Pressable>
       </View>

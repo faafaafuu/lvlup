@@ -1,5 +1,5 @@
 import * as Notifications from 'expo-notifications';
-import { addDays, dateKey, dayStats, mealDateKey, mealSlot, normOn } from '@levelup/domain';
+import { addDays, budgetOn, dateKey, dayStats, mealDateKey, mealSlot } from '@levelup/domain';
 import { fmt } from '@/lib/format';
 import { useStore } from '@/state/store';
 
@@ -32,7 +32,7 @@ function plan(): Array<{ date: Date; title: string; body: string }> {
     const meals = s.meals.filter((m) => mealDateKey(m.at) === day);
     const lunchLogged = meals.some((m) => mealSlot(m.at) === 'Обед');
     if (!lunchLogged) out.push({ date: at(day, LUNCH), title: 'Что было на обед?', body: 'Скажи одной фразой — Хрум посчитает' });
-    const left = normOn(state, day) - dayStats(day, s.meals, s.activity[day]).kcal;
+    const left = budgetOn(state, day) - dayStats(day, s.meals, s.activity[day]).kcal;
     const body = !meals.length
       ? 'Сегодня ещё ничего не записано — нажми на микрофон и перечисли, что ел'
       : left >= 0

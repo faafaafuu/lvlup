@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import { DateKey, DayActivity, GameState, MealDraft, MealLog, Profile, UserPortions, WeightEntry, dateKey, gameSummary, mealSlot, normOn, dayStats, sumNutrients } from '@levelup/domain';
+import { DateKey, DayActivity, GameState, MealDraft, MealLog, Profile, UserPortions, WeightEntry, dateKey, gameSummary, mealSlot, normOn, budgetOn, dayStats, sumNutrients } from '@levelup/domain';
 import { newId } from '@/lib/id';
 import type { ThemePref } from '@/ui/theme';
 
@@ -20,6 +20,8 @@ export interface Settings {
   ai?: boolean;
   /** Случайный id установки — для дневного лимита сервера, с личностью не связан. */
   deviceId?: string;
+  /** Сколько бесплатных распознаваний с ИИ осталось в этом месяце (по ответу сервера). */
+  aiLeft?: number;
   /** Когда последний раз синхронизировались со Здоровьем. */
   healthSyncedAt?: string | null;
 }
@@ -157,7 +159,7 @@ export const useStore = create<AppState>()(
               level: next.level,
               levelXp: next.levelXp,
               levelUp: next.level > prev.level,
-              kcalLeft: normOn(after, day) - stats.kcal,
+              kcalLeft: budgetOn(after, day) - stats.kcal,
               slot: draft.items.length ? mealSlot(at) : 'Тренировка',
               day,
             },

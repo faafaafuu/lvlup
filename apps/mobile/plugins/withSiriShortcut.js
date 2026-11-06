@@ -50,7 +50,9 @@ struct LevelUpShortcuts: AppShortcutsProvider {
         "\\(.applicationName), добавь",
         "Отметь в \\(.applicationName)",
         "Записать в \\(.applicationName)",
-        "Запиши в \\(.applicationName)"
+        "Запиши в \\(.applicationName)",
+        "Добавь еду в \\(.applicationName)",
+        "Съел, \\(.applicationName)"
       ],
       shortTitle: "Записать",
       systemImageName: "mic.fill"

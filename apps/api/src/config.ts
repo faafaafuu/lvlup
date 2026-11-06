@@ -8,6 +8,8 @@ export interface AppConfig {
   publicPerIpLimit: number;
   /** Без токена — столько разборов в сутки на установку приложения (x-device). */
   perDeviceLimit: number;
+  /** Бесплатных разборов с ИИ в месяц на установку; 0 — без месячного лимита. */
+  freeAiPerMonth: number;
   /** Почта поддержки для /privacy и /support. */
   supportEmail: string | null;
   extractor: ExtractorName;
@@ -24,6 +26,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     // Мобильные операторы сажают тысячи людей за один адрес — лимит на адрес большой, точный — на устройство.
     publicPerIpLimit: Number(env.PUBLIC_PER_IP_LIMIT ?? 3000),
     perDeviceLimit: Number(env.PER_DEVICE_LIMIT ?? 120),
+    freeAiPerMonth: Number(env.FREE_AI_PER_MONTH ?? 60),
     supportEmail: env.SUPPORT_EMAIL || null,
     extractor: (env.EXTRACTOR as ExtractorName) || 'anthropic',
     llmTimeoutMs: Number(env.LLM_TIMEOUT_MS ?? 5000),

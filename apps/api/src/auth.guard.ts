@@ -1,6 +1,7 @@
 import { CanActivate, ExecutionContext, HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { timingSafeEqual } from 'node:crypto';
 import { AppConfig } from './config';
+import { Quota } from './quota';
 import { APP_CONFIG } from './tokens';
 
 /**
@@ -17,11 +18,20 @@ export class ApiTokenGuard implements CanActivate {
   private day = '';
   private perIp = new Map<string, number>();
   private perDevice = new Map<string, number>();
+  private readonly quota: Quota;
 
-  constructor(@Inject(APP_CONFIG) private readonly config: AppConfig) {}
+  constructor(@Inject(APP_CONFIG) private readonly config: AppConfig) {
+    this.quota = new Quota(process.env.JOURNAL_DIR || 'journal', config.freeAiPerMonth);
+    process.once('beforeExit', () => this.quota.flush());
+    process.once('SIGTERM', () => {
+      this.quota.flush();
+      process.exit(0);
+    });
+  }
 
   canActivate(context: ExecutionContext): boolean {
     const expected = this.config.apiToken;
+    const res = context.switchToHttp().getResponse<{ setHeader(k: string, v: string): void }>();
     const req = context.switchToHttp().getRequest<{ path: string; headers: Record<string, string | undefined>; socket?: { remoteAddress?: string } }>();
     if (!expected || OPEN.has(req.path)) return true;
     const given = Buffer.from(req.headers['x-api-key'] ?? '');
@@ -42,6 +52,12 @@ export class ApiTokenGuard implements CanActivate {
       const n = (this.perDevice.get(device) ?? 0) + 1;
       this.perDevice.set(device, n);
       if (n > this.config.perDeviceLimit) throw new HttpException('Дневной лимит разборов исчерпан — завтра снова', HttpStatus.TOO_MANY_REQUESTS);
+      if (this.config.freeAiPerMonth > 0 && req.path === '/v1/meals/parse') {
+        const left = this.quota.take(device);
+        // 402: приложение узнаёт по коду, что это лимит, а не поломка, и разбирает на телефоне.
+        if (left < 0) throw new HttpException({ code: 'free_quota', message: 'Бесплатные разборы с ИИ на этот месяц закончились' }, HttpStatus.PAYMENT_REQUIRED);
+        res.setHeader('x-ai-left', String(left));
+      }
     }
     // За nginx (hrum.noahlab.ru) все приходят с его адреса — настоящий берём из X-Real-IP,
     // но верим заголовку только от своих (локальных) адресов.

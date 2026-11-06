@@ -159,6 +159,11 @@ export default function Settings() {
                 <Txt size={13} muted>
                   Текст фразы — на сервер Хрума и модели DeepSeek
                 </Txt>
+                {s.settings.ai === true && s.settings.aiLeft != null && (
+                  <Txt size={13} muted>
+                    {s.settings.aiLeft > 0 ? `Бесплатно в этом месяце осталось: ${s.settings.aiLeft}` : 'Бесплатные на этот месяц закончились — разбор на телефоне'}
+                  </Txt>
+                )}
               </View>
               <Toggle label="Распознавание с ИИ" value={s.settings.ai === true} onChange={(v) => s.updateSettings({ ai: v, deviceId: s.settings.deviceId ?? newId() })} />
             </>,

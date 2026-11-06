@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { DateKey, currentWeight, dateKey, dayStats, gameSummary, normOn } from '@levelup/domain';
+import { DateKey, budgetOn, currentWeight, dateKey, dayStats, gameSummary, workoutKcalOn } from '@levelup/domain';
 import { useStore } from './store';
 
 /** Всё производное для экранов: день, норма, опыт/уровень — считается из записей. */
@@ -19,7 +19,9 @@ export function useDay(day?: DateKey) {
       today: dateKey(new Date()),
       state,
       stats: dayStats(d, meals, activity[d]),
-      norm: normOn(state, d),
+      /** Норма с учётом тренировок дня — от неё считается «осталось». */
+      norm: budgetOn(state, d),
+      burned: workoutKcalOn(state, d),
       weight: currentWeight(profile, weights),
       game: gameSummary(state),
     };
